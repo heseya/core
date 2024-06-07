@@ -47,6 +47,7 @@ class OrderStatusUpdated extends Mailable
         $this->setAnyLangFallback();
         $lang = app(LanguageService::class)->firstByIsoOrDefault($this->order->language);
         $status = $this->order->status?->getTranslation('name', $lang->getKey());
+        $description = $this->order->status?->getTranslation('description', $lang->getKey());
         $this->setLangFallbackSettings(...$previousSettings);
 
         return new Content(
@@ -54,6 +55,7 @@ class OrderStatusUpdated extends Mailable
             with: [
                 'order' => $this->order,
                 'status' => $status,
+                'description' => $description,
             ],
         );
     }
