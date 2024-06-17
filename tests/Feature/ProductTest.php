@@ -1303,7 +1303,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey() . '/sales');
 
         $response
             ->assertOk()
@@ -1384,7 +1384,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey() . '/sales');
 
         $response
             ->assertOk()
@@ -1496,7 +1496,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey() . '/sales');
 
         $response
             ->assertOk()
@@ -1613,7 +1613,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/products/id:' . $this->saleProduct->getKey() . '/sales');
 
         $response
             ->assertOk()

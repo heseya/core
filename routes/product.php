@@ -4,13 +4,6 @@ use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('dashboard')->group(function (): void {
-   Route::prefix('/products')->group(function (): void {
-       Route::get('id:{product:id}', [ProductController::class, 'showForDashboard'])
-           ->middleware('can:products.show_details', 'published:product');
-   });
-});
-
 Route::prefix('products')->group(function (): void {
     Route::get('/', [ProductController::class, 'index'])
         ->middleware('can:products.show');
@@ -28,6 +21,8 @@ Route::prefix('products')->group(function (): void {
         ->middleware('can:products.edit');
     Route::delete('id:{product:id}', [ProductController::class, 'destroy'])
         ->middleware('can:products.remove');
+    Route::get('id:{product:id}/sales', [ProductController::class, 'showForDashboard'])
+        ->middleware('can:products.show_details', 'published:product');
 
     Route::post('id:{product:id}/attachments', [ProductController::class, 'addAttachment'])
         ->middleware('can:products.edit');

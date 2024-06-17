@@ -158,8 +158,8 @@ paths:
     $ref: ./paths/Products.yml#/ProductsAttachments
   /products/id:{id}/attachments/id:{attachment_id}:
     $ref: ./paths/Products.yml#/ProductsAttachmentsParams
-  /dashboard/products/id:{id}:
-    $ref: ./paths/Products.yml#/ProductDashboard
+  /products/id:{id}/sales:
+    $ref: ./paths/Products.yml#/ProductSales
   /product-sets:
     $ref: ./paths/ProductSets.yml#/ProductSets
   /product-sets/{slug}:

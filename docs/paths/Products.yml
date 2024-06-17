@@ -389,7 +389,7 @@ ProductsAttachmentsParams:
     security:
       - BearerAuth: [ ]
 
-ProductDashboard:
+ProductSales:
   get:
     tags:
       - Products
