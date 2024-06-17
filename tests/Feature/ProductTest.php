@@ -1307,44 +1307,10 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [
-                    [
-                        'gross' => '3000.00',
-                        'net' => '3000.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min_initial' => [
-                    [
-                        'gross' => '2500.00',
-                        'net' => '2500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'gross' => '3500.00',
-                        'net' => '3500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min' => [
-                    [
-                        'gross' => '2250.00',
-                        'net' => '2250.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'gross' => '3150.00',
-                        'net' => '3150.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1388,44 +1354,10 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [
-                    [
-                        'net' => '3000.00',
-                        'gross' => '3000.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min_initial' => [
-                    [
-                        'net' => '2500.00',
-                        'gross' => '2500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'net' => '3500.00',
-                        'gross' => '3500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min' => [
-                    [
-                        'net' => '2250.00',
-                        'gross' => '2250.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'net' => '3150.00',
-                        'gross' => '3150.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale->getKey(),
@@ -1484,7 +1416,7 @@ class ProductTest extends TestCase
 
         // Applied - product set is not on block list
         $sale4 = Discount::factory()->create([
-            'description' => 'Not applied - product set is on block list',
+            'description' => 'Applied - product set is on block list',
             'name' => 'Set not on block list',
             'percentage' => '5',
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1500,44 +1432,10 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonCount(2, 'data')
+            ->assertJsonMissing([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [
-                    [
-                        'net' => '3000.00',
-                        'gross' => '3000.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min_initial' => [
-                    [
-                        'net' => '2500.00',
-                        'gross' => '2500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'net' => '3500.00',
-                        'gross' => '3500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min' => [
-                    [
-                        'net' => '2137.50',
-                        'gross' => '2137.50',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'net' => '2992.50',
-                        'gross' => '2992.50',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1617,44 +1515,9 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [
-                    [
-                        'net' => '3000.00',
-                        'gross' => '3000.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min_initial' => [
-                    [
-                        'net' => '2500.00',
-                        'gross' => '2500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'net' => '3500.00',
-                        'gross' => '3500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min' => [
-                    [
-                        'net' => '2250.00',
-                        'gross' => '2250.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'net' => '3150.00',
-                        'gross' => '3150.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),

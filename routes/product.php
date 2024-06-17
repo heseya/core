@@ -21,7 +21,7 @@ Route::prefix('products')->group(function (): void {
         ->middleware('can:products.edit');
     Route::delete('id:{product:id}', [ProductController::class, 'destroy'])
         ->middleware('can:products.remove');
-    Route::get('id:{product:id}/sales', [ProductController::class, 'showForDashboard'])
+    Route::get('id:{product:id}/sales', [ProductController::class, 'showProductSales'])
         ->middleware('can:products.show_details', 'published:product');
 
     Route::post('id:{product:id}/attachments', [ProductController::class, 'addAttachment'])

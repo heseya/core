@@ -174,6 +174,11 @@ final readonly class ProductService
         $product->save();
     }
 
+    public function productSales(Product $product): \Illuminate\Database\Eloquent\Collection
+    {
+        return $product->sales()->with('amounts', 'metadata', 'metadataPrivate')->get();
+    }
+
     private function setup(Product $product, ProductCreateDto|ProductUpdateDto $dto): Product
     {
         if (!($dto->schemas instanceof Optional)) {

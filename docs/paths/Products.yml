@@ -420,7 +420,9 @@ ProductSales:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductView'
+                  type: array
+                  items:
+                    $ref: './../schemas/Sales.yml#/Sale'
               type: object
     security:
       - BearerAuth: [ ]

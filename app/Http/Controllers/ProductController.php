@@ -12,6 +12,7 @@ use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductSaleResource;
 use App\Http\Resources\ProductWithoutSalesResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
@@ -130,80 +131,13 @@ final class ProductController extends Controller
         return ProductWithoutSalesResource::make($product);
     }
 
-    public function showForDashboard(ProductShowRequest $request, Product $product): JsonResource
+    public function showProductSales(Product $product): JsonResource
     {
         if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
 
-        $product->loadMissing([
-            'schemas',
-            'schemas.metadata',
-            'schemas.metadataPrivate',
-            'schemas.options',
-            'schemas.options.items',
-            'schemas.options.metadata',
-            'schemas.options.metadataPrivate',
-            'schemas.options.prices',
-            'schemas.options.schema',
-            'schemas.prices',
-            'schemas.usedSchemas',
-            'sales',
-            'sales.amounts',
-            'sales.metadata',
-            'sales.metadataPrivate',
-            'attachments',
-            'attachments.media',
-            'attachments.media.metadata',
-            'attachments.media.metadataPrivate',
-            'items',
-            'media',
-            'media.metadata',
-            'media.metadataPrivate',
-            'metadata',
-            'metadataPrivate',
-            'pages',
-            'pages.metadata',
-            'pages.metadataPrivate',
-            'pricesBase',
-            'pricesMax',
-            'pricesMaxInitial',
-            'pricesMin',
-            'pricesMinInitial',
-            'productAttributes',
-            'productAttributes.attribute',
-            'productAttributes.attribute.metadata',
-            'productAttributes.attribute.metadataPrivate',
-            'productAttributes.options',
-            'productAttributes.options.metadata',
-            'productAttributes.options.metadataPrivate',
-            'publishedTags',
-            'relatedSets',
-            'relatedSets.childrenPublic',
-            'relatedSets.media',
-            'relatedSets.media.metadata',
-            'relatedSets.media.metadataPrivate',
-            'relatedSets.metadata',
-            'relatedSets.metadataPrivate',
-            'relatedSets.parent',
-            'seo',
-            'seo.media',
-            'seo.media.metadata',
-            'seo.media.metadataPrivate',
-            'sets',
-            'sets.childrenPublic',
-            'sets.media',
-            'sets.media.metadataPrivate',
-            'sets.media.metadata',
-            'sets.metadata',
-            'sets.metadataPrivate',
-            'sets.parent',
-            'banner.media',
-            'banner.media.metadata',
-            'banner.media.metadataPrivate',
-        ]);
-
-        return ProductResource::make($product);
+        return ProductSaleResource::collection($this->productService->productSales($product));
     }
 
     public function store(ProductCreateRequest $request): JsonResource
