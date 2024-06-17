@@ -247,7 +247,7 @@ ProductsSlug:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductView'
+                  $ref: './../schemas/Products.yml#/ProductWithoutSalesView'
               type: object
 
 ProductsParams:
@@ -281,7 +281,7 @@ ProductsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductView'
+                  $ref: './../schemas/Products.yml#/ProductWithoutSalesView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -385,6 +385,42 @@ ProductsAttachmentsParams:
               properties:
                 data:
                   $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ProductDashboard:
+  get:
+    tags:
+      - Products
+    summary: alias
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: [ 'none', 'any', 'default' ]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
       - BearerAuth: [ ]

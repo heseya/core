@@ -4,6 +4,13 @@ use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
+Route::prefix('dashboard')->group(function (): void {
+   Route::prefix('/products')->group(function (): void {
+       Route::get('id:{product:id}', [ProductController::class, 'showForDashboard'])
+           ->middleware('can:products.show_details', 'published:product');
+   });
+});
+
 Route::prefix('products')->group(function (): void {
     Route::get('/', [ProductController::class, 'index'])
         ->middleware('can:products.show');

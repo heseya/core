@@ -1134,6 +1134,179 @@ class ProductTest extends TestCase
 
         $response
             ->assertOk()
+            ->assertJsonMissingPath('data.sales')
+            ->assertJsonFragment([
+                'id' => $this->saleProduct->getKey(),
+                'name' => $this->saleProduct->name,
+                'prices_base' => [
+                    [
+                        'gross' => '3000.00',
+                        'net' => '3000.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min_initial' => [
+                    [
+                        'gross' => '2500.00',
+                        'net' => '2500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max_initial' => [
+                    [
+                        'gross' => '3500.00',
+                        'net' => '3500.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_min' => [
+                    [
+                        'gross' => '2250.00',
+                        'net' => '2250.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+                'prices_max' => [
+                    [
+                        'gross' => '3150.00',
+                        'net' => '3150.00',
+                        'currency' => Currency::DEFAULT->value,
+                    ],
+                ],
+            ])
+            ->assertJsonMissing([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale3->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale4->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale5->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowDashboardWithSales(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        // Applied - product is on list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'percentage' => '10',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale1->products()->attach($this->saleProduct);
+
+        // Not applied - product is not on list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'percentage' => null,
+        ]);
+        $this->discountRepository->setDiscountAmounts($sale2->getKey(), [
+            PriceDto::from([
+                'value' => '10.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+
+        // Not applied - invalid target type
+        $sale3 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Order-value',
+            'percentage' => '5',
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale3->products()->attach($this->saleProduct);
+
+        // Not applied - product is on list, but target_is_allow_list = false
+        $sale4 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Not allow list',
+            'percentage' => '5',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale4->products()->attach($this->saleProduct);
+
+        // Not applied - invalid condition type in condition group
+        $sale5 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Condition type Order-value',
+            'percentage' => '5',
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => '20.00',
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => '10000.00',
+                    ],
+                ],
+                'include_taxes' => false,
+                'is_in_range' => true,
+            ],
+        ]);
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '2000',
+            'currency' => $this->currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN,
+        ]);
+
+        $conditionGroup->conditions->first()->pricesMin()->create([
+            'value' => '1000000',
+            'currency' => $this->currency->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX,
+        ]);
+
+        $sale5->conditionGroups()->attach($conditionGroup);
+
+        $sale5->products()->attach($this->saleProduct);
+
+        $this->discountService->applyDiscountsOnProduct($this->saleProduct);
+
+        $response = $this->actingAs($this->{$user})
+            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
+
+        $response
+            ->assertOk()
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
@@ -1211,7 +1384,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
@@ -1323,7 +1496,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
@@ -1440,7 +1613,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->saleProduct);
 
         $response = $this->actingAs($this->{$user})
-            ->getJson('/products/id:' . $this->saleProduct->getKey());
+            ->getJson('/dashboard/products/id:' . $this->saleProduct->getKey());
 
         $response
             ->assertOk()
