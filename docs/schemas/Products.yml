@@ -1,4 +1,4 @@
-Product:
+BaseProduct:
   type: object
   properties:
     id:
@@ -101,11 +101,17 @@ Product:
             example: '<h1>Lorem ipsum dolor sit amet</h1>'
           description_short:
             type: string
-    published:
-      type: array
-      items:
-        type: string
-        format: uuid
+
+Product:
+  type: object
+  allOf:
+    - $ref: '#/Product'
+    - properties:
+        published:
+          type: array
+          items:
+            type: string
+            format: uuid
 
 ProductView:
   type: object
@@ -257,3 +263,56 @@ ProductBanner:
           subtitle:
             type: string
             example: 'Spring spring spring'
+
+ProductWithoutSalesView:
+  type: object
+  allOf:
+    - $ref: '#/BaseProduct'
+    - properties:
+        description_html:
+          description: 'HTML formatted text to be displayed as a product description'
+          type: string
+          example: '<h1>Lorem ipsum dolor sit amet</h1>'
+        description_short:
+          description: 'Plain text short product description'
+          type: string
+        descriptions:
+          type: array
+          items:
+            $ref: './Pages.yml#/Page'
+        items:
+          $ref: './Items.yml#/ItemWithRequiredQuantity'
+        gallery:
+          description: 'Ids of assigned subsets'
+          type: array
+          items:
+            $ref: './Media.yml#/Media'
+        schemas:
+          description: 'Ids of assigned subsets'
+          type: array
+          items:
+            $ref: './../api.yml#/components/schemas/Schema'
+        sets:
+          description: 'Assigned product sets'
+          type: array
+          items:
+            $ref: './ProductSets.yml#/ProductSet'
+        related_sets:
+          description: 'Sets with products related to this one'
+          type: array
+          items:
+            $ref: './ProductSets.yml#/ProductSet'
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProduct'
+        seo:
+          $ref: './Seo.yml#/SeoView'
+        attachments:
+          description: 'List of all media attachments'
+          type: array
+          items:
+            $ref: './MediaAttachments.yml#/MediaAttachment'
+        banner:
+          $ref: '#/ProductBanner'
