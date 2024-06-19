@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
-use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
@@ -44,6 +43,7 @@ use App\Traits\ModifyLangFallback;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Order\Dtos\OrderIndexDto;
 use Domain\Order\Resources\OrderResource;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
@@ -52,6 +52,7 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App as AppSupport;
 use Illuminate\Support\Facades\Auth;
@@ -59,6 +60,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Spatie\LaravelData\Optional;
 use Throwable;
 
 final readonly class OrderService implements OrderServiceContract
@@ -453,8 +455,8 @@ final readonly class OrderService implements OrderServiceContract
 
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator
     {
-        return Order::searchByCriteria(['buyer_id' => Auth::id()] + $dto->getSearchCriteria())
-            ->sort($dto->getSort())
+        return Order::searchByCriteria(['buyer_id' => Auth::id()] + $dto->toArray())
+            ->sort($dto->sort)
             ->with([
                 'products',
                 'discounts',
@@ -538,6 +540,41 @@ final readonly class OrderService implements OrderServiceContract
 
             SendOrderUrls::dispatch($order);
         }
+    }
+
+    public function index(OrderIndexDto $dto): LengthAwarePaginator
+    {
+        $search_data = ($dto->status_id instanceof Optional)
+            ? $dto->toArray() + ['status.hidden' => 0] : $dto->toArray();
+
+        $query = Order::searchByCriteria($search_data)->sort($dto->sort);
+
+        $orders_ids = $query->select('orders.id')->pluck('id')->toArray();
+
+        $per_page = Config::get('pagination.per_page');
+        $page = Paginator::resolveCurrentPage('page');
+        $this_page_ids = array_slice($orders_ids, $per_page * ($page - 1), $per_page);
+
+        if (count($this_page_ids) > 0) {
+            $orders = Order::query()->whereIn('orders.id', $this_page_ids)->with([
+                'status',
+                'shippingMethod',
+                'digitalShippingMethod',
+                'shippingAddress',
+                'invoiceAddress',
+                'documents',
+                'salesChannel',
+                'metadata',
+                'metadataPrivate',
+                'payments',
+            ])
+                ->orderByRaw('FIELD(orders.id, ' . str_repeat('?, ', count($this_page_ids) - 1) . '?)', $this_page_ids)
+                ->get();
+        } else {
+            $orders = collect();
+        }
+
+        return new \Illuminate\Pagination\LengthAwarePaginator($orders, count($orders_ids), $per_page, $page, ['path' => Paginator::resolveCurrentPath(), 'pageName' => 'page']);
     }
 
     /**

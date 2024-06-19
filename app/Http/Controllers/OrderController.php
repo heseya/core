@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
-use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderUpdateDto;
@@ -18,7 +17,6 @@ use App\Exceptions\ClientException;
 use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
-use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderProductSearchRequest;
 use App\Http\Requests\OrderProductUpdateRequest;
 use App\Http\Requests\OrderUpdateRequest;
@@ -32,6 +30,7 @@ use App\Models\OrderProduct;
 use App\Models\Status;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use Domain\Order\Dtos\OrderIndexDto;
 use Domain\Order\Resources\OrderDocumentResource;
 use Domain\Order\Resources\OrderProductResource;
 use Domain\Order\Resources\OrderPublicResource;
@@ -39,7 +38,6 @@ use Domain\Order\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -51,29 +49,9 @@ class OrderController extends Controller
         private readonly DocumentServiceContract $documentService,
     ) {}
 
-    public function index(OrderIndexRequest $request): JsonResource
+    public function index(OrderIndexDto $dto): JsonResource
     {
-        $search_data = !$request->has('status_id')
-            ? $request->validated() + ['status.hidden' => 0] : $request->validated();
-
-        $query = Order::searchByCriteria($search_data)
-            ->sort($request->input('sort', 'created_at:desc'))
-            ->with([
-                'status',
-                'shippingMethod',
-                'digitalShippingMethod',
-                'shippingAddress',
-                'invoiceAddress',
-                'documents',
-                'salesChannel',
-                'metadata',
-                'metadataPrivate',
-                'payments',
-            ]);
-
-        return OrderResource::collection(
-            $query->paginate(Config::get('pagination.per_page')),
-        );
+        return OrderResource::collection($this->orderService->index($dto));
     }
 
     public function show(Order $order): JsonResource
@@ -157,12 +135,12 @@ class OrderController extends Controller
         return $this->orderService->update($orderUpdateDto, $order);
     }
 
-    public function indexUserOrder(OrderIndexRequest $request): JsonResource
+    public function indexUserOrder(OrderIndexDto $dto): JsonResource
     {
         Gate::inspect('indexUserOrder', [Order::class]);
 
         return OrderResource::collection(
-            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request)),
+            $this->orderService->indexUserOrder($dto),
         );
     }
 
