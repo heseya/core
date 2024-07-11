@@ -31,6 +31,9 @@ jobs:
       - name: JWT
         run: php artisan jwt:secret --force
 
+      - name: Copy env
+        run: cp .env .env.testing
+
       - name: Migrations
         run: php artisan migrate:fresh --env=testing
 
