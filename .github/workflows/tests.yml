@@ -29,7 +29,7 @@ jobs:
         run: php artisan key:generate
 
       - name: JWT
-        run: php artisan jwt:secret --always-no
+        run: php artisan jwt:secret --force
 
       - name: Migrations
         run: php artisan migrate:fresh --env=testing
