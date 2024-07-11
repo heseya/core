@@ -25,10 +25,16 @@ jobs:
           retention-days: 1
 
       - name: Style
-        run: ./vendor/bin/pint --test
+        run: ./vendor/bin/pint ./src --config ./pint.json --test
+
+      - name: Style
+        run: ./vendor/bin/pint ./app --config ./pint-app.json --test
 
       - name: Clear config
         run: php artisan config:clear
 
       - name: PHPStan
-        run: ./vendor/bin/phpstan analyse --memory-limit=2G
+        run: ./vendor/bin/phpstan analyse -c ./phpstan.neon --memory-limit=2G
+
+      - name: PHPStan
+        run: ./vendor/bin/phpstan analyse -c ./phpstan-app.neon --memory-limit=2G
