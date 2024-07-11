@@ -1,0 +1,44 @@
+name: Tests
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: escolasoft/php:8.2-heseya
+    services:
+      mysql:
+        image: mariadb:10.7
+        env:
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: store-api
+          MYSQL_PASSWORD: secret
+      redis:
+        image: redis:5.0
+        env:
+          REDIS_PORT: 6379
+    steps:
+      - name: Instantiate package
+        uses: actions/checkout@v2
+
+      - name: Copy env
+        run: cp .env.testing .env
+
+      - name: Install dependencies
+        run: composer install --no-ansi --no-interaction --no-progress
+
+      - name: JWT
+        run: php artisan jwt:secret --always-no
+
+      - name: Migrations
+        run: php artisan migrate:fresh --env=testing
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-vendor
+          path: |
+            vendor/
+            .env
+          retention-days: 1
+
+      - name: Run tests
+        run: php -dpcov.enabled=1 -dpcov.exclude="~vendor~" ./vendor/bin/phpunit -d memory_limit=-1 --colors=never --coverage-text

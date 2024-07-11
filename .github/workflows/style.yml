@@ -1,0 +1,62 @@
+name: Style
+on: [push]
+jobs:
+  style:
+    runs-on: ubuntu-latest
+    container: escolasoft/php:8.2-heseya
+    if: github.ref_name != 'master' && github.ref_name != 'develop'
+    steps:
+      - name: Instantiate package
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: composer install --no-ansi --no-interaction --no-progress
+
+      - name: Copy env
+        run: cp .env.testing .env
+
+      - name: Generate keys
+        run: php artisan key:generate
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: style-vendor
+          path: |
+            vendor/
+            .env
+          retention-days: 1
+
+      - name: Style
+        run: ./vendor/bin/pint --test
+  phpstan:
+    runs-on: ubuntu-latest
+    container: escolasoft/php:8.2-heseya
+    if: github.ref_name != 'master' && github.ref_name != 'develop'
+    steps:
+      - name: Instantiate package
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: composer install --no-ansi --no-interaction --no-progress
+
+      - name: Copy env
+        run: cp .env.testing .env
+
+      - name: Generate keys
+        run: php artisan key:generate
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: style-vendor
+          path: |
+            vendor/
+            .env
+          retention-days: 1
+
+      - name: Clear config
+        run: php artisan config:clear
+
+      - name: Phpstan
+        run: ./vendor/bin/phpstan analyse --memory-limit=2G
