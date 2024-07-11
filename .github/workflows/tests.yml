@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: composer install --no-ansi --no-interaction --no-progress
 
+      - name: Generate keys
+        run: php artisan key:generate
+
       - name: JWT
         run: php artisan jwt:secret --always-no
 
