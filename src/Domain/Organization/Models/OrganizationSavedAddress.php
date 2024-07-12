@@ -22,6 +22,7 @@ final class OrganizationSavedAddress extends Model
         'address_id',
         'organization_id',
         'type',
+        'change_version',
     ];
     protected $casts = [
         'default' => 'bool',

@@ -43,6 +43,7 @@ return new class extends Migration
             $table->integer('type');
             $table->foreignUuid('address_id')->nullable()->references('id')->on('addresses')->onDelete('cascade');
             $table->foreignUuid('organization_id');
+            $table->integer('change_version')->default(0);
             $table->timestamps();
         });
 
