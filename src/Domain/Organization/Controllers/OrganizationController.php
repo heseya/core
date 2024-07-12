@@ -11,7 +11,6 @@ use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Resources\OrganizationResource;
 use Domain\Organization\Services\OrganizationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Response;
