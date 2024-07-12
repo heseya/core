@@ -6,7 +6,7 @@ jobs:
     container: escolasoft/php:8.2-heseya
     services:
       mysql:
-        image: mariadb:10.7
+        image: mysql:8
         env:
           MYSQL_ROOT_PASSWORD: secret
           MYSQL_DATABASE: store-api
