@@ -1,0 +1,96 @@
+OrganizationSavedAddresses:
+  get:
+    tags:
+      - Organizations
+    summary: 'organizations saved addresses list'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    security:
+      - BearerAuth: [ organizations.edit ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+              type: object
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+              type: object
+
+OrganizationSavedAddressesParams:
+  patch:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    requestBody:
+      $ref: './../requests/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: address_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+              type: object
+  delete:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ organizations.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: address_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success

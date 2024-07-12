@@ -340,6 +340,14 @@ paths:
     $ref: './paths/Redirects.yml#/Redirects'
   '/redirects/id:{id}':
     $ref: './paths/Redirects.yml#/RedirectsParams'
+  /organizations:
+    $ref: ./paths/Organizations.yml#/Organizations
+  /organizations/id:{id}:
+    $ref: ./paths/Organizations.yml#/OrganizationsParams
+  /organizations/id:{id}/shipping-addresses:
+    $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddresses
+  /organizations/id:{id}/shipping-addresses/id:{address_id}:
+    $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddressesParams
 components:
   schemas:
     Error:
