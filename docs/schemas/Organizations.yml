@@ -1,0 +1,20 @@
+Organization:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    billing_email:
+      type: string
+      example: admin@example.com
+    billing_address:
+      $ref: './Addresses.yml#/Address'
+    sales_channel:
+      $ref: './SalesChannel.yml#/SalesChannel'
+    client_id:
+      type: string
+
+OrganizationView:
+  type: object
+  allOf:
+    - $ref: '#/Organization'

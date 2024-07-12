@@ -147,6 +147,9 @@ enum Exceptions: string
     case CLIENT_SCHEMA_OPTIONS_INVALID = 'Selected schemas options are invalid';
     case CLIENT_EMAIL_TAKEN = 'The email has already been taken';
 
+    case CLIENT_ORGANIZATION_EXIST = 'Organization with given VAT already exists';
+    case CLIENT_ORGANIZATION_VAT_REQUIRED = 'Organization billing_address require VAT number';
+
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;
