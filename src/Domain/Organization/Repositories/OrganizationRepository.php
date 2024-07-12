@@ -11,6 +11,7 @@ use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
+use Spatie\LaravelData\Optional;
 
 final readonly class OrganizationRepository
 {
@@ -26,8 +27,11 @@ final readonly class OrganizationRepository
     {
         $address = Address::query()->firstOrCreate($dto->billing_address->toArray());
 
+        $is_complete = $dto->sales_channel_id && !($dto->sales_channel_id instanceof Optional) && $dto->client_id && !($dto->client_id instanceof Optional);
+
         return Organization::query()->create(array_merge($dto->toArray(), [
             'billing_address_id' => $address->getKey(),
+            'is_complete' => $is_complete,
         ]));
     }
 
@@ -39,6 +43,13 @@ final readonly class OrganizationRepository
     public function update(Organization $organization, OrganizationUpdateDto $dto): Organization
     {
         $organization->update($dto->toArray());
+        $organization->increment('change_version');
+
+        if ($organization->client_id && $organization->sales_channel_id) {
+            $organization->update(['is_complete' => true]);
+        } else {
+            $organization->update(['is_complete' => false]);
+        }
 
         return $organization;
     }

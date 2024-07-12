@@ -28,11 +28,18 @@ final class Organization extends Model
         'billing_address_id',
         'sales_channel_id',
         'creator_email',
+        'is_complete',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_complete' => 'boolean',
+    ];
+
+    /** @var string[] */
+    protected array $criteria = [
+        'is_complete',
     ];
 
     /**

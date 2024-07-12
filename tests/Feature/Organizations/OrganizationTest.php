@@ -21,6 +21,7 @@ class OrganizationTest extends TestCase
         $this->address = Address::factory()->create();
 
         $this->organization = Organization::factory()->create([
+            'change_version' => 0,
             'billing_address_id' => $this->address->getKey(),
             'sales_channel_id' => SalesChannel::query()->value('id'),
         ]);
@@ -43,6 +44,34 @@ class OrganizationTest extends TestCase
         ]);
 
         $this->actingAs($this->{$user})->json('GET', '/organizations')->assertOk()->assertJsonCount(11, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexIsComplete(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.show');
+
+        $completeOrganization = Organization::factory()->create([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'is_complete' => true,
+        ]);
+
+        $incompleteOrganization = Organization::factory()->create([
+            'is_complete' => false,
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/organizations', ['is_complete' => true])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $completeOrganization->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $incompleteOrganization->getKey(),
+            ]);
     }
 
     public function testShowUnauthorized(): void
@@ -153,6 +182,7 @@ class OrganizationTest extends TestCase
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test@test.test',
             'client_id' => 'CLIENT_01',
+            'is_complete' => false,
         ]);
 
         $this->assertDatabaseHas('addresses', $address);
@@ -251,6 +281,12 @@ class OrganizationTest extends TestCase
                 'id' => $this->organization->getKey(),
                 'billing_email' => 'new.email@test.com',
             ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'change_version' => 1,
+            'is_complete' => true,
+        ]);
     }
 
     /**
@@ -258,7 +294,7 @@ class OrganizationTest extends TestCase
      */
     public function testUpdateSalesChannel(string $user): void
     {
-        $this->{$user}->givePermissionTo(['organizations.edit', 'organizations.verify']);
+        $this->{$user}->givePermissionTo(['organizations.edit']);
 
         $salesChannel = SalesChannel::factory()->create();
 
@@ -272,6 +308,12 @@ class OrganizationTest extends TestCase
                 'id' => $salesChannel->getKey(),
                 'name' => $salesChannel->name,
             ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'change_version' => 1,
+            'is_complete' => true,
+        ]);
     }
 
     public function testRemoveUnauthorized(): void

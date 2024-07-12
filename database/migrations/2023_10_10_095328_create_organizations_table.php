@@ -26,6 +26,8 @@ return new class extends Migration
 
             $table->foreignUuid('billing_address_id')->nullable()->references('id')->on('addresses')->onDelete('restrict');
 
+            $table->boolean('is_complete')->default(false);
+
             $table->timestamps();
         });
 
