@@ -18,7 +18,9 @@ class OrganizationTest extends TestCase
     {
         parent::setUp();
 
-        $this->address = Address::factory()->create();
+        $this->address = Address::factory()->create([
+            'vat' => '123456789',
+        ]);
 
         $this->organization = Organization::factory()->create([
             'change_version' => 0,
@@ -155,7 +157,7 @@ class OrganizationTest extends TestCase
         $this->{$user}->givePermissionTo('organizations.add');
 
         $address = Address::factory()->definition();
-        $address['vat'] = '123456789';
+        $address['vat'] = '987654321';
         $shippingAddress = Address::factory()->definition();
 
         $response = $this
@@ -275,6 +277,16 @@ class OrganizationTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
                 'billing_email' => 'new.email@test.com',
+                'billing_address' => [
+                    'name' => $this->address->name,
+                    'address' => $this->address->address,
+                    'city' => $this->address->city,
+                    'country' => $this->address->country,
+                    'country_name' => $this->address->country_name,
+                    'phone' => $this->address->phone,
+                    'vat' => $this->address->vat,
+                    'zip' => $this->address->zip,
+                ]
             ])
             ->assertOk()
             ->assertJsonFragment([
