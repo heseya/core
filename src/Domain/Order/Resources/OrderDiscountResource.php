@@ -1,23 +1,21 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Order\Resources;
+
+use App\Http\Resources\Resource;
 use App\Models\Discount;
 use App\Models\OrderDiscount;
-use Brick\Math\Exception\NumberFormatException;
-use Brick\Math\Exception\RoundingNecessaryException;
-use Brick\Money\Exception\UnknownCurrencyException;
 use Illuminate\Http\Request;
 
 /**
  * @property Discount $resource
  */
-class OrderDiscountResource extends Resource
+final class OrderDiscountResource extends Resource
 {
     /**
-     * @throws UnknownCurrencyException
-     * @throws NumberFormatException
-     * @throws RoundingNecessaryException
+     * @return array<string, mixed>
      */
     public function base(Request $request): array
     {
@@ -28,9 +26,7 @@ class OrderDiscountResource extends Resource
         $applied = $pivot->applied;
 
         return [
-            'discount' => $this->resource->code !== null
-                ? CouponResource::make($this)->baseOnly()
-                : SaleResource::make($this)->baseOnly(),
+            'discount_id' => $this->resource->id,
             'name' => $pivot->name,
             'code' => $this->resource->code,
             'percentage' => $pivot->percentage,

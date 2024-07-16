@@ -77,6 +77,7 @@ use Domain\ShippingMethod\Services\ShippingMethodService;
 use Domain\User\Services\OneTimeSecurityCodeService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -157,5 +158,12 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         }
+    }
+
+    public function boot(): void
+    {
+        //                DB::listen(function ($query) {
+        //                    echo(json_encode($query, JSON_PRETTY_PRINT) . ",\n");
+        //                });
     }
 }

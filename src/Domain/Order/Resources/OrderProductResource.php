@@ -1,16 +1,23 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\Order\Resources;
+
+use App\Http\Resources\OrderProductUrlResource;
+use App\Http\Resources\OrderSchemaResource;
+use App\Http\Resources\Resource;
 use App\Models\OrderProduct;
-use Domain\Order\Resources\OrderDepositResource;
 use Illuminate\Http\Request;
 
 /**
  * @property OrderProduct $resource
  */
-class OrderProductResource extends Resource
+final class OrderProductResource extends Resource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return [
@@ -27,7 +34,7 @@ class OrderProductResource extends Resource
             'is_delivered' => $this->resource->is_delivered,
             'urls' => OrderProductUrlResource::collection($this->resource->urls),
             'product' => $this->resource->product
-                ? ProductResource::make($this->resource->product)
+                ? OrderProductDetailsResource::make($this->resource->product)
                 : null,
         ];
     }

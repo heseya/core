@@ -12,6 +12,8 @@ use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\MediaAttachmentResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\ProductSaleResource;
+use App\Http\Resources\ProductWithoutSalesResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
 use App\Models\Product;
@@ -25,8 +27,6 @@ use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Heseya\Dto\DtoException;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
@@ -77,9 +77,6 @@ final class ProductController extends Controller
             'schemas.options.schema',
             'schemas.prices',
             'schemas.usedSchemas',
-            'sales.amounts',
-            'sales.metadata',
-            'sales.metadataPrivate',
             'attachments',
             'attachments.media',
             'attachments.media.metadata',
@@ -130,9 +127,17 @@ final class ProductController extends Controller
             'banner.media.metadata',
             'banner.media.metadataPrivate',
         ]);
-        $product->load(['sales' => fn (BelongsToMany|Builder $belongsToMany) => $belongsToMany->withOrdersCount()]); // @phpstan-ignore-line
 
-        return ProductResource::make($product);
+        return ProductWithoutSalesResource::make($product);
+    }
+
+    public function showProductSales(Product $product): JsonResource
+    {
+        if (Gate::denies('products.show_hidden') && !$product->public) {
+            throw new NotFoundHttpException();
+        }
+
+        return ProductSaleResource::collection($this->productService->productSales($product));
     }
 
     public function store(ProductCreateRequest $request): JsonResource

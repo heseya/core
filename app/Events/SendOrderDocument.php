@@ -2,9 +2,9 @@
 
 namespace App\Events;
 
-use App\Http\Resources\OrderDocumentResource;
-use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use Domain\Order\Resources\OrderDocumentResource;
+use Domain\Order\Resources\OrderResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 

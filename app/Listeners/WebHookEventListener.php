@@ -7,7 +7,6 @@ use App\Models\WebHook;
 use App\Notifications\WebHookNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class WebHookEventListener implements ShouldQueue
