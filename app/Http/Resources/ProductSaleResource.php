@@ -5,9 +5,6 @@ namespace App\Http\Resources;
 use App\Models\Discount;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
-use Domain\ProductSet\Resources\ProductSetResource;
-use Domain\Seo\Resources\SeoMetadataResource;
-use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;
 
 /**
