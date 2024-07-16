@@ -36,4 +36,12 @@ Route::prefix('my/organization')->group(function (): void {
         ->middleware(['can:authenticated', 'app.restrict']);
     Route::patch('', [OrganizationController::class, 'myOrganizationEdit'])
         ->middleware(['can:authenticated', 'app.restrict']);
+    Route::get('shipping-addresses', [OrganizationShippingAddressController::class, 'indexMy'])
+        ->middleware(['can:authenticated', 'app.restrict']);
+    Route::post('shipping-addresses', [OrganizationShippingAddressController::class, 'storeMy'])
+        ->middleware(['can:authenticated', 'app.restrict']);
+    Route::patch('shipping-addresses/id:{address:id}', [OrganizationShippingAddressController::class, 'updateMy'])
+        ->middleware(['can:authenticated', 'app.restrict']);
+    Route::delete('shipping-addresses/id:{address:id}', [OrganizationShippingAddressController::class, 'deleteMy'])
+        ->middleware(['can:authenticated', 'app.restrict']);
 });

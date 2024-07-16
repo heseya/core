@@ -12,7 +12,7 @@ class OrganizationSavedAddressDefault implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         /** @var OrganizationSavedAddress|null $address */
-        $address = request()->route('delivery_address');
+        $address = request()->route('delivery_address') ?? request()->route('address');
 
         if ($address && $address->default && !$value) {
             $fail(Exceptions::CLIENT_ORGANIZATION_ADDRESS_DEFAULT->value);

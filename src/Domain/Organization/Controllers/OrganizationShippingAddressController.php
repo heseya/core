@@ -43,4 +43,26 @@ final class OrganizationShippingAddressController extends Controller
 
         return Response::noContent();
     }
+
+    public function indexMy(): JsonResource
+    {
+        return OrganizationSavedAddressResource::collection($this->organizationSavedAddressService->indexMy());
+    }
+
+    public function storeMy(OrganizationSavedAddressCreateDto $dto): JsonResource
+    {
+        return OrganizationSavedAddressResource::make($this->organizationSavedAddressService->storeAddressMy($dto));
+    }
+
+    public function updateMy(OrganizationSavedAddress $address, OrganizationSavedAddressUpdateDto $dto): JsonResource
+    {
+        return OrganizationSavedAddressResource::make($this->organizationSavedAddressService->updateAddressMy($address, $dto));
+    }
+
+    public function deleteMy(OrganizationSavedAddress $address): HttpResponse
+    {
+        $this->organizationSavedAddressService->deleteMy($address);
+
+        return Response::noContent();
+    }
 }

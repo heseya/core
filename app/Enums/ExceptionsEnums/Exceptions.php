@@ -152,6 +152,7 @@ enum Exceptions: string
     case CLIENT_ORGANIZATION_ADDRESS_DEFAULT = 'There must be one default organization shipping address.';
     case CLIENT_ORGANIZATION_ADDRESS_REMOVE_DEFAULT = 'You cannot delete default organization address.';
     case CLIENT_USER_NOT_IN_ORGANIZATION = 'You don\'t belong to an organization';
+    case CLIENT_ORGANIZATION_INVALID_ADDRESS = 'Invalid organization address';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
