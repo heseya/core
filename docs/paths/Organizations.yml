@@ -105,3 +105,22 @@ OrganizationsParams:
     responses:
       204:
         description: Success
+
+OrganizationRegister:
+  post:
+    tags:
+      - Organizations
+    security:
+      - BearerAuth: [ auth.organization_register ]
+    requestBody:
+      $ref: './../requests/Organizations.yml#/OrganizationRegister'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Organizations.yml#/OrganizationView'
+              type: object

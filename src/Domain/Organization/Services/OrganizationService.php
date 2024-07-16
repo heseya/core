@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Services;
 
+use App\DTO\Auth\RegisterDto;
 use App\Enums\SavedAddressType;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationSavedAddressCreateDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Repositories\OrganizationRepository;
+use Domain\User\Services\AuthService;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 final readonly class OrganizationService
 {
     public function __construct(
         private OrganizationRepository $organizationRepository,
         private OrganizationSavedAddressService $organizationSavedAddressService,
+        private AuthService $authService,
     ) {}
 
     /**
@@ -55,5 +60,23 @@ final readonly class OrganizationService
     public function delete(string $id): void
     {
         $this->organizationRepository->delete($id);
+    }
+
+    public function register(OrganizationRegisterDto $dto): Organization
+    {
+        return DB::transaction(function () use ($dto): Organization {
+            $organization = $this->organizationRepository->registerOrganization($dto);
+
+            $user = $this->authService->register(RegisterDto::from([
+                'email' => $dto->creator_email,
+                'password' => $dto->creator_password,
+                'name' => $dto->creator_name,
+                'captcha_token' => $dto->captcha_token,
+            ]));
+
+            $organization->users()->attach($user->getKey());
+
+            return $organization;
+        });
     }
 }

@@ -7,6 +7,7 @@ namespace Domain\Organization\Repositories;
 use App\Models\Address;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -57,5 +58,14 @@ final readonly class OrganizationRepository
     public function delete(string $id): void
     {
         Organization::query()->where('id', '=', $id)->delete();
+    }
+
+    public function registerOrganization(OrganizationRegisterDto $dto): Organization
+    {
+        $address = Address::query()->firstOrCreate($dto->billing_address->toArray());
+
+        return Organization::query()->create(array_merge($dto->toArray(), [
+            'billing_address_id' => $address->getKey(),
+        ]));
     }
 }

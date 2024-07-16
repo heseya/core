@@ -27,4 +27,6 @@ Route::prefix('organizations')->group(function (): void {
         Route::delete('id:{delivery_address:id}', [OrganizationShippingAddressController::class, 'delete'])
             ->middleware('can:organizations.edit');
     });
+    Route::post('register', [OrganizationController::class, 'register'])
+        ->middleware('can:auth.organization_register');
 });

@@ -7,6 +7,7 @@ namespace Domain\Organization\Controllers;
 use App\Http\Controllers\Controller;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Resources\OrganizationResource;
@@ -46,5 +47,10 @@ final class OrganizationController extends Controller
         $this->organizationService->delete($id);
 
         return Response::noContent();
+    }
+
+    public function register(OrganizationRegisterDto $dto): JsonResource
+    {
+        return OrganizationResource::make($this->organizationService->register($dto));
     }
 }
