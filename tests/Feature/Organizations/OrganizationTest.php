@@ -370,7 +370,7 @@ class OrganizationTest extends TestCase
                     'address' => $address,
                 ],
                 'creator_email' => 'creator@example.com',
-                'creator_password' => 'Test123!',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
                 'creator_name' => 'Jan Kowalski',
             ])
             ->assertForbidden();
