@@ -7,6 +7,7 @@ namespace Domain\Organization\Repositories;
 use App\Models\Address;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
@@ -46,6 +47,10 @@ final readonly class OrganizationRepository
         $organization->update($dto->toArray());
         $organization->increment('change_version');
 
+        if (!($dto->billing_address instanceof Optional)) {
+            $organization->address()->update($dto->billing_address->toArray());
+        }
+
         if ($organization->client_id && $organization->sales_channel_id) {
             $organization->update(['is_complete' => true]);
         } else {
@@ -67,5 +72,17 @@ final readonly class OrganizationRepository
         return Organization::query()->create(array_merge($dto->toArray(), [
             'billing_address_id' => $address->getKey(),
         ]));
+    }
+
+    public function myUpdate(Organization $organization, OrganizationPublicUpdateDto $dto): Organization
+    {
+        $organization->update($dto->toArray());
+        $organization->increment('change_version');
+
+        if (!($dto->billing_address instanceof Optional)) {
+            $organization->address()->update($dto->billing_address->toArray());
+        }
+
+        return $organization;
     }
 }

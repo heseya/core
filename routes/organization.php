@@ -30,3 +30,10 @@ Route::prefix('organizations')->group(function (): void {
     Route::post('register', [OrganizationController::class, 'register'])
         ->middleware('can:auth.organization_register');
 });
+
+Route::prefix('my/organization')->group(function (): void {
+    Route::get('', [OrganizationController::class, 'myOrganization'])
+        ->middleware(['can:authenticated', 'app.restrict']);
+    Route::patch('', [OrganizationController::class, 'myOrganizationEdit'])
+        ->middleware(['can:authenticated', 'app.restrict']);
+});
