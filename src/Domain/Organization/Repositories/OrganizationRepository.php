@@ -43,7 +43,7 @@ final readonly class OrganizationRepository
     public function update(Organization $organization, OrganizationUpdateDto $dto): Organization
     {
         $organization->fill($dto->toArray());
-        $organization->change_version++;
+        ++$organization->change_version;
         $organization->is_complete = $organization->client_id && $organization->sales_channel_id;
 
         $organization->save();
