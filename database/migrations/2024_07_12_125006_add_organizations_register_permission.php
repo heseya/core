@@ -16,10 +16,22 @@ return new class extends Migration
             'auth.organization_register',
         ]);
         $role->save();
+
+        $role = Role::where('type', RoleType::OWNER->value)->first();
+        $role->givePermissionTo([
+            'auth.organization_register',
+        ]);
+        $role->save();
     }
 
     public function down(): void
     {
+        $role = Role::where('type', RoleType::OWNER->value)->first();
+        $role->revokePermissionTo([
+            'auth.organization_register',
+        ]);
+        $role->save();
+
         $role = Role::where('type', RoleType::UNAUTHENTICATED->value)->first();
         $role->revokePermissionTo([
             'auth.organization_register',
