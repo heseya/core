@@ -7,6 +7,7 @@ namespace Domain\Organization\Services;
 use App\DTO\Auth\RegisterDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SavedAddressType;
+use App\Events\OrganizationCreated;
 use App\Exceptions\ClientException;
 use App\Models\User;
 use Domain\Organization\Dtos\OrganizationCreateDto;
@@ -54,6 +55,8 @@ final readonly class OrganizationService
         }
         $organization->refresh();
 
+        OrganizationCreated::dispatch($organization);
+
         return $organization;
     }
 
@@ -62,9 +65,9 @@ final readonly class OrganizationService
         return $this->organizationRepository->update($organization, $dto);
     }
 
-    public function delete(string $id): void
+    public function delete(Organization $organization): void
     {
-        $this->organizationRepository->delete($id);
+        $this->organizationRepository->delete($organization);
     }
 
     public function register(OrganizationRegisterDto $dto): Organization
@@ -80,6 +83,8 @@ final readonly class OrganizationService
             ]));
 
             $organization->users()->attach($user->getKey());
+
+            OrganizationCreated::dispatch($organization);
 
             return $organization;
         });

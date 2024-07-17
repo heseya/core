@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Repositories;
 
+use App\Events\OrganizationDeleted;
+use App\Events\OrganizationUpdated;
 use App\Models\Address;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
@@ -57,12 +59,16 @@ final readonly class OrganizationRepository
             $organization->update(['is_complete' => false]);
         }
 
+        OrganizationUpdated::dispatch($organization);
+
         return $organization;
     }
 
-    public function delete(string $id): void
+    public function delete(Organization $organization): void
     {
-        Organization::query()->where('id', '=', $id)->delete();
+        OrganizationDeleted::dispatch($organization);
+
+        $organization->delete();
     }
 
     public function registerOrganization(OrganizationRegisterDto $dto): Organization
@@ -82,6 +88,8 @@ final readonly class OrganizationRepository
         if (!($dto->billing_address instanceof Optional)) {
             $organization->address()->update($dto->billing_address->toArray());
         }
+
+        OrganizationUpdated::dispatch($organization);
 
         return $organization;
     }

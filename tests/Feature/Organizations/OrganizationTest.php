@@ -5,11 +5,20 @@ namespace Tests\Feature\Organizations;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\ValidationError;
+use App\Events\OrganizationCreated;
+use App\Events\OrganizationDeleted;
+use App\Events\OrganizationUpdated;
+use App\Events\UserCreated;
+use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\WebHook;
 use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class OrganizationTest extends TestCase
@@ -163,6 +172,8 @@ class OrganizationTest extends TestCase
         $address['vat'] = '987654321';
         $shippingAddress = Address::factory()->definition();
 
+        Event::fake(OrganizationCreated::class);
+
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/organizations', [
@@ -184,6 +195,8 @@ class OrganizationTest extends TestCase
             ])
             ->assertJsonFragment($address);
 
+        Event::assertDispatched(OrganizationCreated::class);
+
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test@test.test',
             'client_id' => 'CLIENT_01',
@@ -193,6 +206,7 @@ class OrganizationTest extends TestCase
         $this->assertDatabaseHas('addresses', $address);
         $this->assertDatabaseHas('addresses', $shippingAddress);
 
+        /** @var Organization $organization */
         $organization = Organization::query()->where('id', '=', $response->getData()->data->id)->first();
 
         $this->assertDatabaseHas('organization_saved_addresses', [
@@ -200,6 +214,71 @@ class OrganizationTest extends TestCase
             'default' => true,
             'name' => 'Shipping address',
         ]);
+    }
+
+    public function testCreateWithWebhook(): void
+    {
+        $this->user->givePermissionTo('organizations.add');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '987654321';
+        $shippingAddress = Address::factory()->definition();
+
+        /** @var WebHook $webHook */
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrganizationCreated',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake(OrganizationCreated::class);
+
+        $response = $this
+            ->actingAs($this->user)
+            ->json('POST', '/organizations', [
+                'client_id' => 'CLIENT_01',
+                'billing_email' => 'test@test.test',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => false,
+                        'name' => 'Shipping address',
+                        'address' => $shippingAddress,
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'billing_email' => 'test@test.test',
+                'client_id' => 'CLIENT_01',
+            ])
+            ->assertJsonFragment($address);
+
+        Event::assertDispatched(OrganizationCreated::class);
+
+        /** @var Organization $organization */
+        $organization = Organization::query()->where('id', '=', $response->getData()->data->id)->first();
+        $event = new OrganizationCreated($organization);
+
+        Bus::fake();
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $organization) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $organization->getKey()
+                && $payload['data_type'] === 'Organization'
+                && $payload['event'] === 'OrganizationCreated';
+        });
     }
 
     /**
@@ -276,6 +355,8 @@ class OrganizationTest extends TestCase
     {
         $this->{$user}->givePermissionTo('organizations.edit');
 
+        Event::fake(OrganizationUpdated::class);
+
         $this
             ->actingAs($this->{$user})
             ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
@@ -302,6 +383,75 @@ class OrganizationTest extends TestCase
             'change_version' => 1,
             'is_complete' => true,
         ]);
+
+        Event::assertDispatched(OrganizationUpdated::class);
+    }
+
+    public function testUpdateWithWebhook(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        Event::fake(OrganizationUpdated::class);
+
+        /** @var WebHook $webHook */
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrganizationUpdated',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('PATCH', '/organizations/id:' . $this->organization->getKey(), [
+                'billing_email' => 'new.email@test.com',
+                'billing_address' => [
+                    'name' => $this->address->name,
+                    'address' => $this->address->address,
+                    'city' => $this->address->city,
+                    'country' => $this->address->country,
+                    'country_name' => $this->address->country_name,
+                    'phone' => $this->address->phone,
+                    'vat' => $this->address->vat,
+                    'zip' => $this->address->zip,
+                ]
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'billing_email' => 'new.email@test.com',
+            ]);
+
+        $this->assertDatabaseHas('organizations', [
+            'id' => $this->organization->getKey(),
+            'change_version' => 1,
+            'is_complete' => true,
+        ]);
+
+        $this->organization->refresh();
+        Event::assertDispatched(OrganizationUpdated::class);
+
+        $event = new OrganizationUpdated($this->organization);
+
+        Bus::fake();
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $this->organization->getKey()
+                && $payload['data']['billing_email'] === 'new.email@test.com'
+                && $payload['data_type'] === 'Organization'
+                && $payload['event'] === 'OrganizationUpdated';
+        });
     }
 
     /**
@@ -345,6 +495,8 @@ class OrganizationTest extends TestCase
     {
         $this->{$user}->givePermissionTo('organizations.remove');
 
+        Event::fake(OrganizationDeleted::class);
+
         $this
             ->actingAs($this->{$user})
             ->json('DELETE', '/organizations/id:' . $this->organization->getKey())
@@ -353,6 +505,55 @@ class OrganizationTest extends TestCase
         $this->assertDatabaseMissing('organizations', [
             'id' => $this->organization->getKey(),
         ]);
+
+        Event::assertDispatched(OrganizationDeleted::class);
+    }
+
+    public function testRemoveWithWebhook(): void
+    {
+        $this->user->givePermissionTo('organizations.remove');
+
+        /** @var WebHook $webHook */
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrganizationDeleted',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake(OrganizationDeleted::class);
+
+        $this
+            ->actingAs($this->user)
+            ->json('DELETE', '/organizations/id:' . $this->organization->getKey())
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('organizations', [
+            'id' => $this->organization->getKey(),
+        ]);
+
+        Event::assertDispatched(OrganizationDeleted::class);
+
+        $event = new OrganizationDeleted($this->organization);
+
+        Bus::fake();
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook) {
+            $payload = $job->payload;
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $this->organization->getKey()
+                && $payload['data_type'] === 'Organization'
+                && $payload['event'] === 'OrganizationDeleted';
+        });
     }
 
     public function testRegisterUnauthorized(): void
@@ -384,6 +585,8 @@ class OrganizationTest extends TestCase
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';
 
+        Event::fake([OrganizationCreated::class, UserCreated::class]);
+
         $response = $this
             ->json('POST', '/organizations/register', [
                 'billing_email' => 'test.organization@example.com',
@@ -400,6 +603,9 @@ class OrganizationTest extends TestCase
                 'creator_name' => 'Jan Kowalski',
             ])
             ->assertCreated();
+
+        Event::assertDispatched(OrganizationCreated::class);
+        Event::assertDispatched(UserCreated::class);
 
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test.organization@example.com',
@@ -535,6 +741,8 @@ class OrganizationTest extends TestCase
         $address = Address::factory()->definition();
         $address['vat'] = '123456789';
 
+        Event::fake(OrganizationUpdated::class);
+
         $this->actingAs($this->user)
             ->json('PATCH', 'my/organization', [
                 'billing_email' => 'new.email@example.com',
@@ -546,6 +754,8 @@ class OrganizationTest extends TestCase
                 'billing_email' => 'new.email@example.com',
             ])
             ->assertJsonFragment($address);
+
+        Event::assertDispatched(OrganizationUpdated::class);
     }
 
     public function testEditMyOrganizationExistingVat(): void
