@@ -1,0 +1,49 @@
+OrganizationCreate:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - billing_email
+          - billing_address
+          - shipping_addresses
+        properties:
+          client_id:
+            type: string
+          billing_email:
+            type: string
+            example: admin@example.com
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          sales_channel_id:
+            type: string
+            format: UUID
+          shipping_addresses:
+            type: array
+            items:
+              $ref: '#/OrganizationSavedAddress'
+
+OrganizationUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          billing_email:
+            type: string
+            example: admin@example.com
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          sales_channel_id:
+            type: string
+            format: UUID
+
+OrganizationSavedAddress:
+  type: object
+  properties:
+    default:
+      type: boolean
+    name:
+      type: string
+    address:
+      $ref: './../schemas/Addresses.yml#/Address'

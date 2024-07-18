@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Domain\Organization\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -61,5 +62,13 @@ class Address extends Model
         }
 
         return null;
+    }
+
+    /**
+     * @return HasMany<Organization>
+     */
+    public function organizations(): HasMany
+    {
+        return $this->hasMany(Organization::class, 'billing_address_id', 'id');
     }
 }
