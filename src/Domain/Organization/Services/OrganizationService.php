@@ -95,9 +95,7 @@ final readonly class OrganizationService
             /** @var User $user */
             $user = Auth::user();
 
-            /** @var Organization $organization */
-            $organization = $user->organizations()->firstOrFail();
-            return $organization;
+            return $user->organizations()->firstOrFail();
         } catch (Throwable $ex) {
             throw new ClientException(Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION);
         }
