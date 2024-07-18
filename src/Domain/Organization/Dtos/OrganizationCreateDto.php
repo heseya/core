@@ -24,8 +24,8 @@ final class OrganizationCreateDto extends Data
     public function __construct(
         #[Unique('organizations', 'client_id')]
         public readonly Optional|string|null $client_id,
-        #[Rule(new OrganizationUniqueVat())]
         public readonly string $billing_email,
+        #[Rule(new OrganizationUniqueVat())]
         public readonly AddressCreateDto $billing_address,
         #[Uuid, Exists('sales_channels', 'id')]
         public readonly Optional|string|null $sales_channel_id,
