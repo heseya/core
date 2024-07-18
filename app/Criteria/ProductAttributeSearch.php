@@ -4,6 +4,7 @@ namespace App\Criteria;
 
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Arr;
 
 class ProductAttributeSearch extends Criterion
@@ -33,8 +34,12 @@ class ProductAttributeSearch extends Criterion
                                 'attribute_options.id',
                             );
 
-                            $key = is_numeric(Arr::first($value)) ?
-                                'attribute_options.value_number' : 'attribute_options.value_date';
+                            $checkValue = array_key_exists('value', $value) && is_array($value['value']) ? $value['value'] : $value;
+
+                            $key = 'attribute_options.value_number';
+                            if (!is_numeric(Arr::first($checkValue))) {
+                                $key = strtotime(Arr::first($checkValue)) ? 'attribute_options.value_date' : 'attribute_options.name';
+                            }
 
                             if (Arr::has($value, ['min', 'max'])) {
                                 $query->whereBetween($key, [$value['min'], $value['max']]);
@@ -44,6 +49,22 @@ class ProductAttributeSearch extends Criterion
                                 $query->where($key, '<=', $value['max']);
                             } elseif (Arr::has($value, 'name_eq')) {
                                 $query->where('name', $value['name_eq']);
+                            } elseif (Arr::has($value, 'value')) {
+                                if ($key === 'attribute_options.name') {
+                                    if (is_array($value['value'])) {
+                                        $query->where(function (QueryBuilder $q) use ($value): void {
+                                            foreach ($value['value'] as $search) {
+                                                $q->orWhere('name', 'like', "%{$search}%");
+                                            }
+                                        });
+                                    } else {
+                                        $query->where($key, 'like', "%{$value['value']}%");
+                                    }
+                                } elseif (is_array($value['value'])) {
+                                    $query->whereIn($key, $value['value']);
+                                } else {
+                                    $query->where($key, $value['value']);
+                                }
                             } else {
                                 $query->where(function ($query) use ($value): void {
                                     foreach ($value as $option) {

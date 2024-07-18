@@ -116,6 +116,18 @@ Products:
                   type: number
                 max:
                   type: number
+            marka:
+              type: object
+              properties:
+                value:
+                  type: string
+            wyswietlacz:
+              type: object
+              properties:
+                value:
+                  type: array
+                  items:
+                    type: string
       - name: attribute_not
         in: query
         description: 'search by attributes negation'
