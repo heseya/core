@@ -1,0 +1,12 @@
+OrganizationSavedAddress:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          default:
+            type: boolean
+          name:
+            type: string
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'

@@ -149,6 +149,8 @@ enum Exceptions: string
 
     case CLIENT_ORGANIZATION_EXIST = 'Organization with given VAT already exists';
     case CLIENT_ORGANIZATION_VAT_REQUIRED = 'Organization billing_address require VAT number';
+    case CLIENT_ORGANIZATION_ADDRESS_DEFAULT = 'There must be one default organization shipping address.';
+    case CLIENT_ORGANIZATION_ADDRESS_REMOVE_DEFAULT = 'You cannot delete default organization address.';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
