@@ -21,6 +21,7 @@ use Domain\User\Services\AuthService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 final readonly class OrganizationService
 {
@@ -90,16 +91,14 @@ final readonly class OrganizationService
      */
     public function myOrganization(): Organization
     {
-        /** @var User $user */
-        $user = Auth::user();
+        try {
+            /** @var User $user */
+            $user = Auth::user();
 
-        $organization = $user->organizations()->first();
-
-        if (!$organization) {
+            return $user->organizations()->firstOrFail();
+        } catch (Throwable $ex) {
             throw new ClientException(Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION);
         }
-
-        return $organization;
     }
 
     /**
@@ -107,15 +106,6 @@ final readonly class OrganizationService
      */
     public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): Organization
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        $organization = $user->organizations()->first();
-
-        if (!$organization) {
-            throw new ClientException(Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION);
-        }
-
-        return $this->organizationRepository->myUpdate($organization, $dto);
+        return $this->organizationRepository->myUpdate($this->myOrganization(), $dto);
     }
 }
