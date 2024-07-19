@@ -7,6 +7,7 @@ namespace Domain\Organization\Repositories;
 use App\Events\OrganizationDeleted;
 use App\Events\OrganizationUpdated;
 use App\Models\Address;
+use Domain\Address\Dtos\AddressUpdateDto;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
 use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
@@ -46,17 +47,14 @@ final readonly class OrganizationRepository
 
     public function update(Organization $organization, OrganizationUpdateDto $dto): Organization
     {
-        $organization->update($dto->toArray());
-        $organization->increment('change_version');
+        $organization->fill($dto->toArray());
+        ++$organization->change_version;
+        $organization->is_complete = $organization->client_id && $organization->sales_channel_id;
 
-        if (!($dto->billing_address instanceof Optional)) {
+        $organization->save();
+
+        if ($dto->billing_address instanceof AddressUpdateDto) {
             $organization->address()->update($dto->billing_address->toArray());
-        }
-
-        if ($organization->client_id && $organization->sales_channel_id) {
-            $organization->update(['is_complete' => true]);
-        } else {
-            $organization->update(['is_complete' => false]);
         }
 
         OrganizationUpdated::dispatch($organization);
@@ -82,10 +80,12 @@ final readonly class OrganizationRepository
 
     public function myUpdate(Organization $organization, OrganizationPublicUpdateDto $dto): Organization
     {
-        $organization->update($dto->toArray());
-        $organization->increment('change_version');
+        $organization->fill($dto->toArray());
+        ++$organization->change_version;
 
-        if (!($dto->billing_address instanceof Optional)) {
+        $organization->save();
+
+        if ($dto->billing_address instanceof AddressUpdateDto) {
             $organization->address()->update($dto->billing_address->toArray());
         }
 
