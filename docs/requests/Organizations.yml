@@ -47,3 +47,32 @@ OrganizationSavedAddress:
       type: string
     address:
       $ref: './../schemas/Addresses.yml#/Address'
+
+OrganizationRegister:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - billing_email
+          - billing_address
+          - shipping_addresses
+          - creator_email
+          - creator_password
+          - creator_name
+        properties:
+          billing_email:
+            type: string
+            example: admin@example.com
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          shipping_addresses:
+            type: array
+            items:
+              $ref: '#/OrganizationSavedAddress'
+          creator_email:
+            type: string
+          creator_password:
+            type: string
+          creator_name:
+            type: string

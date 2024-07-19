@@ -3,8 +3,11 @@
 namespace Tests\Feature\Organizations;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RoleType;
 use App\Enums\ValidationError;
 use App\Models\Address;
+use App\Models\Role;
+use App\Models\User;
 use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Tests\TestCase;
@@ -350,5 +353,127 @@ class OrganizationTest extends TestCase
         $this->assertDatabaseMissing('organizations', [
             'id' => $this->organization->getKey(),
         ]);
+    }
+
+    public function testRegisterUnauthorized(): void
+    {
+        $address = Address::factory()->definition();
+        $address['vat'] = '321456987';
+
+        $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test.organization@example.com',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    'default' => true,
+                    'name' =>  'Shipping address',
+                    'address' => $address,
+                ],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+            ])
+            ->assertForbidden();
+    }
+
+    public function testRegister(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.organization_register');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '321456987';
+
+        $response = $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test.organization@example.com',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => true,
+                        'name' =>  'Shipping address',
+                        'address' => $address,
+                    ],
+                ],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('organizations', [
+            'billing_email' => 'test.organization@example.com',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'name' => 'Jan Kowalski',
+            'email' => 'creator@example.com',
+        ]);
+
+        /** @var User $user */
+        $user = User::query()->where('email', '=', 'creator@example.com')->first();
+
+        $this->assertDatabaseHas('organization_user', [
+            'user_id' => $user->getKey(),
+            'organization_id' => $response->getData()->data->id,
+        ]);
+    }
+
+    public function testRegisterExistingVat(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.organization_register');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '123456789';
+
+        $existingAddress = Address::create($address);
+        Organization::factory()->create([
+            'billing_address_id' => $existingAddress->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test.organization@example.com',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => true,
+                        'name' =>  'Shipping address',
+                        'address' => $address,
+                    ],
+                ],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORGANIZATIONUNIQUEVAT->value,
+                'message' => Exceptions::CLIENT_ORGANIZATION_EXIST->value,
+            ]);
+    }
+
+    public function testRegisterMinimumShippingAddresses(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.organization_register');
+
+        $address = Address::factory()->definition();
+
+        $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test@test.test',
+                'billing_address' => $address,
+                'shipping_addresses' => [],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The shipping addresses must have at least 1 items.',
+            ]);
     }
 }
