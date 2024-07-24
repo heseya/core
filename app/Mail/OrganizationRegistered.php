@@ -25,6 +25,7 @@ class OrganizationRegistered extends Mailable
     {
         /** @var string $name */
         $name = $this->organization->address?->name;
+
         return new Envelope(
             subject: __(
                 'mail.subject-new-organization',

@@ -14,7 +14,6 @@ use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
-use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
