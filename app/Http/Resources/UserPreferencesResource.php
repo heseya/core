@@ -13,6 +13,7 @@ class UserPreferencesResource extends Resource
             'failed_login_attempt_alert' => $this->resource->failed_login_attempt_alert,
             'new_localization_login_alert' => $this->resource->new_localization_login_alert,
             'recovery_code_changed_alert' => $this->resource->recovery_code_changed_alert,
+            'new_organization_alert' => $this->resource->new_organization_alert,
         ];
     }
 }

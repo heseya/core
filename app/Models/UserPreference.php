@@ -14,6 +14,7 @@ class UserPreference extends Model
         'failed_login_attempt_alert',
         'new_localization_login_alert',
         'recovery_code_changed_alert',
+        'new_organization_alert',
     ];
 
     protected $casts = [
@@ -21,6 +22,7 @@ class UserPreference extends Model
         'failed_login_attempt_alert' => 'boolean',
         'new_localization_login_alert' => 'boolean',
         'recovery_code_changed_alert' => 'boolean',
+        'new_organization_alert' => 'boolean',
     ];
 
     public function user(): HasOne
