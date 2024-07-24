@@ -13,7 +13,7 @@ OrganizationCreate:
           billing_email:
             type: string
             example: admin@example.com
-          address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           sales_channel_id:
             type: string
@@ -32,7 +32,7 @@ OrganizationUpdate:
           billing_email:
             type: string
             example: admin@example.com
-          address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           sales_channel_id:
             type: string
@@ -45,7 +45,7 @@ OrganizationSavedAddress:
       type: boolean
     name:
       type: string
-    address:
+    billing_address:
       $ref: './../schemas/Addresses.yml#/Address'
 
 OrganizationRegister:
@@ -64,7 +64,7 @@ OrganizationRegister:
           billing_email:
             type: string
             example: admin@example.com
-          address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           shipping_addresses:
             type: array
@@ -76,3 +76,15 @@ OrganizationRegister:
             type: string
           creator_name:
             type: string
+
+OrganizationPublicUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          billing_email:
+            type: string
+            example: admin@example.com
+          billing_address:
+            $ref: './../schemas/Addresses.yml#/Address'

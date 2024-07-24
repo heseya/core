@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Domain\Organization\Repositories;
 
 use App\Models\Address;
+use Domain\Address\Dtos\AddressUpdateDto;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
@@ -49,6 +51,10 @@ final readonly class OrganizationRepository
 
         $organization->save();
 
+        if ($dto->billing_address instanceof AddressUpdateDto) {
+            $organization->address()->update($dto->billing_address->toArray());
+        }
+
         return $organization;
     }
 
@@ -64,5 +70,19 @@ final readonly class OrganizationRepository
         return Organization::query()->create(array_merge($dto->toArray(), [
             'billing_address_id' => $address->getKey(),
         ]));
+    }
+
+    public function myUpdate(Organization $organization, OrganizationPublicUpdateDto $dto): Organization
+    {
+        $organization->fill($dto->toArray());
+        ++$organization->change_version;
+
+        $organization->save();
+
+        if ($dto->billing_address instanceof AddressUpdateDto) {
+            $organization->address()->update($dto->billing_address->toArray());
+        }
+
+        return $organization;
     }
 }

@@ -476,4 +476,100 @@ class OrganizationTest extends TestCase
                 'message' => 'The shipping addresses must have at least 1 items.',
             ]);
     }
+
+    public function testShowMyOrganizationUserWithoutOrganization(): void
+    {
+        $this->actingAs($this->user)
+            ->json('GET', 'my/organization')
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION->name,
+                'message' => Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION->value,
+            ]);
+    }
+
+    public function testShowMyOrganization(): void
+    {
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $this->actingAs($this->user)
+            ->json('GET', 'my/organization')
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'billing_address' => [
+                    'id' => $this->address->getKey(),
+                    'name' => $this->address->name,
+                    'address' => $this->address->address,
+                    'city' => $this->address->city,
+                    'country' => $this->address->country,
+                    'country_name' => $this->address->country_name,
+                    'phone' => $this->address->phone,
+                    'vat' => $this->address->vat,
+                    'zip' => $this->address->zip,
+                ],
+                'billing_email' => $this->organization->billing_email,
+            ]);
+    }
+
+    public function testEditMyOrganizationUserWithoutOrganization(): void
+    {
+        $address = Address::factory()->definition();
+        $address['vat'] = '123456789';
+
+        $this->actingAs($this->user)
+            ->json('PATCH', 'my/organization', [
+                'billing_email' => 'new.email@example.com',
+                'billing_address' => $address
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::MYORGANIZATIONUNIQUEVAT->value,
+                'message' => Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION->value,
+            ]);
+    }
+
+    public function testEditMyOrganization(): void
+    {
+        $this->user->organizations()->attach($this->organization->getKey());
+        $address = Address::factory()->definition();
+        $address['vat'] = '123456789';
+
+        $this->actingAs($this->user)
+            ->json('PATCH', 'my/organization', [
+                'billing_email' => 'new.email@example.com',
+                'billing_address' => $address
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'billing_email' => 'new.email@example.com',
+            ])
+            ->assertJsonFragment($address);
+    }
+
+    public function testEditMyOrganizationExistingVat(): void
+    {
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '123456789';
+
+        $existingAddress = Address::create($address);
+        Organization::factory()->create([
+            'billing_address_id' => $existingAddress->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('PATCH', 'my/organization', [
+                'billing_email' => 'new.email@example.com',
+                'billing_address' => $address
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::MYORGANIZATIONUNIQUEVAT->value,
+                'message' => Exceptions::CLIENT_ORGANIZATION_EXIST->value,
+            ]);
+    }
 }

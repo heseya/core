@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Domain\Organization\Services;
 
 use App\DTO\Auth\RegisterDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SavedAddressType;
+use App\Exceptions\ClientException;
+use App\Models\User;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationSavedAddressCreateDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
@@ -15,7 +19,9 @@ use Domain\Organization\Models\Organization;
 use Domain\Organization\Repositories\OrganizationRepository;
 use Domain\User\Services\AuthService;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 final readonly class OrganizationService
 {
@@ -78,5 +84,28 @@ final readonly class OrganizationService
 
             return $organization;
         });
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function myOrganization(): Organization
+    {
+        try {
+            /** @var User $user */
+            $user = Auth::user();
+
+            return $user->organizations()->firstOrFail();
+        } catch (Throwable $ex) {
+            throw new ClientException(Exceptions::CLIENT_USER_NOT_IN_ORGANIZATION);
+        }
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): Organization
+    {
+        return $this->organizationRepository->myUpdate($this->myOrganization(), $dto);
     }
 }

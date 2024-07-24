@@ -348,6 +348,10 @@ paths:
     $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddresses
   /organizations/id:{id}/shipping-addresses/id:{address_id}:
     $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddressesParams
+  /organizations/register:
+    $ref: ./paths/Organizations.yml#/OrganizationRegister
+  /my/organization:
+    $ref: ./paths/Organizations.yml#/MyOrganizations
 components:
   schemas:
     Error:

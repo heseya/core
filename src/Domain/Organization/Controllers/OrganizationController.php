@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Controllers;
 
+use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
+use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
@@ -52,5 +54,21 @@ final class OrganizationController extends Controller
     public function register(OrganizationRegisterDto $dto): JsonResource
     {
         return OrganizationResource::make($this->organizationService->register($dto));
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function myOrganization(): JsonResource
+    {
+        return OrganizationResource::make($this->organizationService->myOrganization());
+    }
+
+    /**
+     * @throws ClientException
+     */
+    public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): JsonResource
+    {
+        return OrganizationResource::make($this->organizationService->myOrganizationEdit($dto));
     }
 }
