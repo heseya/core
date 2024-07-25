@@ -14,6 +14,7 @@ use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
 use Domain\Organization\Dtos\OrganizationRegisterDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Spatie\LaravelData\Optional;
@@ -72,9 +73,11 @@ final readonly class OrganizationRepository
     public function registerOrganization(OrganizationRegisterDto $dto): Organization
     {
         $address = Address::query()->firstOrCreate($dto->billing_address->toArray());
+        $sale_channel = app(SalesChannelRepository::class)->getDefault();
 
         return Organization::query()->create(array_merge($dto->toArray(), [
             'billing_address_id' => $address->getKey(),
+            'sale_channel_id' => $sale_channel->getKey(),
         ]));
     }
 

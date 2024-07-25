@@ -9,6 +9,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SavedAddressType;
 use App\Events\OrganizationCreated;
 use App\Exceptions\ClientException;
+use App\Mail\OrganizationRegistered;
 use App\Models\User;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
@@ -19,9 +20,11 @@ use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Repositories\OrganizationRepository;
 use Domain\User\Services\AuthService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 final readonly class OrganizationService
@@ -87,6 +90,8 @@ final readonly class OrganizationService
 
             OrganizationCreated::dispatch($organization);
 
+            $this->sendNewOrganizationAlert($organization);
+
             return $organization;
         });
     }
@@ -112,5 +117,14 @@ final readonly class OrganizationService
     public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): Organization
     {
         return $this->organizationRepository->myUpdate($this->myOrganization(), $dto);
+    }
+
+    private function sendNewOrganizationAlert(Organization $organization): void
+    {
+        $admins = User::query()
+            ->whereHas('roles', fn (Builder $query) => $query->whereHas('permissions', fn (Builder $query) => $query->where('name', '=', 'organizations.edit')))
+            ->whereHas('preferences', fn (Builder $query) => $query->where('new_organization_alert', '=', true));
+
+        $admins->each(fn (User $admin) => Mail::to($admin->email)->locale('pl')->send(new OrganizationRegistered($organization)));
     }
 }

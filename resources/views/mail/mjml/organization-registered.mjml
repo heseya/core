@@ -1,0 +1,31 @@
+<mjml>
+    <mj-head>
+        <mj-style inline="inline">
+            .rounded > table { border-collapse:separate; border-radius:15px; }
+        </mj-style>
+    </mj-head>
+    <mj-body background-color="#FFF">
+        <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px" padding-left="20px" padding-right="20px">
+            <mj-column background-color="#244d8b" css-class="rounded">
+                <mj-text align="center" color="#fff" line-height="68px" font-size="40px" font-family="DM Serif Display">
+                    {{ $settingsService->getSetting('store_name')->value }}
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
+            <mj-column>
+                <mj-text align="center" color="#000" font-family="DM Serif Display" font-size="32px" line-height="34px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase"><b>
+                    @lang('mail.organization-registered', ['name' => $settingsService->getSetting('store_name')->value])
+                </b>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" background-repeat="repeat">
+            <mj-column>
+                <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px">
+                    {!! $settingsService->getSetting('mail_footer')->value !!}
+                </mj-text>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

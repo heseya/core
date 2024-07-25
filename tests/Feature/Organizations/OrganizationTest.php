@@ -10,14 +10,17 @@ use App\Events\OrganizationDeleted;
 use App\Events\OrganizationUpdated;
 use App\Events\UserCreated;
 use App\Listeners\WebHookEventListener;
+use App\Mail\OrganizationRegistered;
 use App\Models\Address;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserPreference;
 use App\Models\WebHook;
 use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -579,6 +582,26 @@ class OrganizationTest extends TestCase
 
     public function testRegister(): void
     {
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+
+        $admin1 = User::factory()->create();
+        $admin1->roles()->attach($owner);
+        $admin1->preferences()->associate(
+            UserPreference::create([
+                'new_organization_alert' => true,
+            ]),
+        );
+        $admin1->save();
+
+        $admin2 = User::factory()->create();
+        $admin2->roles()->attach($owner);
+        $admin2->preferences()->associate(
+            UserPreference::create([
+                'new_organization_alert' => false,
+            ])
+        );
+        $admin2->save();
+
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.organization_register');
 
@@ -586,6 +609,7 @@ class OrganizationTest extends TestCase
         $address['vat'] = '321456987';
 
         Event::fake([OrganizationCreated::class, UserCreated::class]);
+        Mail::fake();
 
         $response = $this
             ->json('POST', '/organizations/register', [
@@ -606,6 +630,14 @@ class OrganizationTest extends TestCase
 
         Event::assertDispatched(OrganizationCreated::class);
         Event::assertDispatched(UserCreated::class);
+
+        Mail::assertSent(OrganizationRegistered::class, 1);
+
+        Mail::assertSent(OrganizationRegistered::class, function (OrganizationRegistered $mail) use ($admin1) {
+            $mail->assertTo($admin1->email);
+
+            return true;
+        });
 
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test.organization@example.com',

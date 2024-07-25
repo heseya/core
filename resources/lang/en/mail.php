@@ -108,4 +108,8 @@ return [
     'subject-security-code' => '2FA security code',
     'security-code-hello' => "Dear user,<br />Here's your one-time security code:",
     'security-code-message' => "Use it to authenticate your operation.<br/><br/>If you didn't try to log in, that means someone has broken your password and is trying to access your account.<br/>Please change your password as soon as possible!",
+
+    // organization registered
+    'subject-new-organization' => 'Organization registration :name',
+    'organization-registered' => 'New organization has been registered',
 ];

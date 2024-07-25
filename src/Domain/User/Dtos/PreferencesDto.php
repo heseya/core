@@ -18,5 +18,7 @@ final class PreferencesDto extends Data
         public bool $new_localization_login_alert,
         #[BooleanType]
         public bool $recovery_code_changed_alert,
+        #[BooleanType]
+        public bool $new_organization_alert = false,
     ) {}
 }

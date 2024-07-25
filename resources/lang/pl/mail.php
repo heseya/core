@@ -79,4 +79,8 @@ return [
     'subject-security-code' => 'Kod bezpieczeństwa 2FA',
     'security-code-hello' => 'Drogi użytkowniku,<br />Oto Twój jednorazowy kod bezpieczeństwa:',
     'security-code-message' => 'Użyj go do uwierzytelnienia operacji.<br/><br/>Jeśli nie próbowałeś się zalogować, oznacza to, że ktoś złamał twoje hasło i próbuje uzyskać dostęp do Twojego konta.<br/>Prosimy o jak najszybszą zmianę hasła!',
+
+    // organization registered
+    'subject-new-organization' => 'Rejestracja organizacji :name',
+    'organization-registered' => 'Nowa organizacja została zarejestrowana',
 ];
