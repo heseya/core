@@ -17,6 +17,9 @@ use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Events\OrderUpdatedStatus;
+use App\Events\OrganizationCreated;
+use App\Events\OrganizationDeleted;
+use App\Events\OrganizationUpdated;
 use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -137,6 +140,9 @@ class EventServiceProvider extends ServiceProvider
         UserCreated::class,
         UserDeleted::class,
         UserUpdated::class,
+        OrganizationCreated::class,
+        OrganizationUpdated::class,
+        OrganizationDeleted::class,
     ];
 
     public function boot(): void

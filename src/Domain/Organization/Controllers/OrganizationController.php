@@ -44,9 +44,9 @@ final class OrganizationController extends Controller
         return OrganizationResource::make($this->organizationService->update($organization, $dto));
     }
 
-    public function delete(string $id): HttpResponse
+    public function delete(Organization $organization): HttpResponse
     {
-        $this->organizationService->delete($id);
+        $this->organizationService->delete($organization);
 
         return Response::noContent();
     }
