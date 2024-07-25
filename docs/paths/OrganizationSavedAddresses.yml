@@ -94,3 +94,73 @@ OrganizationSavedAddressesParams:
     responses:
       204:
         description: Success
+
+MyOrganizationSavedAddresses:
+  get:
+    tags:
+      - Organizations
+    summary: 'my organization saved addresses list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+              type: object
+  post:
+    tags:
+      - Organizations
+    requestBody:
+      $ref: './../requests/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+              type: object
+
+MyOrganizationSavedAddressesParams:
+  patch:
+    tags:
+      - Organizations
+    requestBody:
+      $ref: './../requests/OrganizationSavedAddresses.yml#/OrganizationSavedAddress'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+              type: object
+  delete:
+    tags:
+      - Organizations
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success

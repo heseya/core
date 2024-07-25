@@ -301,4 +301,273 @@ class OrganizationSavedAddressTest extends TestCase
             'id' => $this->savedAddress->getKey(),
         ]);
     }
+
+    public function testIndexMy(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->create();
+        OrganizationSavedAddress::factory()->create([
+            'address_id' => $address->getKey(),
+            'organization_id' => $this->organization->getKey(),
+            'default' => false,
+        ]);
+        OrganizationSavedAddress::factory()->create([
+            'address_id' => $address->getKey(),
+            'organization_id' => $this->organization->getKey(),
+            'default' => false,
+        ]);
+
+        $newOrganization = Organization::factory()->create([
+            'change_version' => 0,
+            'billing_address_id' => $address->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        /** @var OrganizationSavedAddress $savedAddress */
+        $savedAddress = OrganizationSavedAddress::factory()->create([
+            'default' => false,
+            'address_id' => $address->getKey(),
+            'organization_id' => $newOrganization->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', "/my/organization/shipping-addresses")
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonMissing([
+                'id' => $savedAddress->getKey(),
+            ]);
+    }
+
+    public function testCreateMy(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', "/my/organization/shipping-addresses", [
+                'default' => true,
+                'name' => 'Shipping address',
+                'address' => Address::factory()->definition(),
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'default' => true,
+                'name' => 'Shipping address'
+            ]);
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'default' => true,
+            'name' => 'Shipping address',
+            'change_version' => 0,
+        ]);
+
+        $this->assertDatabaseMissing('organization_saved_addresses', [
+            'id' => $this->savedAddress->getKey(),
+            'default' => true,
+        ]);
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'id' => $this->savedAddress->getKey(),
+            'default' => false,
+        ]);
+    }
+
+    public function testUpdateMy(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $this
+            ->actingAs($this->user)
+            ->json('PATCH', "/my/organization/shipping-addresses/id:{$this->savedAddress->getKey()}", [
+                'default' => true,
+                'name' => 'New name',
+                'address' => $this->addressData,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $this->savedAddress->getKey(),
+                'name' => 'New name',
+            ]);
+    }
+
+    public function testUpdateMyDefault(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $this
+            ->actingAs($this->user)
+            ->json('PATCH', "/my/organization/shipping-addresses/id:{$this->savedAddress->getKey()}", [
+                'default' => false,
+                'name' => $this->savedAddress->name,
+                'address' => $this->addressData,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORGANIZATIONSAVEDADDRESSDEFAULT->value,
+                'message' => Exceptions::CLIENT_ORGANIZATION_ADDRESS_DEFAULT->value,
+            ]);
+    }
+
+    public function testUpdateMyNewDefault(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->create();
+
+        $savedAddress = OrganizationSavedAddress::factory()->create([
+            'default' => false,
+            'address_id' => $address->getKey(),
+            'organization_id' => $this->organization->getKey(),
+            'change_version' => 0,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('PATCH', "/my/organization/shipping-addresses/id:{$savedAddress->getKey()}", [
+                'default' => true,
+                'name' => $savedAddress->name,
+                'address' => $this->addressData,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $savedAddress->getKey(),
+                'default' => true,
+            ]);
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'id' => $savedAddress->getKey(),
+            'change_version' => 1,
+        ]);
+
+        $this->assertDatabaseMissing('organization_saved_addresses', [
+            'id' => $this->savedAddress->getKey(),
+            'default' => true,
+        ]);
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'id' => $this->savedAddress->getKey(),
+            'default' => false,
+        ]);
+    }
+
+    public function testUpdateMyDifferentOrganization(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->create();
+
+        $newOrganization = Organization::factory()->create([
+            'change_version' => 0,
+            'billing_address_id' => $address->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        /** @var OrganizationSavedAddress $savedAddress */
+        $savedAddress = OrganizationSavedAddress::factory()->create([
+            'default' => false,
+            'address_id' => $address->getKey(),
+            'organization_id' => $newOrganization->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('PATCH', "/my/organization/shipping-addresses/id:{$savedAddress->getKey()}", [
+                'default' => true,
+                'name' => $savedAddress->name,
+                'address' => $this->addressData,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORGANIZATION_INVALID_ADDRESS->name,
+                'message' => Exceptions::CLIENT_ORGANIZATION_INVALID_ADDRESS->value,
+            ]);
+    }
+
+    public function testDeleteMy(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->create();
+
+        $savedAddress = OrganizationSavedAddress::factory()->create([
+            'default' => false,
+            'address_id' => $address->getKey(),
+            'organization_id' => $this->organization->getKey(),
+            'change_version' => 0,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('DELETE', "/my/organization/shipping-addresses/id:{$savedAddress->getKey()}")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('organization_saved_addresses', [
+            'id' => $savedAddress->getKey(),
+        ]);
+    }
+
+    public function testDeleteMyDefault(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $this
+            ->actingAs($this->user)
+            ->json('DELETE', "/my/organization/shipping-addresses/id:{$this->savedAddress->getKey()}")
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_ORGANIZATION_ADDRESS_REMOVE_DEFAULT->value,
+            ]);
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'id' => $this->savedAddress->getKey(),
+        ]);
+    }
+
+    public function testDeleteMyDifferentOrganization(): void
+    {
+        $this->user->givePermissionTo('organizations.edit');
+
+        $this->user->organizations()->attach($this->organization->getKey());
+
+        $address = Address::factory()->create();
+
+        $newOrganization = Organization::factory()->create([
+            'change_version' => 0,
+            'billing_address_id' => $address->getKey(),
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+        ]);
+
+        /** @var OrganizationSavedAddress $savedAddress */
+        $savedAddress = OrganizationSavedAddress::factory()->create([
+            'default' => false,
+            'address_id' => $address->getKey(),
+            'organization_id' => $newOrganization->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('DELETE', "/my/organization/shipping-addresses/id:{$savedAddress->getKey()}")
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORGANIZATION_INVALID_ADDRESS->name,
+                'message' => Exceptions::CLIENT_ORGANIZATION_INVALID_ADDRESS->value,
+            ]);
+    }
 }
