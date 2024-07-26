@@ -135,9 +135,8 @@ class ProductSeeder extends Seeder
         $schemaTranslation = Schema::factory()->definition();
         $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));
         $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
+        $schema->product_id = $product->getKey();
         $schema->save();
-
-        $product->schemas()->attach($schema->getKey());
 
         /** @var Item $item */
         $item = Item::factory()->create();
