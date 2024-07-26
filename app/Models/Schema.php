@@ -58,12 +58,7 @@ class Schema extends Model implements SortableContract, Translatable
         'description',
         'hidden',
         'required',
-        'max',
-        'min',
-        'step',
         'default',
-        'pattern',
-        'validation',
         'available',
         'shipping_time',
         'shipping_date',
@@ -135,8 +130,7 @@ class Schema extends Model implements SortableContract, Translatable
 
         $validationStrings = [
             'attribute' => $this->name,
-            'min' => $this->min,
-            'max' => $this->max,
+
         ];
 
         $validator = Validator::make(

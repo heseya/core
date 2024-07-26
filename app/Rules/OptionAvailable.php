@@ -25,7 +25,7 @@ readonly class OptionAvailable implements Rule
             return false;
         }
 
-        return !$option->disabled;
+        return true;
     }
 
     /**
