@@ -137,13 +137,7 @@ class ProductSeeder extends Seeder
         $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
         $schema->save();
 
-        $priceRepository = App::make(PriceRepository::class);
-        $priceRepository->setModelPrices($schema, [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
-        ]);
-
         $product->schemas()->attach($schema->getKey());
-
 
         /** @var Item $item */
         $item = Item::factory()->create();
