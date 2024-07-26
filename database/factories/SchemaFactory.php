@@ -3,12 +3,9 @@
 namespace Database\Factories;
 
 use App\Enums\SchemaType;
-use Domain\Price\Enums\ProductPriceType;
-use Domain\Price\PriceRepository;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
-use Tests\Utils\FakeDto;
 
 class SchemaFactory extends Factory
 {
