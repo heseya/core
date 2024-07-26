@@ -224,6 +224,25 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'options.metadataPrivate']);
     }
 
+    /**
+     * @deprecated
+     */
+    public function oldRequiredSchemas(): BelongsToMany
+    {
+        return $this->oldSchemas()->where('required', true);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function oldSchemas(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Schema::class, 'product_schemas')
+            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'options.metadataPrivate'])
+            ->orderByPivot('order');
+    }
+
     public function scopePublic(Builder $query): Builder
     {
         return $query->where('public', true);
