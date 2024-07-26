@@ -82,6 +82,7 @@ final class Schema extends Model implements SortableContract, Translatable
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
+        'type' => SchemaType::class,
         'published' => 'array',
     ];
 
