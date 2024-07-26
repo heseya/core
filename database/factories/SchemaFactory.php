@@ -28,7 +28,7 @@ class SchemaFactory extends Factory
             'required' => $this->faker->boolean,
             'default' => null,
             'published' => [App::getLocale()],
-            'type' => SchemaType::SELECT,
+            'type' => SchemaType::SELECT->value,
         ];
     }
 

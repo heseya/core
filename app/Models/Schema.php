@@ -130,7 +130,6 @@ class Schema extends Model implements SortableContract, Translatable
 
         $validationStrings = [
             'attribute' => $this->name,
-
         ];
 
         $validator = Validator::make(
