@@ -1,6 +1,6 @@
 <?php
 
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration

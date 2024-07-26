@@ -14,11 +14,15 @@ final readonly class SchemaService
         private ReorderServiceContract $reorderService,
     ) {}
 
+    /**
+     * @param array<int,Schema> $schemas
+     */
     public function sync(Product $product, array $schemas = []): void
     {
-        $product->schemas()->sync(
-            $this->reorderService->reorder($schemas),
-        );
+        $schemas = $this->reorderService->reorder($schemas);
+        foreach ($schemas as $schema) {
+            $product->schemas()->save($schema);
+        }
 
         if ($product->schemas->isEmpty() && $product->has_schemas) {
             $product->update(['has_schemas' => false]);
@@ -27,7 +31,7 @@ final readonly class SchemaService
             $product->update(['has_schemas' => true]);
         }
 
-        $product->schemas()->each(static function (Schema $schema) use ($product): void {
+        $product->oldSchemas()->each(static function (Schema $schema) use ($product): void {
             if (empty($schema->product_id) || $schema->product_id !== $product->getKey()) {
                 $schema->product()
                     ->associate($product)

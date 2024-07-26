@@ -15,6 +15,7 @@ use App\Enums\SchemaType;
 use App\Exceptions\ClientException;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
+use App\Models\Item;
 use App\Models\Model;
 use App\Models\Option;
 use App\Models\Product;
@@ -41,6 +42,8 @@ use Throwable;
 /**
  * @property string $name
  * @property string $description
+ * @property int $type
+ * @property bool $required
  * @property Collection<int, Option> $options
  *
  * @mixin IdeHelperSchema
@@ -69,6 +72,7 @@ final class Schema extends Model implements SortableContract, Translatable
         'product_id',
     ];
 
+    /** @var string[] */
     protected array $translatable = [
         'name',
         'description',
@@ -81,6 +85,7 @@ final class Schema extends Model implements SortableContract, Translatable
         'published' => 'array',
     ];
 
+    /** @var string[] */
     protected array $criteria = [
         'search' => SchemaSearch::class,
         'name' => TranslatedLike::class,
@@ -94,6 +99,7 @@ final class Schema extends Model implements SortableContract, Translatable
         'schemas.published' => Like::class,
     ];
 
+    /** @var string[] */
     protected array $sortable = [
         'name' => TranslatedColumn::class,
         'sku',
@@ -137,17 +143,21 @@ final class Schema extends Model implements SortableContract, Translatable
         }
     }
 
+    /**
+     * @return array<int|string,float>
+     */
     public function getItems(int|string|null $value, float $quantity = 0): array
     {
-        $items = [];
-
-        if ($value === null || $this->type !== SchemaType::SELECT) {
-            return $items;
+        if ($value === null) {
+            return [];
         }
 
+        /** @var Option|null $option */
         $option = $this->options()->find($value);
 
+        $items = [];
         if ($option?->items) {
+            /** @var Item $item */
             foreach ($option->items as $item) {
                 $items[$item->getKey()] = $quantity;
             }
@@ -156,6 +166,9 @@ final class Schema extends Model implements SortableContract, Translatable
         return $items;
     }
 
+    /**
+     * @return HasMany<Option>
+     */
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
@@ -172,18 +185,25 @@ final class Schema extends Model implements SortableContract, Translatable
 
     /**
      * @deprecated
+     *
+     * @return BelongsToMany<Product>
      */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
+    /**
+     * @return BelongsTo<Product,self>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
     /**
+     * @param array<string,Schema> $schemas
+     *
      * @throws MathException
      * @throws MoneyMismatchException
      */
@@ -198,6 +218,9 @@ final class Schema extends Model implements SortableContract, Translatable
         return $this->getUsedPrice($value, $schemas, $currency);
     }
 
+    /**
+     * @return BelongsToMany<Schema>
+     */
     public function usedBySchemas(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -208,6 +231,9 @@ final class Schema extends Model implements SortableContract, Translatable
         );
     }
 
+    /**
+     * @return BelongsToMany<Schema>
+     */
     public function usedSchemas(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -219,6 +245,8 @@ final class Schema extends Model implements SortableContract, Translatable
     }
 
     /**
+     * @param array<string,Schema> $schemas
+     *
      * @throws MathException
      * @throws MoneyMismatchException
      */
@@ -228,9 +256,9 @@ final class Schema extends Model implements SortableContract, Translatable
             return Money::zero($currency->value);
         }
 
-        /** @var Schema $usedSchema */
+        /** @var Schema|null $usedSchema */
         $usedSchema = $this->usedSchemas()->first();
-        if (!empty($usedSchema)) {
+        if ($usedSchema !== null) {
             return $usedSchema->getUsedPrice(
                 $schemas[$usedSchema->getKey()],
                 $schemas,
