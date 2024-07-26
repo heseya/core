@@ -34,7 +34,7 @@ use Illuminate\Support\Str;
 
 /**
  * @deprecated
- * 
+ *
  * @property string $name
  * @property string $description
  * @property SchemaType $type

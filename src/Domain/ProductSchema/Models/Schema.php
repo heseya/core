@@ -1,6 +1,8 @@
 <?php
 
-namespace Domain\ProductSchema\Models\Schema;
+declare(strict_types=1);
+
+namespace Domain\ProductSchema\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -34,15 +36,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 /**
  * @property string $name
  * @property string $description
- * @property-read Collection<int, Option> $options
+ * @property Collection<int, Option> $options
  *
  * @mixin IdeHelperSchema
  */
-class Schema extends Model implements SortableContract, Translatable
+final class Schema extends Model implements SortableContract, Translatable
 {
     use CustomHasTranslations;
     use HasCriteria;
@@ -167,7 +170,9 @@ class Schema extends Model implements SortableContract, Translatable
         $this->setEnumCastableAttribute('type', SchemaType::SELECT);
     }
 
-    /** @deprecated */
+    /**
+     * @deprecated
+     */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_schemas');
@@ -236,7 +241,7 @@ class Schema extends Model implements SortableContract, Translatable
         try {
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return Money::zero($currency->value);
         }
 

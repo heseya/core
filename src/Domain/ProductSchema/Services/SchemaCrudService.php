@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\ProductSchema\Services;
 
 use App\Exceptions\PublishingException;
@@ -11,7 +13,7 @@ use App\Services\Contracts\TranslationServiceContract;
 use App\Services\ProductService;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
@@ -23,8 +25,7 @@ final readonly class SchemaCrudService
         private OptionService $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws PublishingException

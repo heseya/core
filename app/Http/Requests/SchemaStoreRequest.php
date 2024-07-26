@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\SchemaType;
-use App\Rules\EnumKey;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
 use App\Rules\SchemaRequire;

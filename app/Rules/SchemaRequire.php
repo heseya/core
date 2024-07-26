@@ -13,9 +13,7 @@ class SchemaRequire implements ValidationRule
     /**
      * @param OptionDto[] $options
      */
-    public function __construct(private readonly ?array $options)
-    {
-    }
+    public function __construct(private readonly ?array $options) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

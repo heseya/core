@@ -3,15 +3,14 @@
 namespace App\Rules;
 
 use App\Models\Schema as DeprecatedSchema;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Contracts\Validation\Rule;
 
 readonly class OptionAvailable implements Rule
 {
     public function __construct(
-        private Schema|DeprecatedSchema $schema,
-    ) {
-    }
+        private DeprecatedSchema|Schema $schema,
+    ) {}
 
     /**
      * Determine if the validation rule passes.

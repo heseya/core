@@ -9,7 +9,7 @@ use App\Http\Resources\SchemaResource;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,8 +23,7 @@ final class SchemaController extends Controller
 
     public function __construct(
         private readonly SchemaCrudService $schemaService,
-    ) {
-    }
+    ) {}
 
     public function index(IndexSchemaRequest $request): JsonResource
     {

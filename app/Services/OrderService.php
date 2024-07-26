@@ -11,7 +11,6 @@ use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
@@ -73,8 +72,7 @@ final readonly class OrderService implements OrderServiceContract
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
         private SalesChannelService $salesChannelService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws MathException
@@ -553,11 +551,11 @@ final readonly class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
-                ->findOrFail($dto->getShippingMethodId());
+                    ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
-                ->findOrFail($dto->getDigitalShippingMethodId());
+                    ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }

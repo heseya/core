@@ -12,7 +12,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Faker\Generator;

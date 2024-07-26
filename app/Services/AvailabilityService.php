@@ -11,7 +11,7 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -21,8 +21,7 @@ class AvailabilityService implements AvailabilityServiceContract
 {
     public function __construct(
         protected DepositServiceContract $depositService,
-    ) {
-    }
+    ) {}
 
     /**
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step

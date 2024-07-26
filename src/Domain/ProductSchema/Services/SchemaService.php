@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\ProductSchema\Services;
 
 use App\Models\Product;
 use App\Services\Contracts\ReorderServiceContract;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 
 final readonly class SchemaService
 {
     public function __construct(
         private ReorderServiceContract $reorderService,
-    ) {
-    }
+    ) {}
 
     public function sync(Product $product, array $schemas = []): void
     {

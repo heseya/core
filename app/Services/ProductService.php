@@ -28,7 +28,7 @@ use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaService;
 use Domain\ProductSet\ProductSetService;
 use Domain\Seo\SeoMetadataService;
@@ -54,8 +54,7 @@ final readonly class ProductService
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
         private ProductSetService $productSetService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException

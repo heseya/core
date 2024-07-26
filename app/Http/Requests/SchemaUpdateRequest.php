@@ -24,7 +24,6 @@ class SchemaUpdateRequest extends FormRequest
 
             'type' => ['sometimes', 'string', new EnumKey(SchemaType::class)],
 
-
             'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
 

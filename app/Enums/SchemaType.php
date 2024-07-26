@@ -5,7 +5,6 @@ namespace App\Enums;
 use App\Enums\Traits\EnumTrait;
 use Heseya\Data\Contracts\CoerceableEnum;
 
-
 enum SchemaType: int implements CoerceableEnum
 {
     use EnumTrait;
