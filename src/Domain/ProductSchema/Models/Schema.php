@@ -42,7 +42,7 @@ use Throwable;
 /**
  * @property string $name
  * @property string $description
- * @property int $type
+ * @property int|SchemaType $type
  * @property bool $required
  * @property Collection<int, Option> $options
  *

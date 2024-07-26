@@ -15,13 +15,12 @@ final readonly class SchemaService
     ) {}
 
     /**
-     * @param array<int,Schema> $schemas
+     * @param array<string> $schemas
      */
     public function sync(Product $product, array $schemas = []): void
     {
-        $schemas = $this->reorderService->reorder($schemas);
         foreach ($schemas as $schema) {
-            $product->schemas()->save($schema);
+            Schema::where('uuid', $schema)->update(['product_id' => $product->getKey()]);
         }
 
         if ($product->schemas->isEmpty() && $product->has_schemas) {

@@ -21,7 +21,7 @@ use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
-use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;

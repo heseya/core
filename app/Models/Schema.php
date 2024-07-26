@@ -118,14 +118,6 @@ class Schema extends Model implements SortableContract, Translatable
             return;
         }
 
-        if ($this->max) {
-            $validation->push('max:' . $this->max);
-        }
-
-        if ($this->min) {
-            $validation->push('min:' . $this->min);
-        }
-
         if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this));

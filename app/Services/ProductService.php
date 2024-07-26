@@ -54,7 +54,8 @@ final readonly class ProductService
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
         private ProductSetService $productSetService,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws DtoException
@@ -288,6 +289,7 @@ final readonly class ProductService
 
             $minmax = match ($schema->type) {
                 default => throw new Exception(),
+                SchemaType::SELECT->value,
                 SchemaType::SELECT => $getBestSchemasPrices(
                     $required ? $options : array_merge($options, [null]),
                 ),
