@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace Domain\ProductSchema\Models\Schema;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\SchemaHasProduct;
 use App\Criteria\SchemaSearch;
 use App\Criteria\TranslatedLike;
 use App\Criteria\WhereInIds;
@@ -12,6 +13,9 @@ use App\Enums\SchemaType;
 use App\Exceptions\ClientException;
 use App\Models\Contracts\SortableContract;
 use App\Models\Interfaces\Translatable;
+use App\Models\Model;
+use App\Models\Option;
+use App\Models\Product;
 use App\Rules\OptionAvailable;
 use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\CustomHasTranslations;
@@ -24,21 +28,17 @@ use Domain\Currency\Currency;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 /**
- * @deprecated
- * 
  * @property string $name
  * @property string $description
- * @property SchemaType $type
- * @property Collection<int, Price> $prices
+ * @property-read Collection<int, Option> $options
  *
  * @mixin IdeHelperSchema
  */
@@ -58,12 +58,7 @@ class Schema extends Model implements SortableContract, Translatable
         'description',
         'hidden',
         'required',
-        'max',
-        'min',
-        'step',
         'default',
-        'pattern',
-        'validation',
         'available',
         'shipping_time',
         'shipping_date',
@@ -80,7 +75,6 @@ class Schema extends Model implements SortableContract, Translatable
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
-        'type' => SchemaType::class,
         'published' => 'array',
     ];
 
@@ -89,6 +83,7 @@ class Schema extends Model implements SortableContract, Translatable
         'name' => TranslatedLike::class,
         'hidden',
         'required',
+        'has_product' => SchemaHasProduct::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
@@ -118,33 +113,11 @@ class Schema extends Model implements SortableContract, Translatable
             return;
         }
 
-        if ($this->max) {
-            $validation->push('max:' . $this->max);
-        }
-
-        if ($this->min) {
-            $validation->push('min:' . $this->min);
-        }
-
-        if ($this->type->is(SchemaType::SELECT)) {
-            $validation->push('uuid');
-            $validation->push(new OptionAvailable($this));
-        }
-
-        if (
-            in_array($this->type, [
-                SchemaType::NUMERIC,
-                SchemaType::MULTIPLY,
-                SchemaType::MULTIPLY_SCHEMA,
-            ])
-        ) {
-            $validation->push('numeric');
-        }
+        $validation->push('uuid');
+        $validation->push(new OptionAvailable($this));
 
         $validationStrings = [
             'attribute' => $this->name,
-            'min' => $this->min,
-            'max' => $this->max,
         ];
 
         $validator = Validator::make(
@@ -152,10 +125,7 @@ class Schema extends Model implements SortableContract, Translatable
             [$this->getKey() => $validation],
             [
                 'required' => Lang::get('validation.schema.required', $validationStrings),
-                'numeric' => Lang::get('validation.schema.numeric', $validationStrings),
                 'uuid' => Lang::get('validation.schema.uuid', $validationStrings),
-                'min' => Lang::get('validation.schema.min', $validationStrings),
-                'max' => Lang::get('validation.schema.max', $validationStrings),
             ],
         );
 
@@ -194,26 +164,18 @@ class Schema extends Model implements SortableContract, Translatable
 
     public function setTypeAttribute(mixed $value): void
     {
-        if (is_string($value)) {
-            $value = SchemaType::fromName($value);
-        }
-
-        $this->setEnumCastableAttribute('type', $value);
+        $this->setEnumCastableAttribute('type', SchemaType::SELECT);
     }
 
+    /** @deprecated */
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function prices(): MorphMany
+    public function product(): BelongsTo
     {
-        return $this->morphMany(Price::class, 'model');
-    }
-
-    public function getPriceForCurrency(Currency $currency): Money
-    {
-        return $this->prices->where('currency', $currency->value)->firstOrFail()->value;
+        return $this->belongsTo(Product::class);
     }
 
     /**
@@ -261,21 +223,9 @@ class Schema extends Model implements SortableContract, Translatable
             return Money::zero($currency->value);
         }
 
-        if (
-            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC))
-            && Str::length(trim($value)) === 0
-        ) {
-            return Money::zero($currency->value);
-        }
-
-        if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
-            return Money::zero($currency->value);
-        }
-
-        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
-            /** @var Schema $usedSchema */
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-
+        /** @var Schema $usedSchema */
+        $usedSchema = $this->usedSchemas()->first();
+        if (!empty($usedSchema)) {
             return $usedSchema->getUsedPrice(
                 $schemas[$usedSchema->getKey()],
                 $schemas,
@@ -283,21 +233,13 @@ class Schema extends Model implements SortableContract, Translatable
             )->multipliedBy($value);
         }
 
-        $price = $this->getPriceForCurrency($currency);
-
-        if ($this->type->is(SchemaType::SELECT)) {
+        try {
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
-            $price = $price->plus($option->getPriceForCurrency($currency));
+        } catch (\Throwable $th) {
+            return Money::zero($currency->value);
         }
 
-        if ($this->type->is(SchemaType::MULTIPLY)) {
-            if ($value === null) {
-                return Money::zero($currency->value);
-            }
-            $price = $price->multipliedBy($value);
-        }
-
-        return $price;
+        return $option->getPriceForCurrency($currency);
     }
 }

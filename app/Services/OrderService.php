@@ -73,7 +73,8 @@ final readonly class OrderService implements OrderServiceContract
         private DepositServiceContract $depositService,
         private ProductRepositoryContract $productRepository,
         private SalesChannelService $salesChannelService,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws MathException
@@ -238,12 +239,10 @@ final readonly class OrderService implements OrderServiceContract
                         $schema = $product->schemas()->findOrFail($schemaId);
                         $price = $schema->getPrice($value, $item->getSchemas(), $currency);
 
-                        if ($schema->type === SchemaType::SELECT) {
-                            /** @var Option $option */
-                            $option = $schema->options()->findOrFail($value);
-                            $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
-                            $value = $option->name;
-                        }
+                        /** @var Option $option */
+                        $option = $schema->options()->findOrFail($value);
+                        $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
+                        $value = $option->name;
 
                         $orderProduct->schemas()->create([
                             'name' => $schema->getTranslation('name', $language),
@@ -554,11 +553,11 @@ final readonly class OrderService implements OrderServiceContract
             // Validate whether delivery methods are the proper type
             $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL->value)
-                    ->findOrFail($dto->getShippingMethodId());
+                ->findOrFail($dto->getShippingMethodId());
 
             $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
                 ShippingMethod::where('shipping_type', ShippingType::DIGITAL->value)
-                    ->findOrFail($dto->getDigitalShippingMethodId());
+                ->findOrFail($dto->getDigitalShippingMethodId());
         } catch (Throwable $e) {
             throw new OrderException(Exceptions::CLIENT_SHIPPING_METHOD_INVALID_TYPE);
         }

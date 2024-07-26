@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -17,17 +16,17 @@ use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Setting\Models\Setting;
@@ -115,8 +114,6 @@ class CartTest extends TestCase
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -1244,8 +1241,6 @@ class CartTest extends TestCase
         );
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
                 'hidden' => false,
             ])
         );
@@ -1315,8 +1310,6 @@ class CartTest extends TestCase
         $product = $this->productService->create($productDto);
 
         $schemaDto = FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
             'hidden' => false,
         ]);
         $schema = $this->schemaCrudService->store($schemaDto);
@@ -3052,8 +3045,6 @@ class CartTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => true,
                 'options' => [
@@ -3083,8 +3074,6 @@ class CartTest extends TestCase
 
         $optionalSchema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -3103,8 +3092,6 @@ class CartTest extends TestCase
 
         $noItemSchema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => true,
                 'options' => [

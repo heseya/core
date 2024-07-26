@@ -37,6 +37,7 @@ use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
@@ -78,6 +79,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     use Sortable;
 
     public const HIDDEN_PERMISSION = 'products.show_hidden';
+
     protected $fillable = [
         'id',
         'name',
@@ -89,8 +91,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'quantity_step',
         'google_product_category',
         'available',
-        'price_min_initial',
-        'price_max_initial',
         'shipping_time',
         'shipping_date',
         'has_schemas',
@@ -100,11 +100,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'published',
         'search_values',
     ];
+
     protected array $translatable = [
         'name',
         'description_html',
         'description_short',
     ];
+
     protected $casts = [
         'shipping_date' => 'date',
         'public' => 'bool',
@@ -116,6 +118,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'shipping_digital' => 'bool',
         'purchase_limit_per_user' => 'float',
     ];
+
     protected array $sortable = [
         'id',
         'name' => TranslatedRawColumn::class,
@@ -127,6 +130,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'set.*',
         'price' => PriceColumn::class,
     ];
+
     protected array $criteria = [
         'search' => ProductSearch::class,
         'ids' => WhereInIds::class,
@@ -151,6 +155,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'published' => Like::class,
         'products.published' => Like::class,
     ];
+
     protected string $defaultSortBy = 'products.order';
     protected string $defaultSortDirection = 'desc';
 
@@ -207,17 +212,16 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ? $this->tags()->where('tags.published', 'LIKE', '%' . Config::get('language.id') . '%') : $this->tags();
     }
 
-    public function requiredSchemas(): BelongsToMany
+    public function requiredSchemas(): HasMany
     {
         return $this->schemas()->where('required', true);
     }
 
-    public function schemas(): BelongsToMany
+    public function schemas(): HasMany
     {
         return $this
-            ->belongsToMany(Schema::class, 'product_schemas')
-            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'options.metadataPrivate'])
-            ->orderByPivot('order');
+            ->hasMany(Schema::class)
+            ->with(['options', 'metadata', 'metadataPrivate', 'options.metadata', 'options.metadataPrivate']);
     }
 
     public function scopePublic(Builder $query): Builder

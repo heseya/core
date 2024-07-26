@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
-use App\Services\SchemaCrudService;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -310,7 +308,6 @@ class ProductAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
         ]));
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
@@ -346,7 +343,6 @@ class ProductAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
-            'type' => SchemaType::SELECT,
             'available' => false,
         ]));
 

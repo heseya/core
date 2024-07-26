@@ -6,13 +6,13 @@ use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Price;
-use App\Models\Schema;
-use App\Services\SchemaCrudService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -746,10 +746,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
             'used_schemas' => [
                 $usedSchema->getKey(),
             ],
@@ -780,14 +776,9 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
             'used_schemas' => [
                 $usedSchema->getKey(),
             ],
-            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
         ]));
 
         $response->assertValid()->assertCreated();
@@ -820,7 +811,6 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -833,8 +823,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'prices' => [['value' => 200, 'currency' => $this->currency->value]],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -906,8 +894,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'prices' => [PriceDto::from(Money::of(200, Currency::DEFAULT->value))],
-            'type' => SchemaType::SELECT->name,
             'hidden' => false,
             'required' => false,
             'default' => null,
@@ -985,9 +971,6 @@ class SchemaTest extends TestCase
             'description' => 'new schema description',
             'hidden' => false,
             'required' => true,
-            'max' => 10,
-            'min' => 1,
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]]
         ]));
 
         $item = Item::factory()->create();
@@ -995,10 +978,9 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
-        $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
+        $option->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
         $option->items()->sync([
             $item->getKey(),
             $item2->getKey(),
@@ -1013,15 +995,13 @@ class SchemaTest extends TestCase
             "description->{$this->lang}" => 'new schema description',
             'hidden' => false,
             'required' => true,
-            'max' => 10,
-            'min' => 1,
         ]);
 
         $this->assertDatabaseHas('prices', [
             'value' => 1000,
             'currency' => Currency::DEFAULT->value,
-            'model_id' => $schema->getKey(),
-            'model_type' => $schema->getMorphClass(),
+            'model_id' => $option->getKey(),
+            'model_type' => $option->getMorphClass(),
         ]);
     }
 
@@ -1206,7 +1186,6 @@ class SchemaTest extends TestCase
             'name' => 'Color',
             'type' => SchemaType::SELECT,
         ]);
-        $colors->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         /** @var Option $red */
         $red = $colors->options()->create([
@@ -1214,24 +1193,7 @@ class SchemaTest extends TestCase
         ]);
         $red->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
 
-        /** @var Schema $multiplier */
-        $multiplier = Schema::create([
-            'name' => 'Multiplier',
-            'type' => SchemaType::MULTIPLY_SCHEMA,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-        ]);
-        $multiplier->usedSchemas()->attach($colors);
-
-        $this->assertEquals(0, $colors->getPrice($red->getKey(), [
-            $colors->getKey() => $red->getKey(),
-            $multiplier->getKey() => 2,
-        ], $this->currency)->getAmount()->toFloat());
-
-        $value = mt_rand(10, 100) / 10;
-        $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
-            $multiplier->getKey() => $value,
+        $this->assertEquals(1000, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
         ], $this->currency)->getAmount()->toFloat());
     }

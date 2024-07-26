@@ -22,7 +22,6 @@ use App\Models\Status;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -38,6 +37,7 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\Tag\Models\Tag;
@@ -917,8 +917,6 @@ class PerformanceTest extends TestCase
 
         $schema = $schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
                 'hidden' => false,
                 'required' => true,
                 'options' => [
@@ -943,8 +941,6 @@ class PerformanceTest extends TestCase
 
         $schema2 = $schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [['value' => 0, 'currency' => Currency::DEFAULT->value]],
                 'hidden' => false,
                 'required' => false,
                 'options' => [

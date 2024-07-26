@@ -4,10 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
-use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
@@ -19,14 +17,12 @@ use App\Models\Media;
 use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Models\Schema;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -40,6 +36,8 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
@@ -117,8 +115,6 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'Rozmiar',
-                'type' => SchemaType::SELECT,
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'required' => true,
             ])
         );
@@ -2253,9 +2249,7 @@ class ProductTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::STRING,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -2311,9 +2305,7 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::STRING,
                 'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -3257,9 +3249,7 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -3310,9 +3300,7 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -3394,9 +3382,7 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -3615,9 +3601,7 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
             ])
         );
 
@@ -3876,6 +3860,7 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
+
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test schema',

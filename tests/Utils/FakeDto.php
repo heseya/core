@@ -2,7 +2,6 @@
 
 namespace Tests\Utils;
 
-use App\Models\Schema;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -13,6 +12,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Dtos\SchemaUpdateDto;
+use Domain\ProductSchema\Models\Schema\Schema;
 use Domain\ShippingMethod\Dtos\PriceRangeDto;
 use Domain\ShippingMethod\Dtos\ShippingMethodCreateDto;
 use Faker\Generator;
@@ -41,17 +41,18 @@ final readonly class FakeDto
             Money::of(round(mt_rand(500, 2000) / 100, 2), $currency),
         );
 
-        return ShippingMethodCreateDto::from([
+        return ShippingMethodCreateDto::from(
+            [
                 ...$data + [
-                        'name' => $faker->randomElement([
-                            'dpd',
-                            'inpostkurier',
-                        ]),
-                        'public' => $faker->boolean,
-                        'block_list' => $faker->boolean,
-                        'price_ranges' => [$priceRange],
-                        'payment_on_delivery' => false,
-                    ],
+                    'name' => $faker->randomElement([
+                        'dpd',
+                        'inpostkurier',
+                    ]),
+                    'public' => $faker->boolean,
+                    'block_list' => $faker->boolean,
+                    'price_ranges' => [$priceRange],
+                    'payment_on_delivery' => false,
+                ],
             ]
         );
     }
@@ -86,18 +87,18 @@ final readonly class FakeDto
         $langId = App::getLocale();
 
         $data = $data + [
-                'translations' => [
-                    $langId => [
-                        'name' => $name,
-                        'description_html' => "<p>{$description}</p>",
-                        'description_short' => $description,
-                    ],
+            'translations' => [
+                $langId => [
+                    'name' => $name,
+                    'description_html' => "<p>{$description}</p>",
+                    'description_short' => $description,
                 ],
-                'published' => [$langId],
-                'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
-                'public' => $faker->boolean,
-                'shipping_digital' => false,
-            ];
+            ],
+            'published' => [$langId],
+            'slug' => Str::slug($name) . '-' . mt_rand(1, 99999),
+            'public' => $faker->boolean,
+            'shipping_digital' => false,
+        ];
 
         if ($returnArray) {
             return $data;
@@ -159,8 +160,6 @@ final readonly class FakeDto
 
     public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
     {
-        $data['prices'] = self::generatePricesInAllCurrencies($data['prices'] ?? []);
-
         $data = $data + Schema::factory()->definition();
 
         $langId = App::getLocale();

@@ -10,17 +10,17 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
@@ -73,8 +73,6 @@ class OrderDepositTest extends TestCase
         ]));
 
         $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'required' => true,
             'options' => [
@@ -268,8 +266,6 @@ class OrderDepositTest extends TestCase
     public function testCantCreateOrderWithoutMultipleItems($user): void
     {
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'options' => [
                 [

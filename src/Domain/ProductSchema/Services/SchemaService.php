@@ -1,16 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace Domain\ProductSchema\Services;
 
 use App\Models\Product;
 use App\Services\Contracts\ReorderServiceContract;
-use App\Services\Contracts\SchemaServiceContract;
+use Domain\ProductSchema\Models\Schema\Schema;
 
-final readonly class SchemaService implements SchemaServiceContract
+final readonly class SchemaService
 {
     public function __construct(
         private ReorderServiceContract $reorderService,
-    ) {}
+    ) {
+    }
 
     public function sync(Product $product, array $schemas = []): void
     {
@@ -24,5 +25,13 @@ final readonly class SchemaService implements SchemaServiceContract
         if ($product->schemas->isNotEmpty() && !$product->has_schemas) {
             $product->update(['has_schemas' => true]);
         }
+
+        $product->schemas()->each(static function (Schema $schema) use ($product): void {
+            if (empty($schema->product_id) || $schema->product_id !== $product->getKey()) {
+                $schema->product()
+                    ->associate($product)
+                    ->save();
+            }
+        });
     }
 }

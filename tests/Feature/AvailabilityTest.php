@@ -20,12 +20,12 @@ use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Domain\ShippingMethod\Services\Contracts\ShippingMethodServiceContract;
@@ -99,7 +99,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
-                'type' => SchemaType::SELECT,
                 'available' => false,
             ])
         );
@@ -166,7 +165,6 @@ class AvailabilityTest extends TestCase
         $schemaOne = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -174,7 +172,6 @@ class AvailabilityTest extends TestCase
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaTwo',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -733,14 +730,12 @@ class AvailabilityTest extends TestCase
     {
         $schemaOne = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
                 'required' => true,
             ])
         );
 
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
                 'required' => true,
             ])
         );
@@ -782,7 +777,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -812,7 +806,6 @@ class AvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'schemaOne',
-                'type' => SchemaType::SELECT,
                 'required' => true,
                 'available' => false,
             ])
@@ -842,8 +835,6 @@ class AvailabilityTest extends TestCase
             $schema1 = $this->schemaCrudService->store(
                 FakeDto::schemaDto([
                     'required' => true,
-                    'type' => SchemaType::SELECT,
-                    'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
                     'hidden' => false,
                     'available' => true,
                     'options' => [

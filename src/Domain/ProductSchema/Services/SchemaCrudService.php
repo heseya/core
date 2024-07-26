@@ -1,32 +1,30 @@
 <?php
 
-namespace App\Services;
+namespace Domain\ProductSchema\Services;
 
 use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\OptionServiceContract;
-use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use App\Services\ProductService;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
-use Domain\ProductSchema\SchemaRepository;
+use Domain\ProductSchema\Models\Schema\Schema;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
-final readonly class SchemaCrudService implements SchemaCrudServiceContract
+final readonly class SchemaCrudService
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
-        private OptionServiceContract $optionService,
+        private OptionService $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-        private SchemaRepository $schemaRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws PublishingException
@@ -81,10 +79,6 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
 
         if ($dto instanceof SchemaCreateDto && !($dto->metadata_computed instanceof Optional)) {
             $this->metadataService->sync($schema, $dto->metadata_computed);
-        }
-
-        if ($dto->prices instanceof DataCollection) {
-            $this->schemaRepository->setSchemaPrices($schema->getKey(), $dto->prices->items());
         }
 
         if (!$schema->wasRecentlyCreated) {

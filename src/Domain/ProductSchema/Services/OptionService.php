@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Services;
+namespace Domain\ProductSchema\Services;
 
 use App\Models\Option;
-use App\Models\Schema;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\OptionServiceContract;
 use Domain\ProductSchema\Dtos\OptionDto;
+use Domain\ProductSchema\Models\Schema\Schema;
 use Domain\ProductSchema\OptionRepository;
 use Spatie\LaravelData\Optional;
 
-final readonly class OptionService implements OptionServiceContract
+final readonly class OptionService
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
         private OptionRepository $optionRepository,
-    ) {}
+    ) {
+    }
 
     /**
      * @param OptionDto[] $options

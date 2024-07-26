@@ -9,9 +9,9 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
+use Domain\ProductSchema\Models\Schema\Schema;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -21,7 +21,8 @@ class AvailabilityService implements AvailabilityServiceContract
 {
     public function __construct(
         protected DepositServiceContract $depositService,
-    ) {}
+    ) {
+    }
 
     /**
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
@@ -153,14 +154,6 @@ class AvailabilityService implements AvailabilityServiceContract
      */
     public function getCalculateSchemaAvailability(Schema $schema): array
     {
-        if ($schema->type !== SchemaType::SELECT) {
-            return [
-                'available' => true,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ];
-        }
-
         // If option don't have any related options is always unavailable
         $available = false;
         $shipping_time = null;
@@ -168,7 +161,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
         foreach ($schema->options as $option) {
             $availability = $this->getCalculateOptionAvailability($option);
-            if ($option->disabled || !$availability['available']) {
+            if (!$availability['available']) {
                 continue;
             }
 
@@ -432,8 +425,8 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon
-                && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
-                    || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+            && ((!$isAfter && $shippingDate1->isBefore($shippingDate2))
+                || ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
             return $shippingDate2;
         }
 

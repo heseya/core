@@ -4,7 +4,6 @@ namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -16,7 +15,6 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -24,6 +22,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
@@ -477,9 +476,7 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test',
-                'type' => SchemaType::STRING,
                 'required' => true,
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'published' => [$this->lang],
             ])
         );
@@ -863,8 +860,6 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -929,8 +924,6 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::BOOLEAN,
-                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -995,8 +988,6 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::BOOLEAN,
-                'price' => 10,
                 'hidden' => false,
             ])
         );

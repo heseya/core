@@ -6,7 +6,6 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
@@ -26,14 +25,11 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Status;
-use App\Models\User;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
-use BenSampo\Enum\Exceptions\InvalidEnumMemberException;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -44,6 +40,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Setting\Models\Setting;
@@ -57,7 +54,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -572,8 +568,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -666,8 +660,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices_base' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
                 'hidden' => false,
             ])
         );
@@ -770,8 +762,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => true,
             ])
         );
@@ -845,8 +835,6 @@ class OrderCreateTest extends TestCase
         $schemaPrice = 10;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::STRING->name,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
                 'required' => false, // Important!
             ])
         );
@@ -1403,8 +1391,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -1471,8 +1457,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -1542,8 +1526,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -1609,8 +1591,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -1666,8 +1646,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -1879,11 +1857,11 @@ class OrderCreateTest extends TestCase
                 'email' => $this->email,
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'billing_address' => $address + [
-                        'vat' => null,
-                    ],
+                    'vat' => null,
+                ],
                 'shipping_place' => $address + [
-                        'vat' => null,
-                    ],
+                    'vat' => null,
+                ],
                 'items' => [
                     [
                         'product_id' => $this->product->getKey(),
@@ -2573,16 +2551,12 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
 
         $schema2 = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
             ])
         );
@@ -2635,8 +2609,6 @@ class OrderCreateTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::SELECT,
-                'prices' => [['value' => 10, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => true,
             ])
