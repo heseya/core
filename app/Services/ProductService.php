@@ -54,8 +54,7 @@ final readonly class ProductService
         private ProductRepositoryContract $productRepository,
         private TranslationServiceContract $translationService,
         private ProductSetService $productSetService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws DtoException
