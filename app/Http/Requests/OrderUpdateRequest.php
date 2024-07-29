@@ -20,6 +20,7 @@ class OrderUpdateRequest extends FormRequest
 
             'billing_address' => ['nullable', 'array'],
             'billing_address.name' => ['string', 'max:255'],
+            'billing_address.company_name' => ['string', 'nullable', 'max:255'],
             'billing_address.phone' => ['string', 'max:20'],
             'billing_address.address' => ['string', 'max:255'],
             'billing_address.zip' => ['string', 'max:16'],

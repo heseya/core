@@ -16,7 +16,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class AddressUpdateDto extends Data
 {
     public function __construct(
-        public string $name,
+        public string|Optional|null $name,
+        public string|Optional|null $company_name,
         #[StringType, Max(255)]
         public string $address,
         #[StringType, Max(20)]
@@ -38,12 +39,14 @@ final class AddressUpdateDto extends Data
     {
         if (Str::contains(request()->url(), 'billing-addresses')) {
             return [
-                'name' => ['string', 'max:255'],
+                'name' => ['string', 'max:255', 'required_without:company_name'],
+                'company_name' => ['string', 'max:255', 'required_without:name'],
             ];
         }
 
         return [
             'name' => ['string', 'max:255', new FullName()],
+            'company_name' => ['string', 'max:255', 'required_without:name'],
         ];
     }
 }

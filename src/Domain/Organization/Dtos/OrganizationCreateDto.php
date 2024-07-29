@@ -15,6 +15,7 @@ use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class OrganizationCreateDto extends Data
 {
@@ -32,4 +33,19 @@ final class OrganizationCreateDto extends Data
         #[DataCollectionOf(OrganizationSavedAddressCreateDto::class), Min(1)]
         public readonly DataCollection $shipping_addresses,
     ) {}
+
+    /**
+     * @param ValidationContext $context
+     *
+     * @return array<string, array<int, string>>
+     */
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'billing_address.name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.company_name'],
+            'billing_address.company_name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.name'],
+            'shipping_addresses.*.address.name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.company_name'],
+            'shipping_addresses.*.address.company_name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.name'],
+        ];
+    }
 }

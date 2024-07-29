@@ -12,6 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class AddressDto extends Dto implements InstantiateFromRequest
 {
     private Missing|string|null $name;
+    private Missing|string|null $company_name;
     private Missing|string|null $address;
     private Missing|string|null $vat;
     private Missing|string|null $zip;
@@ -25,6 +26,7 @@ class AddressDto extends Dto implements InstantiateFromRequest
     ): self {
         return new self(
             name: $request->input($prefix . 'name', new Missing()),
+            company_name: $request->input($prefix . 'company_name', new Missing()),
             address: $request->input($prefix . 'address', new Missing()),
             vat: $request->input($prefix . 'vat', new Missing()),
             zip: $request->input($prefix . 'zip', new Missing()),
@@ -37,6 +39,11 @@ class AddressDto extends Dto implements InstantiateFromRequest
     public function getName(): Missing|string|null
     {
         return $this->name;
+    }
+
+    public function getCompanyName(): Missing|string|null
+    {
+        return $this->company_name;
     }
 
     public function getAddress(): Missing|string|null

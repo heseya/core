@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
 use Spatie\LaravelData\Attributes\Validation\Required;
+use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -17,7 +18,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class AddressStoreDto extends Data
 {
     public function __construct(
-        public string $name,
+        public string|Optional|null $name,
+        public string|Optional|null $company_name,
         #[Required, StringType, Max(255)]
         public string $address,
         #[Required, StringType, Max(20)]
@@ -39,12 +41,14 @@ final class AddressStoreDto extends Data
     {
         if (Str::contains(request()->url(), 'billing-addresses')) {
             return [
-                'name' => ['required', 'string', 'max:255'],
+                'name' => ['required_without:company_name', 'string', 'max:255'],
+                'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
             ];
         }
 
         return [
-            'name' => ['required', 'string', 'max:255', new FullName()],
+            'name' => ['required_without:company_name', 'string', 'max:255', new FullName()],
+            'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
         ];
     }
 }
