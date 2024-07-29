@@ -509,7 +509,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 2,
                     'schemas' => [
-                        $schema->getKey() => 'TEST-VALUE',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -891,7 +891,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -955,7 +955,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 3,
                     'schemas' => [
-                        $schema->getKey() => true,
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -1018,7 +1018,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => true,
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
                 [

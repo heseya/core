@@ -1273,7 +1273,7 @@ class CartTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
                 [
@@ -1308,8 +1308,12 @@ class CartTest extends TestCase
 
         $schemaDto = FakeDto::schemaDto([
             'hidden' => false,
+            'options' => [
+                'name' => 'Test',
+            ],
         ]);
         $schema = $this->schemaCrudService->store($schemaDto);
+
 
         $product->schemas()->save($schema);
 
@@ -1338,7 +1342,7 @@ class CartTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 3,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],

@@ -216,6 +216,9 @@ SchemaRequest:
       items:
         type: string
         format: uuid
+    product_id:
+      type: string
+      format: uuid
 
 SchemaShort:
   type: object

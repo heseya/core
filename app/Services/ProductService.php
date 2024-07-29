@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -32,7 +31,6 @@ use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaService;
 use Domain\ProductSet\ProductSetService;
 use Domain\Seo\SeoMetadataService;
-use Exception;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -282,17 +280,14 @@ final readonly class ProductService
             );
 
             $required = $schema->required;
+
             $options = $schema->options->map(
                 fn (Option $option) => $option->getKey(),
             )->toArray();
 
-            $minmax = match ($schema->type) {
-                default => throw new Exception(),
-                SchemaType::SELECT->value,
-                SchemaType::SELECT => $getBestSchemasPrices(
-                    $required ? $options : array_merge($options, [null]),
-                ),
-            };
+            $minmax = $getBestSchemasPrices(
+                $required ? $options : array_merge($options, [null]),
+            );
         } else {
             $price = $allSchemas->reduce(
                 fn (Money $carry, Schema $current) => $carry->plus(

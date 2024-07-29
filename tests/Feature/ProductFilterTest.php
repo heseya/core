@@ -58,11 +58,13 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show', 'products.show_hidden']);
 
         $productWithoutSchemas = Product::factory()->create();
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
 
         /** @var Product $productWithSchemas */
         $productWithSchemas = Product::factory()->create();
-        $productWithSchemas->schemas()->attach($schema->getKey());
+
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
+            'product_id' => $productWithSchemas->getKey(),
+        ]));
 
         $this
             ->actingAs($this->{$user})

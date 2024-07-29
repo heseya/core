@@ -198,9 +198,9 @@ class ProductServiceTest extends TestCase
             'type' => SchemaType::SELECT,
             'required' => $required,
             'options' => $options,
+            'product_id' => $this->product->getKey(),
         ]));
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->product->load('schemas');
 
         $this->assertEquals(

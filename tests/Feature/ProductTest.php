@@ -205,7 +205,6 @@ class ProductTest extends TestCase
                         [
                             'name' => 'XL',
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                            'disabled' => false,
                             'available' => true,
                             'items' => [
                                 [
@@ -218,7 +217,6 @@ class ProductTest extends TestCase
                         [
                             'name' => 'L',
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                            'disabled' => false,
                             'available' => false,
                             'items' => [
                                 [

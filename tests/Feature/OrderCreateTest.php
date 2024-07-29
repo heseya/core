@@ -587,7 +587,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -597,7 +597,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id);
 
         $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
+            $schema->getKey() => $schema->options->first()->getKey(),
         ], $this->currency);
 
         $orderTotal = $this->productPrice
@@ -778,7 +778,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -788,7 +788,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id);
 
         $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
+            $schema->getKey() => $schema->options->first()->getKey(),
         ], $this->currency);
 
         $orderTotal = $this->productPrice
@@ -1419,7 +1419,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -1488,7 +1488,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -1553,7 +1553,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -1617,7 +1617,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -1672,7 +1672,7 @@ class OrderCreateTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => $productQuantity,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],

@@ -167,14 +167,21 @@ final readonly class FakeDto
         $data['translations'][$langId]['name'] = $data['translations'][$langId]['name'] ?? $data['name'];
         $data['translations'][$langId]['description'] = $data['translations'][$langId]['description'] ?? $data['description'];
 
-        if (array_key_exists('options', $data)) {
-            foreach ($data['options'] as &$option) {
-                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
-                    4
-                );
+        if (!array_key_exists('options', $data) || empty($data['options'])) {
+            $data['options'] = [
+                [
+                    'name' => 'Test',
+                    'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))],
+                ]
+            ];
+        }
 
-                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
-            }
+        foreach ($data['options'] as &$option) {
+            $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
+                4
+            );
+
+            $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
         }
 
         if ($returnArray) {
