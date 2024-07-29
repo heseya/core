@@ -259,21 +259,18 @@ class SchemaTest extends TestCase
         $option1 = Option::factory()->create([
             'name' => 'A',
             'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 0,
             'schema_id' => $schema->getKey(),
         ]);
         $option2 = Option::factory()->create([
             'name' => 'C',
             'prices' => [['value' => 100, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 2,
             'schema_id' => $schema->getKey(),
         ]);
         $option3 = Option::factory()->create([
             'name' => 'B',
             'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 1,
             'schema_id' => $schema->getKey(),
         ]);

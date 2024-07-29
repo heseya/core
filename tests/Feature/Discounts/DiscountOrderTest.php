@@ -478,10 +478,9 @@ class DiscountOrderTest extends TestCase
                 'name' => 'test',
                 'required' => true,
                 'published' => [$this->lang],
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->attach($schema->getKey());
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -861,10 +860,9 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'hidden' => false,
+                'product_id' => $product->getKey(),
             ])
         );
-
-        $product->schemas()->save($schema);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -925,10 +923,9 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'hidden' => false,
+                'product_id' => $product->getKey(),
             ])
         );
-
-        $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -989,10 +986,9 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'hidden' => false,
+                'product_id' => $product->getKey(),
             ])
         );
-
-        $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,

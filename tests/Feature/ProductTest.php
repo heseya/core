@@ -116,9 +116,9 @@ class ProductTest extends TestCase
             FakeDto::schemaDto([
                 'name' => 'Rozmiar',
                 'required' => true,
+                'product_id' => $this->product->getKey(),
             ])
         );
-        $this->product->schemas()->attach($schema->getKey());
 
         $this->travel(5)->hours();
 
@@ -3244,16 +3244,16 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $this->product->schemas()->detach();
+        Schema::where('product_id', $this->product->id)->delete();
 
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $productNewPrice = 250;
@@ -3301,10 +3301,10 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $saleValue = 25;
@@ -3383,10 +3383,10 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $schemaNewPrice = 75;
@@ -3602,10 +3602,9 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->attach($schema->getKey());
 
         $this->productService->updateMinMaxPrices($this->product);
 
@@ -3812,10 +3811,10 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test schema',
+                'product_id' => $this->product->getKey(),
             ])
         );
 
-        $this->product->schemas()->save($schema);
         $this->product->update(['has_schemas' => true]);
 
         $this->actingAs($this->{$user})->json('delete', 'schemas/id:' . $schema->getKey());
@@ -3866,7 +3865,6 @@ class ProductTest extends TestCase
                 'name' => 'test schema',
             ])
         );
-
         $this->product->schemas()->save($schema);
 
         $this->product->update(['has_schemas' => true]);

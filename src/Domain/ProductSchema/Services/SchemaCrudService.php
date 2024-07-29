@@ -25,7 +25,8 @@ final readonly class SchemaCrudService
         private OptionService $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-    ) {}
+    ) {
+    }
 
     /**
      * @throws PublishingException
@@ -82,10 +83,8 @@ final readonly class SchemaCrudService
             $this->metadataService->sync($schema, $dto->metadata_computed);
         }
 
-        if (!$schema->wasRecentlyCreated) {
-            $schema->products->each(
-                fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-            );
+        if (!$schema->wasRecentlyCreated && $schema->product) {
+            $this->productService->updateMinMaxPrices($schema->product);
         }
 
         $schema->options->each(
@@ -99,11 +98,11 @@ final readonly class SchemaCrudService
 
     public function destroy(Schema $schema): void
     {
-        $products = $schema->products;
+        $product = $schema->product;
         $schema->delete();
 
-        $products->each(
-            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-        );
+        if ($product) {
+            $this->productService->updateMinMaxPrices($product);
+        }
     }
 }

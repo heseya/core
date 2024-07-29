@@ -79,17 +79,8 @@ class ProductServiceTest extends TestCase
             'optional schema' => array_merge(
                 $base,
                 [
-                    SchemaType::STRING,
+                    SchemaType::SELECT,
                     false,
-                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
-                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
-                ],
-            ),
-            'boolean schema' => array_merge(
-                $base,
-                [
-                    SchemaType::BOOLEAN,
-                    true,
                     PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
                     PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
                 ],
@@ -97,7 +88,7 @@ class ProductServiceTest extends TestCase
             'required schema' => array_merge(
                 $base,
                 [
-                    SchemaType::STRING,
+                    SchemaType::SELECT,
                     true,
                     PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
                     PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
@@ -123,7 +114,7 @@ class ProductServiceTest extends TestCase
         ]));
         $option = $schema->options()->create([
             'name' => 'Default option',
-            'prices' => [['value' => $schemaPrice, 'currency' => $this->currency->value]],
+            'prices' => [['value' => $schemaPrice, 'currency' => self::$currency->value]],
         ]);
 
         $this->product->schemas()->attach($schema->getKey());
@@ -299,7 +290,7 @@ class ProductServiceTest extends TestCase
         ]));
         $option = $schema->options()->create([
             'name' => 'Default option',
-            'prices' => [['value' => $schema1Price, 'currency' => $this->currency->value]],
+            'prices' => [['value' => $schema1Price, 'currency' => self::$currency->value]],
         ]);
 
         $this->product->schemas()->attach($schema);
@@ -312,7 +303,7 @@ class ProductServiceTest extends TestCase
         ]));
         $option2 = $schema2->options()->create([
             'name' => 'Default option',
-            'prices' => [['value' => $schema2Price, 'currency' => $this->currency->value]],
+            'prices' => [['value' => $schema2Price, 'currency' => self::$currency->value]],
         ]);
 
         $this->product->schemas()->attach($schema2);
@@ -325,7 +316,7 @@ class ProductServiceTest extends TestCase
         ]));
         $option3 = $schema3->options()->create([
             'name' => 'Default option',
-            'prices' => [['value' => $schema3Price, 'currency' => $this->currency->value]],
+            'prices' => [['value' => $schema3Price, 'currency' => self::$currency->value]],
         ]);
 
         $this->product->schemas()->attach($schema3);

@@ -9,6 +9,7 @@ use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
@@ -80,9 +81,9 @@ class OrderDepositTest extends TestCase
                     'name' => 'XL',
                     'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
                 ],
-            ]
+            ],
+            'product_id' => $this->product->getKey(),
         ]));
-        $this->product->schemas()->sync([$this->schema->getKey()]);
         $this->option = $this->schema->options->where('name', 'XL')->first();
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
@@ -182,6 +183,9 @@ class OrderDepositTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
+        /**
+         * @var OrderProduct $orderProduct
+         */
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
@@ -272,10 +276,9 @@ class OrderDepositTest extends TestCase
                     'name' => 'XL',
                     'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
                 ],
-            ]
+            ],
+            'product_id' => $this->product->getKey(),
         ]));
-
-        $this->product->schemas()->sync([$schema->getKey()]);
 
         $option = $schema->options->where('name', 'XL')->first();
 

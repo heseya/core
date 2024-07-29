@@ -47,6 +47,7 @@ abstract class SchemaDto extends Data
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,
         public readonly array|Optional $metadata_private,
+        public string|Optional|null $product_id,
         #[Rule(['sometimes', new Translations(['name'])])]
         public array|Optional $translations = [],
         public array|Optional $published = [],

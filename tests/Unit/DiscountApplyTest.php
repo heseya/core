@@ -22,6 +22,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\OptionService;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
@@ -44,7 +45,7 @@ class DiscountApplyTest extends TestCase
     private OptionService $optionService;
     private $product;
     private $productToOrderProduct;
-    private $schema;
+    private Schema $schema;
     private $set;
     private $order;
     private $shippingMethod;
@@ -397,7 +398,8 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProduct($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -432,7 +434,9 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
+
         $product = $this->productService->create(
             FakeDto::productCreateDto([
                 'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
@@ -471,7 +475,8 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductInProductSets($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -506,7 +511,9 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductInProductSetsNotAllowList($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);

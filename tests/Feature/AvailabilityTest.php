@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -15,7 +14,6 @@ use App\Models\Order;
 use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
@@ -25,6 +23,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -100,10 +99,9 @@ class AvailabilityTest extends TestCase
             FakeDto::schemaDto([
                 'required' => true,
                 'available' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->save($schema);
 
         /** @var Item $item */
         $item = Item::factory()->create([
@@ -647,9 +645,8 @@ class AvailabilityTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $schemas = $this->createSchemasWithOptions($schemaCount);
+        $schemas = $this->createSchemasWithOptions($schemaCount, $this->product->getKey());
 
-        $this->product->schemas()->sync(array_keys($schemas));
         $this->product->update([
             'has_schemas' => true,
         ]);
@@ -742,13 +739,11 @@ class AvailabilityTest extends TestCase
 
         $optionOne = Option::factory()->create([
             'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
         ]);
         $optionOne->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         $optionTwo = Option::factory()->create([
             'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
         ]);
         $optionTwo->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
@@ -782,7 +777,7 @@ class AvailabilityTest extends TestCase
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
+        $this->product->schemas()->save($schema);
 
         /** @var Item $item */
         $item = Item::factory()->create();
@@ -811,12 +806,12 @@ class AvailabilityTest extends TestCase
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
+        $this->product->schemas()->save($schema);
 
         return $this->product->refresh();
     }
 
-    private function createSchemasWithOptions(int $schemaCount): array
+    private function createSchemasWithOptions(int $schemaCount, ?string $product_id = null): array
     {
         $schemas = [];
         for ($i = 0; $i < $schemaCount; ++$i) {
@@ -853,6 +848,7 @@ class AvailabilityTest extends TestCase
                             'order' => 2,
                         ] + Option::factory()->definition(),
                     ],
+                    'product_id' => $product_id,
                 ])
             );
 

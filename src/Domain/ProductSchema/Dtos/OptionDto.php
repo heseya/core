@@ -48,7 +48,6 @@ final class OptionDto extends Data
         public readonly array|Optional $translations,
         #[DataCollectionOf(PriceDto::class)]
         public DataCollection|Optional $prices,
-        public readonly bool|Optional $disabled,
         public readonly array|Optional $items,
 
         #[MapInputName('metadata')]

@@ -48,10 +48,12 @@ class ProductsAvailabilityTest extends TestCase
     {
         /** @var Product $product */
         $product = Product::factory()->create();
+
         $item = Item::factory()->create();
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => false,
+            'product_id' => $product->getKey(),
         ]));
 
         /** @var Option $option */
@@ -59,7 +61,6 @@ class ProductsAvailabilityTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
         $option->items()->attach($item->getKey());
-        $product->schemas()->attach($schema->getKey());
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
@@ -72,17 +73,17 @@ class ProductsAvailabilityTest extends TestCase
     // Product have schema and options but without any items
     public function testRequiredSchemasNoItems(): void
     {
+        /** @var Product $product */
+        $product = Product::factory()->create();
+
         /** @var Schema $schema */
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
-
-        /** @var Product $product */
-        $product = Product::factory()->create();
-        $product->schemas()->attach($schema->getKey());
 
         // Check schema finder
         $requiredSchemas = $this->invokeMethod(
@@ -103,20 +104,21 @@ class ProductsAvailabilityTest extends TestCase
     // Product have schema and options with required items but item is not available
     public function testRequiredSchemasNoAvailableItems(): void
     {
+        /** @var Product $product */
+        $product = Product::factory()->create();
+
         $item1 = Item::factory()->create();
         $item2 = Item::factory()->create();
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option1 = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option2 = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option1->items()->attach($item1->getKey());
         $option2->items()->sync($item2->getKey());
 
-        /** @var Product $product */
-        $product = Product::factory()->create();
-        $product->schemas()->attach($schema->getKey());
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
@@ -129,24 +131,25 @@ class ProductsAvailabilityTest extends TestCase
     // Product have schema and options with required items but item is not available
     public function testRequiredSchemasNoAvailableItemsMultipleSchemas(): void
     {
+        /** @var Product $product */
+        $product = Product::factory()->create();
+
         $item1 = Item::factory()->create();
         $item2 = Item::factory()->create();
 
         $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option = Option::factory()->create(['schema_id' => $schema1->getKey()]);
         $option->items()->attach($item1->getKey());
 
         $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option = Option::factory()->create(['schema_id' => $schema2->getKey()]);
         $option->items()->attach($item2->getKey());
-
-        /** @var Product $product */
-        $product = Product::factory()->create();
-        $product->schemas()->sync([$schema1->getKey(), $schema2->getKey()]);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
@@ -228,10 +231,10 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);
-        $product->schemas()->sync([$schema->getKey()]);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
@@ -254,10 +257,10 @@ class ProductsAvailabilityTest extends TestCase
 
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option = Option::factory()->create(['schema_id' => $schema->getKey()]);
         $option->items()->sync([$item1->getKey() => ['required_quantity' => 1]]);
-        $product->schemas()->sync([$schema->getKey()]);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 

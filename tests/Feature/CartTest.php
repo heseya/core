@@ -126,10 +126,9 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->productWithSchema->getKey(),
             ])
         );
-
-        $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
 
         $this->option = $this->schema->options->where('name', 'XL')->first();
 
@@ -484,8 +483,6 @@ class CartTest extends TestCase
     public function testCartProcessSameProductNotAvailableWithSchema($user): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
-
-        $this->product->schemas()->sync([$this->schema->getKey()]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
@@ -3057,6 +3054,7 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -3082,6 +3080,7 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -3100,12 +3099,11 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
         $noItemOption = $noItemSchema->options->where('name', 'Tak')->first();
-
-        $this->product->schemas()->sync([$schema->getKey(), $optionalSchema->getKey(), $noItemSchema->getKey()]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
