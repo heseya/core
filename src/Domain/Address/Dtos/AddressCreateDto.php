@@ -12,9 +12,9 @@ final class AddressCreateDto extends Data
 {
     public function __construct(
         #[Max(255)]
-        public readonly string|Optional|null $name,
+        public readonly Optional|string|null $name,
         #[Max(255)]
-        public readonly string|Optional|null $company_name,
+        public readonly Optional|string|null $company_name,
         #[Max(255)]
         public readonly string $address,
         #[Max(15)]

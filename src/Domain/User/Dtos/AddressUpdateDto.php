@@ -16,8 +16,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class AddressUpdateDto extends Data
 {
     public function __construct(
-        public string|Optional|null $name,
-        public string|Optional|null $company_name,
+        public Optional|string|null $name,
+        public Optional|string|null $company_name,
         #[StringType, Max(255)]
         public string $address,
         #[StringType, Max(20)]

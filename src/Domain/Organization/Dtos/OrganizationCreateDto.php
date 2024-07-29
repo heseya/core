@@ -35,8 +35,6 @@ final class OrganizationCreateDto extends Data
     ) {}
 
     /**
-     * @param ValidationContext $context
-     *
      * @return array<string, array<int, string>>
      */
     public static function rules(ValidationContext $context): array
