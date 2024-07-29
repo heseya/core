@@ -6,7 +6,6 @@ namespace Domain\ProductSchema\Services;
 
 use App\Exceptions\PublishingException;
 use App\Models\Option;
-use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
@@ -25,8 +24,7 @@ final readonly class SchemaCrudService
         private OptionService $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-    ) {
-    }
+    ) {}
 
     /**
      * @throws PublishingException

@@ -420,7 +420,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -499,7 +499,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -539,7 +539,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,

@@ -165,6 +165,7 @@ class AvailabilityTest extends TestCase
                 'name' => 'schemaOne',
                 'required' => true,
                 'available' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
         $schemaTwo = $this->schemaCrudService->store(
@@ -172,6 +173,7 @@ class AvailabilityTest extends TestCase
                 'name' => 'schemaTwo',
                 'required' => true,
                 'available' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -205,8 +207,6 @@ class AvailabilityTest extends TestCase
             'quantity' => 0,
         ]);
         $itemTwo->options()->saveMany([$optionThree, $optionFour]);
-
-        $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
 
         $response = $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
@@ -263,8 +263,6 @@ class AvailabilityTest extends TestCase
 
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
-        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
-
         $this->actingAs($this->{$user})
             ->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
                 'quantity' => 2,
@@ -309,8 +307,6 @@ class AvailabilityTest extends TestCase
 
         $data = $this->createDataPatternOne();
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
-
-        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
         $this
             ->actingAs($this->{$user})
@@ -375,7 +371,6 @@ class AvailabilityTest extends TestCase
 
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
-        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
         $this->product->update(['available' => true]);
 
         $this->actingAs($this->{$user})->postJson('/orders', [
@@ -442,8 +437,6 @@ class AvailabilityTest extends TestCase
         ]);
 
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
-
-        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
         $this->product->update([
             'available' => true,
@@ -728,12 +721,14 @@ class AvailabilityTest extends TestCase
         $schemaOne = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -774,10 +769,9 @@ class AvailabilityTest extends TestCase
                 'name' => 'schemaOne',
                 'required' => true,
                 'available' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->save($schema);
 
         /** @var Item $item */
         $item = Item::factory()->create();
@@ -803,10 +797,9 @@ class AvailabilityTest extends TestCase
                 'name' => 'schemaOne',
                 'required' => true,
                 'available' => false,
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->save($schema);
 
         return $this->product->refresh();
     }
@@ -836,14 +829,12 @@ class AvailabilityTest extends TestCase
                         [
                             'name' => 'A',
                             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-                            'disabled' => false,
                             'available' => true,
                             'order' => 0,
                         ] + Option::factory()->definition(),
                         [
                             'name' => 'B',
                             'prices' => [['value' => 10, 'currency' => Currency::DEFAULT->value]],
-                            'disabled' => false,
                             'available' => true,
                             'order' => 2,
                         ] + Option::factory()->definition(),

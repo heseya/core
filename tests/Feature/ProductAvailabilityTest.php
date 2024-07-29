@@ -306,8 +306,11 @@ class ProductAvailabilityTest extends TestCase
     {
         $this->{$user}->givePermissionTo('deposits.add');
 
+        $product = Product::factory()->create();
+
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
+            'product_id' => $product->getKey(),
         ]));
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
@@ -315,9 +318,6 @@ class ProductAvailabilityTest extends TestCase
 
         $item = Item::factory()->create();
         $item->options()->attach($option->getKey());
-
-        $product = Product::factory()->create();
-        $product->schemas()->attach($schema->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -344,6 +344,7 @@ class ProductAvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
             'available' => false,
+            'product_id' => $this->product->getKey(),
         ]));
 
         $this->product->items()->sync([
@@ -351,8 +352,6 @@ class ProductAvailabilityTest extends TestCase
                 'required_quantity' => 3,
             ],
         ]);
-
-        $this->product->schemas()->attach($schema->getKey());
 
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),

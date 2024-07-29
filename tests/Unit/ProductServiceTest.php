@@ -111,13 +111,13 @@ class ProductServiceTest extends TestCase
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'required' => $required,
+            'product_id' => $this->product->getKey(),
         ]));
         $option = $schema->options()->create([
             'name' => 'Default option',
             'prices' => [['value' => $schemaPrice, 'currency' => self::$currency->value]],
         ]);
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->product->refresh()->load('schemas');
 
         $calculated = $this->productService->getMinMaxPrices($this->product, self::$currency);
