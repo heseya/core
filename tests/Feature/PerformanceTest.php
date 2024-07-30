@@ -166,9 +166,11 @@ class PerformanceTest extends TestCase
             ->assertOk();
         $this->assertQueryCountLessThan(25);
 
-        $this->actingAs($this->user)
-            ->json('GET', '/products/?' . Arr::query(['name' => $product->name, 'full' => true]))
-            ->assertOk();
+        $response = $this->actingAs($this->user)
+            ->json('GET', '/products/?' . Arr::query(['name' => $product->name, 'full' => true]));
+
+        $response->assertOk();
+
         $this->assertQueryCountLessThan(49);
     }
 

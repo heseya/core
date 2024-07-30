@@ -114,16 +114,16 @@ class MetadataService implements MetadataServiceContract
 
     private function getClassFromSegment(string $segment): string
     {
-        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
+        // DDD structure
+        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
+            Str::singular($segment),
+        );
 
         if (class_exists($className)) {
             return $className;
         }
 
-        // DDD structure
-        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
-            Str::singular($segment),
-        );
+        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
 
         if (class_exists($className)) {
             return $className;

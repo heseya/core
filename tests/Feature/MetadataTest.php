@@ -293,13 +293,14 @@ class MetadataTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->{$user})->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
             ],
-        )
-            ->assertOk()
+        );
+
+        $response->assertOk()
             ->assertJsonFragment([
                 'data' => [
                     $metadata->name => 'new super value',
@@ -383,13 +384,14 @@ class MetadataTest extends TestCase
             'public' => false,
         ]);
 
-        $this->actingAs($this->{$user})->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             [
                 $metadata->name => 'new super value',
             ],
-        )
-            ->assertOk()
+        );
+
+        $response->assertOk()
             ->assertJsonFragment([
                 'data' => [
                     $metadata->name => 'new super value',
