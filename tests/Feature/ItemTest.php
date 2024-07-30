@@ -368,7 +368,7 @@ class ItemTest extends TestCase
         $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'hidden' => false,
             'required' => true,
-        ]));
+        ], false, false));
 
         $option1 = $schema1->options()->create([
             'name' => 'XL',
@@ -379,7 +379,7 @@ class ItemTest extends TestCase
         $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'hidden' => false,
             'required' => false,
-        ]));
+        ], false, false));
 
         $option2 = $schema2->options()->create([
             'name' => 'XL',

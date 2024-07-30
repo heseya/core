@@ -5,6 +5,7 @@ use App\Models\Option;
 use App\Models\Price;
 use Illuminate\Database\Migrations\Migration;
 use App\Models\Schema as DeprecatedSchema;
+use Domain\Currency\Currency;
 
 return new class extends Migration
 {
@@ -16,7 +17,7 @@ return new class extends Migration
         $reflection = new ReflectionClass(Option::class);
 
         DeprecatedSchema::with(['options', 'prices'])->each(static function ($record) use ($reflection) {
-            /** @var SchemaModel $record */
+            /** @var DeprecatedSchema $record */
             if ($record->type->is(SchemaType::BOOLEAN)) {
                 $optionYes = $record->options()->create([
                     'name' => 'Tak',
@@ -35,6 +36,15 @@ return new class extends Migration
 
                 $record->type = SchemaType::SELECT;
                 $record->save();
+            }
+            if ($record->type->is(SchemaType::SELECT)) {
+                $record->options()->each(static function (Option $option) use ($record) {
+                    $option->prices()->each(static function (Price $price) use ($record) {
+                        $price->update([
+                            'value' => $price->value->plus($record->getPriceForCurrency(Currency::fromName($price->currency)))
+                        ]);
+                    });
+                });
             }
         });
 

@@ -1127,7 +1127,7 @@ class SchemaTest extends TestCase
     public function testUpdateWithOptionPriceAndDisabledNull(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto(), false, false);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();

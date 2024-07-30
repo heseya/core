@@ -661,7 +661,7 @@ class OrderCreateTest extends TestCase
             FakeDto::schemaDto([
                 'hidden' => false,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         $option = Option::factory()->create([

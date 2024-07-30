@@ -100,7 +100,7 @@ class AvailabilityTest extends TestCase
                 'required' => true,
                 'available' => false,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         /** @var Item $item */
@@ -166,7 +166,7 @@ class AvailabilityTest extends TestCase
                 'required' => true,
                 'available' => false,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
@@ -174,7 +174,7 @@ class AvailabilityTest extends TestCase
                 'required' => true,
                 'available' => false,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         $optionOne = Option::factory()->create([
@@ -722,14 +722,14 @@ class AvailabilityTest extends TestCase
             FakeDto::schemaDto([
                 'required' => true,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         $schemaTwo = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         $optionOne = Option::factory()->create([

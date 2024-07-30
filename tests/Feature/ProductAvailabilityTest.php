@@ -311,7 +311,7 @@ class ProductAvailabilityTest extends TestCase
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'required' => true,
             'product_id' => $product->getKey(),
-        ]));
+        ], false, false));
         $option = Option::factory()->create([
             'schema_id' => $schema->getKey(),
         ]);
@@ -345,7 +345,7 @@ class ProductAvailabilityTest extends TestCase
             'required' => true,
             'available' => false,
             'product_id' => $this->product->getKey(),
-        ]));
+        ], false, false));
 
         $this->product->items()->sync([
             $this->item->getKey() => [

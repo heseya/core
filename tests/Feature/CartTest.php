@@ -1302,7 +1302,7 @@ class CartTest extends TestCase
 
         $productDto = FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(30.0, $this->currency->value))],
         ]);
         $product = $this->productService->create($productDto);
 
