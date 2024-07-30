@@ -241,7 +241,7 @@ class ProductServiceTest extends TestCase
             'name' => 'Default option',
         ]);
         $option->prices()->create([
-            'value' => $schema1Price,
+            'value' => $schema1Price * 100,
             'currency' => self::$currency->value,
             'price_type' => OptionPriceType::PRICE_BASE,
         ]);
@@ -257,7 +257,7 @@ class ProductServiceTest extends TestCase
             'name' => 'Default option',
         ]);
         $option2->prices()->create([
-            'value' => $schema2Price,
+            'value' => $schema2Price * 100,
             'currency' => self::$currency->value,
             'price_type' => OptionPriceType::PRICE_BASE,
         ]);
@@ -273,7 +273,7 @@ class ProductServiceTest extends TestCase
             'name' => 'Default option',
         ]);
         $option3->prices()->create([
-            'value' => $schema3Price,
+            'value' => $schema3Price * 100,
             'currency' => self::$currency->value,
             'price_type' => OptionPriceType::PRICE_BASE,
         ]);

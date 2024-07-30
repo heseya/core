@@ -2097,9 +2097,9 @@ class ProductTest extends TestCase
             'description_html' => null,
         ]);
 
-        $this->assertDatabaseHas('product_schemas', [
+        $this->assertDatabaseHas('schemas', [
             'product_id' => $response->json('data.id'),
-            'schema_id' => $schema->getKey(),
+            'id' => $schema->getKey(),
         ]);
 
         Event::assertDispatched(ProductCreated::class);
@@ -2248,6 +2248,12 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => false,
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -2301,9 +2307,16 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $schemaPrice = 50;
+
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'required' => true,
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -3249,6 +3262,12 @@ class ProductTest extends TestCase
             FakeDto::schemaDto([
                 'required' => false,
                 'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -3300,6 +3319,12 @@ class ProductTest extends TestCase
             FakeDto::schemaDto([
                 'required' => false,
                 'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -3551,6 +3576,12 @@ class ProductTest extends TestCase
             FakeDto::schemaDto([
                 'required' => true,
                 'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 

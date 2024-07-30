@@ -331,7 +331,6 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -366,7 +365,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'hidden' => false,
             'required' => false,
             'options' => [
@@ -487,7 +485,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => true,
                 'required' => true,
                 'metadata' => [
@@ -518,7 +515,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -562,7 +558,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
             'hidden' => $boolean,
             'required' => $boolean,
             'metadata_private' => [
@@ -600,7 +595,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => $boolean,
                 'required' => $boolean,
                 'options' => [
@@ -646,7 +640,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
             'required' => false,
             'options' => [
                 [
@@ -1145,7 +1138,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test Updated',
-            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1177,7 +1169,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
