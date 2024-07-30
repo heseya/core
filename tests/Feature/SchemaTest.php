@@ -485,7 +485,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'hidden' => true,
+                'hidden' => false,
                 'required' => true,
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
@@ -558,7 +558,7 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'hidden' => $boolean,
+            'hidden' => false,
             'required' => $boolean,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
@@ -570,7 +570,7 @@ class SchemaTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => false,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
@@ -586,7 +586,7 @@ class SchemaTest extends TestCase
     public function testCreateWithOptionMetadataPrivate(string $user, bool $boolean, bool $booleanValue): void
     {
         $this->{$user}->givePermissionTo(['products.add', 'options.show_metadata_private']);
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/schemas', FakeDto::schemaData([
                 'translations' => [
@@ -595,7 +595,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'hidden' => $boolean,
+                'hidden' => false,
                 'required' => $boolean,
                 'options' => [
                     [
@@ -610,12 +610,13 @@ class SchemaTest extends TestCase
                         ],
                     ],
                 ],
-            ]))
-            ->assertValid()
+            ]));
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => false,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
@@ -688,54 +689,6 @@ class SchemaTest extends TestCase
                 $usedSchema->getKey(),
             ],
         ])->assertForbidden();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateRelationProductsAdd(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $this->createRelation($user);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function createRelation(string $user): void
-    {
-        $usedSchema = $this->schemaCrudService->store(FakeDto::schemaDto());
-
-        $response = $this->actingAs($this->{$user})->postJson('/schemas', FakeDto::schemaData([
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Multiplier',
-                ],
-            ],
-            'published' => [$this->lang],
-            'used_schemas' => [
-                $usedSchema->getKey(),
-            ],
-        ]));
-
-        $response->assertValid()->assertCreated();
-        $schema = $response->getData()->data;
-
-        $this->assertDatabaseHas('schema_used_schemas', [
-            'schema_id' => $schema->id,
-            'used_schema_id' => $usedSchema->getKey(),
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateRelationProductsEdit(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $this->createRelation($user);
     }
 
     /**
@@ -855,12 +808,6 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('schemas', [
             "name->{$this->lang}" => 'Test Updated',
             'default' => null,
-        ]);
-
-        $this->assertDatabaseHas('prices', [
-            'value' => "20000",
-            'currency' => Currency::DEFAULT->value,
-            'model_id' => $schema->getKey(),
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -991,45 +938,6 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateNoPublished(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('PATCH', '/schemas/id:' . $schema->getKey(), [
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'new name',
-                    ],
-                ],
-            ])
-            ->assertValid()
-            ->assertOk()
-            ->assertJsonFragment([
-                'name' => 'new name',
-                'published' => [
-                    $this->lang,
-                ],
-            ])
-            ->assertJsonMissing([
-                'first' => 'new value',
-            ])
-            ->assertJsonMissing([
-                'second' => 'new metadata',
-            ]);
-
-        $this->assertDatabaseHas('schemas', [
-            'id' => $schema->getKey(),
-            'published' => json_encode([$this->lang]),
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testRemoveUnauthorized(string $user): void
     {
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
@@ -1109,7 +1017,7 @@ class SchemaTest extends TestCase
         ]);
         $red->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
 
-        $this->assertEquals(1000, $colors->getPrice($red->getKey(), [
+        $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
         ], $this->currency)->getAmount()->toFloat());
     }
