@@ -7,6 +7,7 @@ namespace Domain\User\Dtos;
 use App\Rules\ConsentsExists;
 use App\Rules\RequiredConsents;
 use App\Traits\DtoHasPhone;
+use Domain\Consent\Enums\ConsentType;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
@@ -58,8 +59,8 @@ final class ProfileUpdateDto extends Data
     {
         return [
             'phone' => ['nullable', 'phone:AUTO'],
-            'consents' => [new RequiredConsents()],
-            'consents.*' => ['boolean', new ConsentsExists()],
+            'consents' => [new RequiredConsents(ConsentType::USER)],
+            'consents.*' => ['boolean', new ConsentsExists(ConsentType::USER)],
         ];
     }
 }

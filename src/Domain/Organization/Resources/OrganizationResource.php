@@ -24,4 +24,14 @@ final class OrganizationResource extends Resource
             'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
         ];
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function view(Request $request): array
+    {
+        return [
+            'consents' => ConsentOrganizationResource::collection($this->resource->consents),
+        ];
+    }
 }

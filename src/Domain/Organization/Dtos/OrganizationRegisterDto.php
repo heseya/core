@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Dtos;
 
+use App\Rules\ConsentsExists;
 use App\Rules\EmailUnique;
 use App\Rules\OrganizationUniqueVat;
+use App\Rules\RequiredConsents;
 use Domain\Address\Dtos\AddressCreateDto;
+use Domain\Consent\Enums\ConsentType;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\Validation\Email;
@@ -22,6 +25,7 @@ final class OrganizationRegisterDto extends Data
 {
     /**
      * @param DataCollection<int, OrganizationSavedAddressCreateDto> $shipping_addresses
+     * @param array<string, bool> $consents
      */
     public function __construct(
         #[Email, Max(255)]
@@ -35,6 +39,7 @@ final class OrganizationRegisterDto extends Data
         public readonly string $creator_password,
         public readonly string $creator_name,
         public readonly Optional|string $captcha_token,
+        public readonly array $consents,
     ) {}
 
     /**
@@ -44,6 +49,8 @@ final class OrganizationRegisterDto extends Data
     {
         return [
             'creator_password' => ['required', 'string', Password::defaults()],
+            'consents' => ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
+            'consents.*' => ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
         ];
     }
 }

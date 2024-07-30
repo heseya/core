@@ -8,6 +8,9 @@ use App\Models\Interfaces\Translatable;
 use App\Models\Model;
 use App\Models\User;
 use App\Traits\CustomHasTranslations;
+use Domain\Consent\Enums\ConsentType;
+use Domain\Organization\Models\Organization;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -17,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 final class Consent extends Model implements Translatable
 {
     use CustomHasTranslations;
+    use HasCriteria;
     use HasFactory;
 
     public const HIDDEN_PERMISSION = 'consents.show_hidden';
@@ -33,6 +37,7 @@ final class Consent extends Model implements Translatable
         'description_html',
         'required',
         'published',
+        'type',
     ];
 
     /** @var string[] */
@@ -44,6 +49,12 @@ final class Consent extends Model implements Translatable
     protected $casts = [
         'required' => 'boolean',
         'published' => 'array',
+        'type' => ConsentType::class,
+    ];
+
+    /** @var string[] */
+    protected array $criteria = [
+        'type',
     ];
 
     /**
@@ -54,5 +65,15 @@ final class Consent extends Model implements Translatable
         return $this->belongsToMany(User::class)
             ->withPivot('value')
             ->using(ConsentUser::class);
+    }
+
+    /**
+     * @return BelongsToMany<Organization>
+     */
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class)
+            ->withPivot('value')
+            ->using(ConsentOrganization::class);
     }
 }
