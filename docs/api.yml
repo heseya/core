@@ -105,10 +105,16 @@ paths:
   /orders/id:{id}/send-urls:
     $ref: ./paths/Orders.yml#/OrdersSendUrls
   /orders/my:
-    $ref: ./paths/Orders.yml#/OrdersMy
+    $ref: ./paths/Orders.yml#/OrdersMyDeprecated
   /orders/my/{code}:
-    $ref: ./paths/Orders.yml#/OrdersMySingle
+    $ref: ./paths/Orders.yml#/OrdersMySingleDeprecated
   /orders/my-products:
+    $ref: ./paths/Orders.yml#/MyOrderProductsDeprecated
+  /my/orders:
+    $ref: ./paths/Orders.yml#/OrdersMy
+  /my/orders/{code}:
+    $ref: ./paths/Orders.yml#/OrdersMySingle
+  /my/orders/products:
     $ref: ./paths/Orders.yml#/MyOrderProducts
   /orders/id:{id}/docs:
     $ref: ./paths/Orders.yml#/OrderAddDocument

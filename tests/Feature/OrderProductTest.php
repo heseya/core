@@ -77,15 +77,22 @@ class OrderProductTest extends TestCase
     public function testMyProductsUnauthorized(): void
     {
         $this
-            ->json('GET', '/orders/my-products')
+            ->json('GET', 'my/orders/products')
             ->assertForbidden();
+    }
+
+    public function testMyProductsDeprecated(): void
+    {
+        $this
+            ->json('GET', 'orders/my-products')
+            ->assertRedirect();
     }
 
     public function testIndexMyProducts(): void
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', '/orders/my-products')
+            ->json('GET', 'my/orders/products')
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }
@@ -94,7 +101,7 @@ class OrderProductTest extends TestCase
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', '/orders/my-products', ['shipping_digital' => true])
+            ->json('GET', 'my/orders/products', ['shipping_digital' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
@@ -111,7 +118,7 @@ class OrderProductTest extends TestCase
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', '/orders/my-products', ['shipping_digital' => false])
+            ->json('GET', 'my/orders/products', ['shipping_digital' => false])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonMissing([
@@ -174,7 +181,7 @@ class OrderProductTest extends TestCase
 
         $this
             ->actingAs($this->user)
-            ->json('GET', '/orders/my-products')
+            ->json('GET', 'my/orders/products')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
