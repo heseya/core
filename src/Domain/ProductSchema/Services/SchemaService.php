@@ -14,9 +14,8 @@ final readonly class SchemaService
      */
     public function sync(Product $product, array $schemas = []): void
     {
-        foreach ($schemas as $schema) {
-            Schema::where('id', $schema)->update(['product_id' => $product->getKey()]);
-        }
+        Schema::whereIn('id', $schemas)->update(['product_id' => $product->getKey()]);
+        $product->schemas()->whereNotIn('id', $schemas)->update(['product_id' => null]);
 
         if ($product->schemas->isEmpty() && $product->has_schemas) {
             $product->update(['has_schemas' => false]);

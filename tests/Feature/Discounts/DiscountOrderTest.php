@@ -543,7 +543,7 @@ class DiscountOrderTest extends TestCase
 
         $this->assertDatabaseHas('order_schemas', [
             'name' => 'test',
-            'value' => 'TEST-VALUE',
+            'value' => 'Test',
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
@@ -553,7 +553,7 @@ class DiscountOrderTest extends TestCase
         ]);
         $this->assertDatabaseHas('order_schemas', [
             'name' => 'test',
-            'value' => 'TEST-VALUE',
+            'value' => 'Test',
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
@@ -861,6 +861,12 @@ class DiscountOrderTest extends TestCase
             FakeDto::schemaDto([
                 'hidden' => false,
                 'product_id' => $product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                    ]
+                ]
             ])
         );
 
@@ -924,6 +930,12 @@ class DiscountOrderTest extends TestCase
             FakeDto::schemaDto([
                 'hidden' => false,
                 'product_id' => $product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                    ]
+                ]
             ])
         );
 

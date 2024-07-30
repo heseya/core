@@ -117,7 +117,7 @@ class ProductTest extends TestCase
                 'name' => 'Rozmiar',
                 'required' => true,
                 'product_id' => $this->product->getKey(),
-            ])
+            ], false, false)
         );
 
         $this->travel(5)->hours();
@@ -3367,56 +3367,6 @@ class ProductTest extends TestCase
             'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => ($productNewPrice + $schemaPrice - $saleValue) * 100,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateSchemaMinMaxPrice(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(
-            FakeDto::schemaDto([
-                'required' => true,
-                'product_id' => $this->product->getKey(),
-            ])
-        );
-
-        $this->productService->updateMinMaxPrices($this->product);
-
-        $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/schemas/id:' . $schema->getKey(),
-            FakeDto::schemaData([
-                'name' => 'Test Updated',
-                'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
-                'type' => 'string',
-                'required' => false,
-            ])
-        );
-
-        $response->assertValid()->assertOk();
-
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MIN,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => (100 + $schemaNewPrice) * 100,
-            'currency' => $this->currency->value,
         ]);
     }
 

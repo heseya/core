@@ -270,10 +270,10 @@ final class Schema extends Model implements SortableContract, Translatable
         try {
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
+
+            return $option->getPriceForCurrency($currency);
         } catch (Throwable $th) {
             return Money::zero($currency->value);
         }
-
-        return $option->getPriceForCurrency($currency);
     }
 }

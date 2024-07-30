@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductSchema\Dtos;
 
+use App\Enums\SchemaType;
 use App\Rules\Translations;
 use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Spatie\LaravelData\Attributes\Computed;
@@ -27,6 +28,8 @@ abstract class SchemaDto extends Data
     #[Computed]
     #[MapOutputName('metadata')]
     public array|Optional $metadata_computed;
+
+    public SchemaType $type = SchemaType::SELECT;
 
     /**
      * @param string[]|Optional $used_schemas
@@ -53,5 +56,6 @@ abstract class SchemaDto extends Data
         public array|Optional $published = [],
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
+        $this->type = SchemaType::SELECT;
     }
 }

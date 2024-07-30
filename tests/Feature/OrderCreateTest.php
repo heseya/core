@@ -2557,6 +2557,7 @@ class OrderCreateTest extends TestCase
         );
 
         $optionId = Str::uuid()->toString();
+
         $this->actingAs($this->{$user})->postJson('/orders', [
             'sales_channel_id' => $salesChannelId,
             'currency' => $this->currency,

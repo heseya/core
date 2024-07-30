@@ -150,6 +150,16 @@ class ItemService implements ItemServiceContract
 
             $schemas = $item->getSchemas();
 
+            if (!empty($schemas)) {
+                $schema_ids = array_keys($schemas);
+                $schema_ids = array_unique($schema_ids);
+
+                if ($product->schemas()->whereIn('id', $schema_ids)->count() !== count($schema_ids)) {
+                    $cartItemToRemove[] = $item->getCartItemId();
+                    continue;
+                }
+            }
+
             $productItems = [];
             /** @var Item $productItem */
             foreach ($product->items as $productItem) {

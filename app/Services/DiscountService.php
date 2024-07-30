@@ -390,6 +390,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $cartItem->getQuantity(),
             );
         }
+
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
         $shippingPrice = Money::zero($currency->value);

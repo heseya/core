@@ -38,7 +38,7 @@ return new class extends Migration
             }
         });
 
-        DeprecatedSchema::where('type', '!=', SchemaType::SELECT)->delete();
+        DeprecatedSchema::where('type', '!=', SchemaType::SELECT->value)->delete();
     }
 
     /**

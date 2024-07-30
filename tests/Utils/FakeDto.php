@@ -158,7 +158,7 @@ final readonly class FakeDto
         return Arr::only(self::schemaDto($data, true), $keys);
     }
 
-    public static function schemaDto(array $data = [], bool $returnArray = false): SchemaDto|array
+    public static function schemaDto(array $data = [], bool $returnArray = false, bool $addDefaultOption = true): SchemaDto|array
     {
         $data = $data + Schema::factory()->definition();
 
@@ -167,7 +167,7 @@ final readonly class FakeDto
         $data['translations'][$langId]['name'] = $data['translations'][$langId]['name'] ?? $data['name'];
         $data['translations'][$langId]['description'] = $data['translations'][$langId]['description'] ?? $data['description'];
 
-        if (!array_key_exists('options', $data) || empty($data['options'])) {
+        if ($addDefaultOption && (!array_key_exists('options', $data) || empty($data['options']))) {
             $data['options'] = [
                 [
                     'name' => 'Test',
@@ -176,12 +176,14 @@ final readonly class FakeDto
             ];
         }
 
-        foreach ($data['options'] as &$option) {
-            $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
-                4
-            );
+        if (!empty($data['options'])) {
+            foreach ($data['options'] as &$option) {
+                $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
+                    4
+                );
 
-            $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
+                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
+            }
         }
 
         if ($returnArray) {

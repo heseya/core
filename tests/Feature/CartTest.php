@@ -1309,11 +1309,12 @@ class CartTest extends TestCase
         $schemaDto = FakeDto::schemaDto([
             'hidden' => false,
             'options' => [
-                'name' => 'Test',
+                [
+                    'name' => 'Test',
+                ]
             ],
         ]);
         $schema = $this->schemaCrudService->store($schemaDto);
-
 
         $product->schemas()->save($schema);
 

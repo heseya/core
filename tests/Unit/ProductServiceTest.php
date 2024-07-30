@@ -287,39 +287,36 @@ class ProductServiceTest extends TestCase
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'required' => true,
+            'product_id' => $this->product->getKey(),
         ]));
         $option = $schema->options()->create([
             'name' => 'Default option',
             'prices' => [['value' => $schema1Price, 'currency' => self::$currency->value]],
         ]);
 
-        $this->product->schemas()->attach($schema);
-
         $schema2Price = 7;
         /** @var Schema $schema2 */
         $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test2',
             'required' => false,
+            'product_id' => $this->product->getKey(),
         ]));
         $option2 = $schema2->options()->create([
             'name' => 'Default option',
             'prices' => [['value' => $schema2Price, 'currency' => self::$currency->value]],
         ]);
 
-        $this->product->schemas()->attach($schema2);
-
         $schema3Price = 10;
         /** @var Schema $schema3 */
         $schema3 = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test3',
             'required' => false,
+            'product_id' => $this->product->getKey(),
         ]));
         $option3 = $schema3->options()->create([
             'name' => 'Default option',
             'prices' => [['value' => $schema3Price, 'currency' => self::$currency->value]],
         ]);
-
-        $this->product->schemas()->attach($schema3);
 
         $this->product->load('schemas');
 
