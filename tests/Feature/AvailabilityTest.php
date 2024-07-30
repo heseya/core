@@ -119,13 +119,14 @@ class AvailabilityTest extends TestCase
 
         $item->options()->save($option);
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/items/id:' . $item->getKey() . '/deposits', [
                 'quantity' => 6,
                 'shipping_time' => 0,
-            ])
-            ->assertCreated();
+            ]);
+
+        $response->assertCreated();
 
         $this
             ->assertDatabaseHas('products', [

@@ -44,9 +44,7 @@ class AvailabilityService implements AvailabilityServiceContract
         $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
 
         // Products
-        $schemas
-            ->pluck('products')
-            ->flatten()
+        $schemas->pluck('product')
             ->merge($item->products)
             ->unique('id')
             ->each(fn (Product $product) => $this->calculateProductAvailability($product));
