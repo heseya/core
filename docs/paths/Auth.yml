@@ -605,3 +605,162 @@ SelfUpdateRoles:
               type: object
     security:
       - BearerAuth: [ ]
+
+
+ShippingAddressesDeprecated:
+  post:
+    tags:
+      - Auth
+    summary: 'Add shipping address to user'
+    deprecated: true
+    requestBody:
+      $ref: './../requests/SavedAddresses.yml#/SavedAddress'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+ShippingAddressesParamsDeprecated:
+  patch:
+    tags:
+      - Auth
+    summary: 'Update user shipping address'
+    deprecated: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/SavedAddresses.yml#/SavedAddress'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - Auth
+    summary: 'Delete user shipping address'
+    deprecated: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+BillingAddressesDeprecated:
+  post:
+    tags:
+      - Auth
+    summary: 'Add billing address to user'
+    deprecated: true
+    requestBody:
+      $ref: './../requests/SavedAddresses.yml#/SavedAddress'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+BillingAddressesParamsDeprecated:
+  patch:
+    tags:
+      - Auth
+    summary: 'Update user billing address'
+    deprecated: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: './../requests/SavedAddresses.yml#/SavedAddress'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - Auth
+    summary: 'Delete user billing address'
+    deprecated: true
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/SavedAddresses.yml#/SavedAddress'
+              type: object
+    security:
+      - BearerAuth: [ ]
