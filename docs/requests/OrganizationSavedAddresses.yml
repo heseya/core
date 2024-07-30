@@ -8,5 +8,7 @@ OrganizationSavedAddress:
             type: boolean
           name:
             type: string
+          company_name:
+            type: string
           address:
             $ref: './../schemas/Addresses.yml#/Address'

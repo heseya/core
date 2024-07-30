@@ -13,6 +13,7 @@ use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
+use Spatie\LaravelData\Support\Validation\ValidationContext;
 
 final class OrganizationUpdateDto extends Data
 {
@@ -25,4 +26,15 @@ final class OrganizationUpdateDto extends Data
         #[Uuid, Exists('sales_channels', 'id')]
         public readonly Optional|string|null $sales_channel_id,
     ) {}
+
+    /**
+     * @return array<string, array<int, string>>
+     */
+    public static function rules(ValidationContext $context): array
+    {
+        return [
+            'billing_address.name' => ['string', 'sometimes', 'nullable', 'max:255', 'required_without:billing_address.company_name'],
+            'billing_address.company_name' => ['string', 'sometimes', 'nullable', 'max:255', 'required_without:billing_address.name'],
+        ];
+    }
 }

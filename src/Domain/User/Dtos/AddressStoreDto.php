@@ -17,7 +17,8 @@ use Spatie\LaravelData\Support\Validation\ValidationContext;
 final class AddressStoreDto extends Data
 {
     public function __construct(
-        public string $name,
+        public Optional|string|null $name,
+        public Optional|string|null $company_name,
         #[Required, StringType, Max(255)]
         public string $address,
         #[Required, StringType, Max(20)]
@@ -39,12 +40,14 @@ final class AddressStoreDto extends Data
     {
         if (Str::contains(request()->url(), 'billing-addresses')) {
             return [
-                'name' => ['required', 'string', 'max:255'],
+                'name' => ['required_without:company_name', 'string', 'max:255'],
+                'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
             ];
         }
 
         return [
-            'name' => ['required', 'string', 'max:255', new FullName()],
+            'name' => ['required_without:company_name', 'string', 'max:255', new FullName()],
+            'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
         ];
     }
 }

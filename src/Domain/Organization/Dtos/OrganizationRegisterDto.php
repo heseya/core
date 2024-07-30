@@ -44,6 +44,10 @@ final class OrganizationRegisterDto extends Data
     {
         return [
             'creator_password' => ['required', 'string', Password::defaults()],
+            'billing_address.name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.company_name'],
+            'billing_address.company_name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.name'],
+            'shipping_addresses.*.address.name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.company_name'],
+            'shipping_addresses.*.address.company_name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.name'],
         ];
     }
 }

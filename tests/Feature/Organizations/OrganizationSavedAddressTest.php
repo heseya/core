@@ -120,6 +120,30 @@ class OrganizationSavedAddressTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateNoNameAndCompanyName(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.edit');
+
+        $address = Address::factory()->definition();
+        $address['name'] = null;
+        $address['company_name'] = null;
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', "/organizations/id:{$this->organization->getKey()}/shipping-addresses", [
+                'default' => true,
+                'name' => 'Shipping address',
+                'address' => $address,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => 'The address.name field is required when address.company name is not present.'
+            ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $this
