@@ -52,6 +52,8 @@ final class SchemaStoreRequest extends FormRequest
 
                 'options.*.items' => ['nullable', 'array'],
                 'options.*.items.*' => ['uuid', 'exists:items,id'],
+
+                'product_id' => ['uuid', 'exists:products,id', 'nullable'],
             ],
         );
     }
