@@ -24,6 +24,7 @@ use App\Dtos\SaleDto;
 use App\Dtos\SaleIndexDto;
 use App\Dtos\TimeBetweenConditionDto;
 use App\Dtos\UserInConditionDto;
+use App\Dtos\UserInOrganizationConditionDto;
 use App\Dtos\UserInRoleConditionDto;
 use App\Dtos\WeekDayInConditionDto;
 use App\Enums\ConditionType;
@@ -70,6 +71,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
@@ -897,6 +899,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+            ConditionType::USER_IN_ORGANIZATION => $this->checkConditionUserInOrganization($condition),
         };
     }
 
@@ -1754,6 +1757,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::CART_LENGTH => false,
             // For product price cache assume no promo codes used
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
+            ConditionType::USER_IN_ORGANIZATION => $checkForCurrentUser && $this->checkConditionUserInOrganization($condition),
         };
     }
 
@@ -1872,6 +1876,25 @@ readonly class DiscountService implements DiscountServiceContract
         $conditionDto = UserInConditionDto::fromArray($condition->value + ['type' => $condition->type]);
         if (Auth::user()) {
             return in_array(Auth::id(), $conditionDto->getUsers()) === $conditionDto->isIsAllowList();
+        }
+
+        return false;
+    }
+
+    private function checkConditionUserInOrganization(DiscountCondition $condition): bool
+    {
+        /** @var UserInOrganizationConditionDto $conditionDto */
+        $conditionDto = UserInOrganizationConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        /** @var User|App|null $user */
+        $user = Auth::user();
+
+        if ($user instanceof User) {
+            /** @var Organization $organization */
+            foreach ($user->organizations as $organization) {
+                if (in_array($organization->getKey(), $conditionDto->getOrganizations()) === $conditionDto->isIsAllowList()) {
+                    return true;
+                }
+            }
         }
 
         return false;
