@@ -322,6 +322,87 @@ OrdersMySingle:
     security:
       - BearerAuth: [ ]
 
+OrdersMyDeprecated:
+  get:
+    tags:
+      - Orders
+    summary: 'user orders list'
+    deprecated: true
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search.'
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: 'Sorting string.'
+        schema:
+          type: string
+          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+      - name: status_id
+        in: query
+        description: 'Status UUID'
+        schema:
+          type: string
+      - name: shipping_method_id
+        in: query
+        description: 'Shipping Method UUID'
+        schema:
+          type: string
+      - name: from
+        in: query
+        description: 'Date datetime from'
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: 'Date datetime to'
+        schema:
+          type: string
+          format: date-time
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+OrdersMySingleDeprecated:
+  get:
+    tags:
+      - Orders
+    summary: 'user order view'
+    deprecated: true
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5B32FD
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/OrderView'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
 OrdersCodePay:
   post:
     tags:
@@ -551,6 +632,33 @@ MyOrderProducts:
         schema:
           type: boolean
     summary: 'User ordered products list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+MyOrderProductsDeprecated:
+  get:
+    tags:
+      - Orders
+    parameters:
+      - name: shipping_digital
+        in: query
+        required: false
+        schema:
+          type: boolean
+    summary: 'User ordered products list'
+    deprecated: true
     responses:
       200:
         description: Success

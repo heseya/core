@@ -114,6 +114,7 @@ class OrganizationTest extends TestCase
                 'billing_address' => [
                     'id' => $this->address->getKey(),
                     'name' => $this->address->name,
+                    'company_name' => $this->address->company_name,
                     'address' => $this->address->address,
                     'city' => $this->address->city,
                     'country' => $this->address->country,
@@ -142,6 +143,7 @@ class OrganizationTest extends TestCase
                 'billing_address' => [
                     'id' => $this->address->getKey(),
                     'name' => $this->address->name,
+                    'company_name' => $this->address->company_name,
                     'address' => $this->address->address,
                     'city' => $this->address->city,
                     'country' => $this->address->country,
@@ -254,6 +256,7 @@ class OrganizationTest extends TestCase
         $address = Address::factory()->definition();
         $address['vat'] = '987654321';
         $shippingAddress = Address::factory()->definition();
+        $shippingAddress['company_name'] = null;
 
         /** @var WebHook $webHook */
         $webHook = WebHook::factory()->create([
@@ -851,6 +854,7 @@ class OrganizationTest extends TestCase
                 'billing_address' => [
                     'id' => $this->address->getKey(),
                     'name' => $this->address->name,
+                    'company_name' => $this->address->company_name,
                     'address' => $this->address->address,
                     'city' => $this->address->city,
                     'country' => $this->address->country,

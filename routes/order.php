@@ -4,6 +4,10 @@ use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Middleware\CanDownloadDocument;
+use App\Models\Order;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('orders')->group(function (): void {
@@ -11,12 +15,20 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.show');
     Route::post('/', [OrderController::class, 'store'])
         ->middleware('can:orders.add');
-    Route::get('my', [OrderController::class, 'indexUserOrder'])
-        ->middleware('can:orders.show_own');
-    Route::get('my/{order:code}', [OrderController::class, 'showUserOrder'])
-        ->middleware('can:orders.show_own');
-    Route::get('my-products', [OrderController::class, 'myOrderProducts'])
-        ->middleware('can:authenticated');
+
+    /** @deprecated  */
+    Route::get('my', function (): Application|RedirectResponse|\Illuminate\Foundation\Application {
+        return redirect('my/orders');
+    });
+    /** @deprecated  */
+    Route::get('my/{order:code}', function (Order $order): Application|RedirectResponse|\Illuminate\Foundation\Application {
+        return redirect('my/orders/' . $order->code);
+    });
+    /** @deprecated  */
+    Route::get('my-products', function (): Application|RedirectResponse|\Illuminate\Foundation\Application {
+        return redirect('my/products');
+    });
+
     Route::get('id:{order:id}', [OrderController::class, 'show'])
         ->middleware('can:orders.show_details');
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
@@ -46,4 +58,13 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:payments.offline');
     Route::post('{order:code}/pay/id:{paymentMethod}', [PaymentController::class, 'pay'])
         ->middleware('can:payments.add');
+});
+
+Route::prefix('my')->group(function (): void {
+    Route::get('orders', [OrderController::class, 'indexUserOrder'])
+        ->middleware('can:orders.show_own');
+    Route::get('orders/products', [OrderController::class, 'myOrderProducts'])
+        ->middleware('can:authenticated');
+    Route::get('orders/{order:code}', [OrderController::class, 'showUserOrder'])
+        ->middleware('can:orders.show_own');
 });

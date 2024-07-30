@@ -20,6 +20,7 @@ class AddressFactory extends Factory
     {
         return [
             'name' => $this->faker->firstName . ' ' . $this->faker->lastName,
+            'company_name' => mt_rand(0, 1) === 1 ? $this->faker->company : null,
             'phone' => $this->faker->phoneNumber,
             'address' => $this->faker->streetAddress,
             'zip' => $this->faker->postcode,

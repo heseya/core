@@ -40,6 +40,8 @@ final class OrganizationUpdateDto extends Data
     public static function rules(ValidationContext $context): array
     {
         return [
+            'billing_address.name' => ['string', 'sometimes', 'nullable', 'max:255', 'required_without:billing_address.company_name'],
+            'billing_address.company_name' => ['string', 'sometimes', 'nullable', 'max:255', 'required_without:billing_address.name'],
             'consents' => [new RequiredConsents(ConsentType::ORGANIZATION)],
             'consents.*' => ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
         ];

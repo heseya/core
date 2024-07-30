@@ -8,6 +8,8 @@ OrganizationSavedAddress:
       $ref: './Addresses.yml#/Address'
     name:
       type: string
+    company_name:
+      type: string
     default:
       type: boolean
     change_version:
