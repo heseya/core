@@ -350,6 +350,8 @@ paths:
     $ref: ./paths/Organizations.yml#/Organizations
   /organizations/id:{id}:
     $ref: ./paths/Organizations.yml#/OrganizationsParams
+  /organizations/id:{id}/users:
+    $ref: ./paths/Organizations.yml#/OrganizationUsers
   /organizations/id:{id}/shipping-addresses:
     $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddresses
   /organizations/id:{id}/shipping-addresses/id:{address_id}:

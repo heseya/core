@@ -6,6 +6,7 @@ namespace Domain\Organization\Controllers;
 
 use App\Exceptions\ClientException;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
 use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
@@ -70,5 +71,10 @@ final class OrganizationController extends Controller
     public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): JsonResource
     {
         return OrganizationResource::make($this->organizationService->myOrganizationEdit($dto));
+    }
+
+    public function organizationUsers(Organization $organization): JsonResource
+    {
+        return UserResource::collection($this->organizationService->organizationUsers($organization));
     }
 }
