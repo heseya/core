@@ -619,6 +619,7 @@ class SchemaTest extends TestCase
                         ],
                     ],
                 ],
+                'default' => null,
             ]));
 
         $response->assertValid()
