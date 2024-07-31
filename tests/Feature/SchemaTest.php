@@ -476,22 +476,27 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
-        $this
+        $data = FakeDto::schemaData([
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
+            'hidden' => false,
+            'required' => true,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+            'options' => [],
+            'default' => null,
+        ]);
+
+        $response = $this
             ->actingAs($this->{$user})
-            ->json('POST', '/schemas', FakeDto::schemaData([
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                    ],
-                ],
-                'published' => [$this->lang],
-                'hidden' => false,
-                'required' => true,
-                'metadata' => [
-                    'attributeMeta' => 'attributeValue',
-                ],
-            ]))
-            ->assertValid()
+            ->json('POST', '/schemas', $data);
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'metadata' => [
@@ -551,7 +556,7 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['products.add', 'schemas.show_metadata_private']);
 
-        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', FakeDto::schemaData([
+        $data = FakeDto::schemaData([
             'translations' => [
                 $this->lang => [
                     'name' => 'Test',
@@ -563,7 +568,11 @@ class SchemaTest extends TestCase
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
-        ]));
+            'options' => [],
+            'default' => null,
+        ]);
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', $data);
 
         $response
             ->assertValid()

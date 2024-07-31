@@ -846,9 +846,7 @@ class OrderCreateTest extends TestCase
                 [
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
-                    'schemas' => [
-                        $schema->getKey() => '',
-                    ],
+                    'schemas' => [],
                 ],
             ],
         ]);
