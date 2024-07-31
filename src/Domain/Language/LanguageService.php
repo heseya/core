@@ -55,6 +55,11 @@ final class LanguageService
 
         if ($language->wasChanged('hidden')) {
             $this->updateHiddenLanguagesCache($language->getKey());
+
+            if ($language->hidden) {
+                $defaultLanguage = $this->defaultLanguage();
+                $language->salesChannels()->update(['language_id' => $defaultLanguage->getKey()]);
+            }
         }
 
         LanguageUpdated::dispatch($language);

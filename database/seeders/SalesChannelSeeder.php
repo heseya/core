@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Seeder;
 use Support\Enum\Status;
@@ -17,11 +19,10 @@ class SalesChannelSeeder extends Seeder
     {
         $channel = SalesChannel::query()->make([
             'slug' => 'another',
-            'status' => Status::ACTIVE->value,
-            'countries_block_list' => false,
-            'default_currency' => Currency::GBP,
-            'default_language_id' => Language::default()?->getKey(),
+            'status' => SalesChannelStatus::PUBLIC->value,
+            'language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
+            'activity' => SalesChannelActivityType::ACTIVE,
         ]);
         $published = [];
         foreach (Language::query()->get() as $language) {

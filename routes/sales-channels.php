@@ -10,8 +10,8 @@ Route::prefix('sales-channels')->group(function (): void {
 
     Route::get('/id:{sales_channel:id}', [SalesChannelController::class, 'show'])
         ->middleware('published:sales_channel');
-    Route::patch('/id:{id}', [SalesChannelController::class, 'update'])
+    Route::patch('/id:{sales_channel:id}', [SalesChannelController::class, 'update'])
         ->middleware('can:sales_channels.edit');
-    Route::delete('/id:{id}', [SalesChannelController::class, 'destroy'])
+    Route::delete('/id:{sales_channel:id}', [SalesChannelController::class, 'destroy'])
         ->middleware('can:sales_channels.remove');
 });

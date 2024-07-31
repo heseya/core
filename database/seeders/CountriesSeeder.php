@@ -268,9 +268,5 @@ class CountriesSeeder extends Seeder
         ];
 
         DB::table('countries')->insert($countries);
-
-        /** @var SalesChannel $channel */
-        $channel = SalesChannel::query()->first();
-        $channel->countries()->sync(array_map(fn ($el) => $el['code'], $countries));
     }
 }

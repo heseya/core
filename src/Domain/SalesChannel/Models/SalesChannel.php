@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace Domain\SalesChannel\Models;
 
-use App\Models\Country;
+use App\Models\App;
 use App\Models\Interfaces\Translatable;
 use App\Models\Model;
+use App\Models\PaymentMethod;
+use App\Models\User;
 use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
-use Domain\SalesChannel\Criteria\CountrySearch;
+use Domain\Organization\Models\Organization;
+use Domain\SalesChannel\Criteria\SalesChannelCountrySearch;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
+use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Support\Enum\Status;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @mixin IdeHelperSalesChannel
@@ -33,10 +40,11 @@ final class SalesChannel extends Model implements Translatable
         'name',
         'slug',
         'status',
-        'countries_block_list',
-        'default_currency',
-        'default_language_id',
+        'language_id',
         'published',
+        'activity',
+        'default',
+        'price_map_id',
 
         // TODO: remove temp field
         'vat_rate',
@@ -48,14 +56,15 @@ final class SalesChannel extends Model implements Translatable
     ];
 
     protected $casts = [
-        'status' => Status::class,
-        'countries_block_list' => 'bool',
+        'status' => SalesChannelStatus::class,
         'published' => 'array',
+        'activity' => SalesChannelActivityType::class,
+        'default' => 'bool',
     ];
 
     /** @var array<string, class-string> */
     protected array $criteria = [
-        'country' => CountrySearch::class,
+        'country' => SalesChannelCountrySearch::class,
         'published' => Like::class,
         'sales_channels.published' => Like::class,
     ];
@@ -63,23 +72,44 @@ final class SalesChannel extends Model implements Translatable
     /**
      * @return BelongsTo<Language, self>
      */
-    public function defaultLanguage(): BelongsTo
+    public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class);
     }
 
     /**
-     * @return BelongsToMany<Country>
+     * @return BelongsToMany<ShippingMethod>
      */
-    public function countries(): BelongsToMany
+    public function shippingMethods(): BelongsToMany
     {
-        return $this->belongsToMany(
-            Country::class,
-            'sales_channels_countries',
-            'sales_channel_id',
-            'country_code',
-            'id',
-            'code',
-        );
+        return $this->belongsToMany(ShippingMethod::class, 'sales_channel_shipping_method');
+    }
+
+    /**
+     * @return BelongsToMany<PaymentMethod>
+     */
+    public function paymentMethods(): BelongsToMany
+    {
+        return $this->belongsToMany(PaymentMethod::class, 'sales_channel_payment_method');
+    }
+
+    /**
+     * @return HasMany<Organization>
+     */
+    public function organizations(): HasMany
+    {
+        return $this->hasMany(Organization::class);
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeHiddenInOrganization(Builder $query, App|User $user): void
+    {
+        $query->orWhereHas('organizations', function (Builder $query) use ($user): void {
+            $query->whereHas('users', function (Builder $query) use ($user): void {
+                $query->where('id', '=', $user->getKey());
+            });
+        });
     }
 }

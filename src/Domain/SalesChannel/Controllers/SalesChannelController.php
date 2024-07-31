@@ -45,18 +45,14 @@ final class SalesChannelController extends Controller
         );
     }
 
-    public function update(string $id, SalesChannelUpdateDto $dto): SalesChannelResource
+    public function update(SalesChannel $salesChannel, SalesChannelUpdateDto $dto): SalesChannelResource
     {
-        $this->salesChannelService->update($id, $dto);
-
-        return new SalesChannelResource(
-            $this->salesChannelService->show($id),
-        );
+        return SalesChannelResource::make($this->salesChannelService->update($salesChannel, $dto));
     }
 
-    public function destroy(string $id): HttpResponse|JsonResponse
+    public function destroy(SalesChannel $salesChannel): HttpResponse|JsonResponse
     {
-        $this->salesChannelService->delete($id);
+        $this->salesChannelService->delete($salesChannel);
 
         return Response::noContent();
     }

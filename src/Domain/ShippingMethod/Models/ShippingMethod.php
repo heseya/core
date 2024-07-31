@@ -7,6 +7,7 @@ namespace Domain\ShippingMethod\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ShippingMethodItems;
+use App\Criteria\WhereHasSalesChannel;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
 use App\Models\Address;
@@ -24,6 +25,7 @@ use App\Traits\HasMetadata;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -84,6 +86,7 @@ final class ShippingMethod extends Model
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'items' => ShippingMethodItems::class,
+        'sales_channel_id' => WhereHasSalesChannel::class,
     ];
 
     /**
@@ -220,5 +223,13 @@ final class ShippingMethod extends Model
     public function logo(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'logo_id');
+    }
+
+    /**
+     * @return BelongsToMany<SalesChannel>
+     */
+    public function salesChannels(): BelongsToMany
+    {
+        return $this->belongsToMany(SalesChannel::class, 'sales_channel_shipping_method');
     }
 }
