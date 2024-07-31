@@ -5,7 +5,7 @@ namespace App\Services\Contracts;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
+use Domain\ProductSchema\Models\Schema;
 
 interface AvailabilityServiceContract
 {

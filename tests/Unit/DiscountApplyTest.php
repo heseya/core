@@ -6,7 +6,6 @@ use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
 use App\Models\Discount;
@@ -15,9 +14,7 @@ use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Repositories\DiscountRepository;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\OptionService;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -25,6 +22,9 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\OptionService;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -45,7 +45,7 @@ class DiscountApplyTest extends TestCase
     private OptionService $optionService;
     private $product;
     private $productToOrderProduct;
-    private $schema;
+    private Schema $schema;
     private $set;
     private $order;
     private $shippingMethod;
@@ -63,28 +63,28 @@ class DiscountApplyTest extends TestCase
     {
         return [
             /** TODO: REVERT */
-//            'as amount coupon' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                110.0,
-//                'coupon',
-//            ],
+            //            'as amount coupon' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                110.0,
+            //                'coupon',
+            //            ],
             'as percentage coupon' => [
                 'percentage',
                 '20.0',
-                104.0,
+                96.0,
                 'coupon',
             ],
-//            'as amount sale' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                110.0,
-//                'sale',
-//            ],
+            //            'as amount sale' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                110.0,
+            //                'sale',
+            //            ],
             'as percentage sale' => [
                 'percentage',
                 '20.0',
-                104.0,
+                96.0,
                 'sale',
             ],
         ];
@@ -94,24 +94,24 @@ class DiscountApplyTest extends TestCase
     {
         return [
             /** TODO: REVERT */
-//            'as amount coupon' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                100.0,
-//                'coupon',
-//            ],
+            //            'as amount coupon' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                100.0,
+            //                'coupon',
+            //            ],
             'as percentage coupon' => [
                 'percentage',
                 '20.0',
                 96.0,
                 'coupon',
             ],
-//            'as amount sale' => [
-//                DiscountType::AMOUNT,
-//                20.0,
-//                100.0,
-//                'sale',
-//            ],
+            //            'as amount sale' => [
+            //                DiscountType::AMOUNT,
+            //                20.0,
+            //                100.0,
+            //                'sale',
+            //            ],
             'as percentage sale' => [
                 'percentage',
                 '20.0',
@@ -146,8 +146,6 @@ class DiscountApplyTest extends TestCase
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'prices' => [PriceDto::from(Money::of(10, $this->currency->value))],
-                'type' => 'string',
                 'hidden' => false,
             ])
         );
@@ -400,7 +398,8 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProduct($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -421,7 +420,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -435,7 +434,9 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductNotAllowList($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
+
         $product = $this->productService->create(
             FakeDto::productCreateDto([
                 'prices_base' => [PriceDto::from(Money::of(220, $this->currency->value))],
@@ -474,7 +475,8 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductInProductSets($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
 
         $code = $discountKind === 'coupon' ? [] : ['code' => null];
 
@@ -497,7 +499,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
@@ -509,7 +511,9 @@ class DiscountApplyTest extends TestCase
      */
     public function testApplyDiscountToProductInProductSetsNotAllowList($type, $value, $result, $discountKind): void
     {
-        $this->product->schemas()->sync([$this->schema->getKey()]);
+        $this->schema->product()->associate($this->product);
+        $this->schema->save();
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -535,7 +539,7 @@ class DiscountApplyTest extends TestCase
             $this->currency,
         );
 
-        $this->assertTrue($orderProduct->price->isEqualTo($result));
+        $this->assertTrue($orderProduct->price->isEqualTo($result), ((string) $orderProduct->price) . ' is not equal to ' . ((string) $result));
         $this->assertDatabaseMissing('order_products', [
             'product_id' => $this->product->getKey(),
             'quantity' => 1,

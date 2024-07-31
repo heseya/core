@@ -9,18 +9,19 @@ use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Carbon;
@@ -73,8 +74,6 @@ class OrderDepositTest extends TestCase
         ]));
 
         $this->schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'required' => true,
             'options' => [
@@ -82,9 +81,9 @@ class OrderDepositTest extends TestCase
                     'name' => 'XL',
                     'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
                 ],
-            ]
+            ],
+            'product_id' => $this->product->getKey(),
         ]));
-        $this->product->schemas()->sync([$this->schema->getKey()]);
         $this->option = $this->schema->options->where('name', 'XL')->first();
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
@@ -184,6 +183,9 @@ class OrderDepositTest extends TestCase
         ]);
 
         $order = Order::factory()->create();
+        /**
+         * @var OrderProduct $orderProduct
+         */
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
@@ -268,18 +270,15 @@ class OrderDepositTest extends TestCase
     public function testCantCreateOrderWithoutMultipleItems($user): void
     {
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
             'hidden' => false,
             'options' => [
                 [
                     'name' => 'XL',
                     'prices' =>  [PriceDto::from(Money::of(0, $this->currency->value))],
                 ],
-            ]
+            ],
+            'product_id' => $this->product->getKey(),
         ]));
-
-        $this->product->schemas()->sync([$schema->getKey()]);
 
         $option = $schema->options->where('name', 'XL')->first();
 

@@ -75,7 +75,6 @@ final class ProductController extends Controller
             'schemas.options.metadataPrivate',
             'schemas.options.prices',
             'schemas.options.schema',
-            'schemas.prices',
             'schemas.usedSchemas',
             'attachments',
             'attachments.media',

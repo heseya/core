@@ -2,13 +2,14 @@
 
 namespace App\Rules;
 
-use App\Models\Schema;
+use App\Models\Schema as DeprecatedSchema;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Contracts\Validation\Rule;
 
 readonly class OptionAvailable implements Rule
 {
     public function __construct(
-        private Schema $schema,
+        private DeprecatedSchema|Schema $schema,
     ) {}
 
     /**
@@ -18,13 +19,9 @@ readonly class OptionAvailable implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        $option = $this->schema->options->find($value)?->first();
+        $option = $this->schema->options()->find($value)?->first();
 
-        if ($option === null) {
-            return false;
-        }
-
-        return !$option->disabled;
+        return !($option === null);
     }
 
     /**
