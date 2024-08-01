@@ -22,6 +22,13 @@ OrganizationCreate:
             type: array
             items:
               $ref: '#/OrganizationSavedAddress'
+          consents:
+            properties:
+              119c0a63-1ea1-4769-8d5f-169f68de5598:
+                type: boolean
+              02b97693-857c-4fb9-9999-47400ac5fbef:
+                type: boolean
+            type: object
 
 OrganizationUpdate:
   content:
@@ -37,6 +44,13 @@ OrganizationUpdate:
           sales_channel_id:
             type: string
             format: UUID
+          consents:
+            properties:
+              119c0a63-1ea1-4769-8d5f-169f68de5598:
+                type: boolean
+              02b97693-857c-4fb9-9999-47400ac5fbef:
+                type: boolean
+            type: object
 
 OrganizationSavedAddress:
   type: object
@@ -76,6 +90,14 @@ OrganizationRegister:
             type: string
           creator_name:
             type: string
+          consents:
+            properties:
+              119c0a63-1ea1-4769-8d5f-169f68de5598:
+                type: boolean
+              02b97693-857c-4fb9-9999-47400ac5fbef:
+                type: boolean
+            type: object
+
 
 OrganizationPublicUpdate:
   content:
@@ -88,3 +110,10 @@ OrganizationPublicUpdate:
             example: admin@example.com
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
+          consents:
+            properties:
+              119c0a63-1ea1-4769-8d5f-169f68de5598:
+                type: boolean
+              02b97693-857c-4fb9-9999-47400ac5fbef:
+                type: boolean
+            type: object

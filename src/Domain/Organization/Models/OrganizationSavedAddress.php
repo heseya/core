@@ -11,6 +11,9 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperOrganizationSavedAddress
+ */
 final class OrganizationSavedAddress extends Model
 {
     use HasFactory;

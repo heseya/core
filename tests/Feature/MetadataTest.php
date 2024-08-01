@@ -10,13 +10,13 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Models\User;
-use App\Services\SchemaCrudService;
 use Domain\Banner\Models\Banner;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Page\Page;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\App as FacadesApp;
@@ -293,13 +293,14 @@ class MetadataTest extends TestCase
             'public' => true,
         ]);
 
-        $this->actingAs($this->{$user})->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             [
                 $metadata->name => 'new super value',
             ],
-        )
-            ->assertOk()
+        );
+
+        $response->assertOk()
             ->assertJsonFragment([
                 'data' => [
                     $metadata->name => 'new super value',
@@ -383,13 +384,14 @@ class MetadataTest extends TestCase
             'public' => false,
         ]);
 
-        $this->actingAs($this->{$user})->patchJson(
+        $response = $this->actingAs($this->{$user})->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata-private",
             [
                 $metadata->name => 'new super value',
             ],
-        )
-            ->assertOk()
+        );
+
+        $response->assertOk()
             ->assertJsonFragment([
                 'data' => [
                     $metadata->name => 'new super value',

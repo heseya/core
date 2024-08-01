@@ -12,8 +12,8 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\WebHook;
-use App\Services\SchemaCrudService;
 use Domain\Currency\Currency;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
@@ -366,11 +366,9 @@ class ItemTest extends TestCase
         $this->{$user}->givePermissionTo('items.show_details');
 
         $schema1 = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => true,
-        ]));
+        ], false, false));
 
         $option1 = $schema1->options()->create([
             'name' => 'XL',
@@ -379,11 +377,9 @@ class ItemTest extends TestCase
         $option1->items()->sync([$this->item->getKey()]);
 
         $schema2 = $this->schemaCrudService->store(FakeDto::schemaDto([
-            'type' => 'select',
-            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
             'hidden' => false,
             'required' => false,
-        ]));
+        ], false, false));
 
         $option2 = $schema2->options()->create([
             'name' => 'XL',

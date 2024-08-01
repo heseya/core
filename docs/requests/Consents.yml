@@ -23,4 +23,8 @@ Consent:
             items:
               type: string
               format: uuid
+          type:
+            description: 'Type of consent'
+            type: string
+            enum: [ 'user', 'organization' ]
         type: object

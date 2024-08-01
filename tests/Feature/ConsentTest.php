@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
+use App\Enums\ValidationError;
 use App\Models\Role;
+use Domain\Consent\Enums\ConsentType;
 use Domain\Consent\Models\Consent;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -49,6 +52,27 @@ class ConsentTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonCount(12, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByType(string $user): void
+    {
+        $this->{$user}->givePermissionTo('consents.show');
+
+        Consent::factory()->count(5)->create([
+            'type' => ConsentType::ORGANIZATION,
+        ]);
+
+        Consent::factory()->count(5)->create([
+            'type' => ConsentType::USER,
+        ]);
+
+        $response = $this->actingAs($this->{$user})->json('get', '/consents', ['type' => ConsentType::USER]);
+
+        $response->assertOk();
+        $response->assertJsonCount(7, 'data');
     }
 
     /**
@@ -116,7 +140,8 @@ class ConsentTest extends TestCase
             'required' => false,
             'published' => [
                 $this->lang,
-            ]
+            ],
+            'type' => ConsentType::USER,
         ]);
 
         $response->assertCreated();
@@ -251,6 +276,37 @@ class ConsentTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonFragment(['message' => 'You must accept the required consents.']);
+    }
+
+    public function testRegisterWithOrganizationConsent(): void
+    {
+        /** @var Role $role */
+        $role = Role::query()->where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $consent = Consent::factory()->create([
+            'required' => true,
+            'type' => ConsentType::ORGANIZATION,
+        ]);
+
+        $this->requiredConsent->update([
+            'required' => false,
+        ]);
+
+        $this
+            ->json('POST', '/register', [
+                'name' => 'test',
+                'email' => 'test@test.test',
+                'password' => 'TestTset432!!',
+                'consents' => [
+                    $consent->getKey() => true,
+                ],
+            ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'key' => ValidationError::CONSENTSEXISTS->value,
+                'message' => Exceptions::CLIENT_CONSENT_NOT_EXISTS->value,
+            ]);
     }
 
     public function testRegisterWitConsent(): void

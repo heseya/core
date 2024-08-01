@@ -1,31 +1,29 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
+
+namespace Domain\ProductSchema\Services;
 
 use App\Exceptions\PublishingException;
 use App\Models\Option;
-use App\Models\Product;
-use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\OptionServiceContract;
-use App\Services\Contracts\SchemaCrudServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
+use App\Services\ProductService;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
-use Domain\ProductSchema\SchemaRepository;
+use Domain\ProductSchema\Models\Schema;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
-final readonly class SchemaCrudService implements SchemaCrudServiceContract
+final readonly class SchemaCrudService
 {
     public function __construct(
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
-        private OptionServiceContract $optionService,
+        private OptionService $optionService,
         private ProductService $productService,
         private TranslationServiceContract $translationService,
-        private SchemaRepository $schemaRepository,
     ) {}
 
     /**
@@ -83,14 +81,8 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
             $this->metadataService->sync($schema, $dto->metadata_computed);
         }
 
-        if ($dto->prices instanceof DataCollection) {
-            $this->schemaRepository->setSchemaPrices($schema->getKey(), $dto->prices->items());
-        }
-
-        if (!$schema->wasRecentlyCreated) {
-            $schema->products->each(
-                fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-            );
+        if (!$schema->wasRecentlyCreated && $schema->product) {
+            $this->productService->updateMinMaxPrices($schema->product);
         }
 
         $schema->options->each(
@@ -104,11 +96,11 @@ final readonly class SchemaCrudService implements SchemaCrudServiceContract
 
     public function destroy(Schema $schema): void
     {
-        $products = $schema->products;
+        $product = $schema->product;
         $schema->delete();
 
-        $products->each(
-            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
-        );
+        if ($product) {
+            $this->productService->updateMinMaxPrices($product);
+        }
     }
 }

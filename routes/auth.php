@@ -3,7 +3,10 @@
 use App\Enums\SavedAddressType;
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\ProviderController;
+use App\Models\Address;
 use Domain\User\Controllers\AuthController;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
@@ -17,19 +20,27 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('can:authenticated');
     Route::patch('profile/metadata-personal', [MetadataController::class, 'updateOrCreateLoggedMyPersonal'])
         ->middleware('can:authenticated');
+
+    /** @deprecated  */
     Route::prefix('profile')
         ->middleware('can:profile.addresses_manage')
         ->group(function (): void {
+            /** @deprecated  */
             Route::post('shipping-addresses', [AuthController::class, 'storeSavedAddress'])
                 ->defaults('type', SavedAddressType::SHIPPING);
+            /** @deprecated  */
             Route::patch('shipping-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
                 ->defaults('type', SavedAddressType::SHIPPING);
+            /** @deprecated  */
             Route::delete('shipping-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
                 ->defaults('type', SavedAddressType::SHIPPING);
+            /** @deprecated  */
             Route::post('billing-addresses', [AuthController::class, 'storeSavedAddress'])
                 ->defaults('type', SavedAddressType::BILLING);
+            /** @deprecated  */
             Route::patch('billing-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
                 ->defaults('type', SavedAddressType::BILLING);
+            /** @deprecated  */
             Route::delete('billing-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
                 ->defaults('type', SavedAddressType::BILLING);
         });
@@ -61,6 +72,23 @@ Route::prefix('auth')->group(function (): void {
         Route::patch('{authProviderKey}', [ProviderController::class, 'update'])
             ->middleware('can:auth.providers.manage');
     });
+});
+
+Route::prefix('my')
+    ->middleware('can:profile.addresses_manage')
+    ->group(function (): void {
+        Route::post('shipping-addresses', [AuthController::class, 'storeSavedAddress'])
+            ->defaults('type', SavedAddressType::SHIPPING);
+        Route::patch('shipping-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
+            ->defaults('type', SavedAddressType::SHIPPING);
+        Route::delete('shipping-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
+            ->defaults('type', SavedAddressType::SHIPPING);
+        Route::post('billing-addresses', [AuthController::class, 'storeSavedAddress'])
+            ->defaults('type', SavedAddressType::BILLING);
+        Route::patch('billing-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
+            ->defaults('type', SavedAddressType::BILLING);
+        Route::delete('billing-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
+            ->defaults('type', SavedAddressType::BILLING);
 });
 
 Route::post('login', [AuthController::class, 'login'])
