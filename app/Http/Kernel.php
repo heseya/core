@@ -8,6 +8,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\ContentLanguage;
 use App\Http\Middleware\LangFallback;
 use App\Http\Middleware\PublishedTranslation;
+use App\Http\Middleware\SalesChannelFallback;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\UndotParams;
@@ -44,6 +45,7 @@ class Kernel extends HttpKernel
         ContentLanguage::class,
         UndotParams::class,
         LangFallback::class,
+        SalesChannelFallback::class,
     ];
 
     /**

@@ -112,4 +112,14 @@ final class SalesChannel extends Model implements Translatable
             });
         });
     }
+
+    public function hasOrganizationWithUser(App|User $user): bool
+    {
+        return $this::query()->where('id', '=', $this->getKey())
+            ->whereHas('organizations', function (Builder $query) use ($user): void {
+                $query->whereHas('users', function (Builder $query) use ($user): void {
+                    $query->where('id', '=', $user->getKey());
+                });
+            })->exists();
+    }
 }
