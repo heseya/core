@@ -12,7 +12,9 @@ final class AddressUpdateDto extends Data
 {
     public function __construct(
         #[Max(255)]
-        public readonly Optional|string $name,
+        public readonly Optional|string|null $name,
+        #[Max(255)]
+        public readonly Optional|string|null $company_name,
         #[Max(255)]
         public readonly Optional|string $address,
         #[Max(15)]

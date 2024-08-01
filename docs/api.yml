@@ -29,12 +29,20 @@ paths:
   /auth/profile:
     $ref: ./paths/Auth.yml#/Profile
   /auth/profile/shipping-addresses:
-    $ref: ./paths/Auth.yml#/ShippingAddresses
+    $ref: ./paths/Auth.yml#/ShippingAddressesDeprecated
   /auth/profile/shipping-addresses/id:{id}:
-    $ref: ./paths/Auth.yml#/ShippingAddressesParams
+    $ref: ./paths/Auth.yml#/ShippingAddressesParamsDeprecated
   /auth/profile/billing-addresses:
-    $ref: ./paths/Auth.yml#/BillingAddresses
+    $ref: ./paths/Auth.yml#/BillingAddressesDeprecated
   /auth/profile/billing-addresses/id:{id}:
+    $ref: ./paths/Auth.yml#/BillingAddressesParamsDeprecated
+  /my/shipping-addresses:
+    $ref: ./paths/Auth.yml#/ShippingAddresses
+  /my/shipping-addresses/id:{id}:
+    $ref: ./paths/Auth.yml#/ShippingAddressesParams
+  /my/billing-addresses:
+    $ref: ./paths/Auth.yml#/BillingAddresses
+  /my/billing-addresses/id:{id}:
     $ref: ./paths/Auth.yml#/BillingAddressesParams
   /auth/profile/roles:
     $ref: ./paths/Auth.yml#/SelfUpdateRoles
@@ -105,10 +113,16 @@ paths:
   /orders/id:{id}/send-urls:
     $ref: ./paths/Orders.yml#/OrdersSendUrls
   /orders/my:
-    $ref: ./paths/Orders.yml#/OrdersMy
+    $ref: ./paths/Orders.yml#/OrdersMyDeprecated
   /orders/my/{code}:
-    $ref: ./paths/Orders.yml#/OrdersMySingle
+    $ref: ./paths/Orders.yml#/OrdersMySingleDeprecated
   /orders/my-products:
+    $ref: ./paths/Orders.yml#/MyOrderProductsDeprecated
+  /my/orders:
+    $ref: ./paths/Orders.yml#/OrdersMy
+  /my/orders/{code}:
+    $ref: ./paths/Orders.yml#/OrdersMySingle
+  /my/orders/products:
     $ref: ./paths/Orders.yml#/MyOrderProducts
   /orders/id:{id}/docs:
     $ref: ./paths/Orders.yml#/OrderAddDocument
@@ -344,6 +358,8 @@ paths:
     $ref: ./paths/Organizations.yml#/Organizations
   /organizations/id:{id}:
     $ref: ./paths/Organizations.yml#/OrganizationsParams
+  /organizations/id:{id}/users:
+    $ref: ./paths/Organizations.yml#/OrganizationUsers
   /organizations/id:{id}/shipping-addresses:
     $ref: ./paths/OrganizationSavedAddresses.yml#/OrganizationSavedAddresses
   /organizations/id:{id}/shipping-addresses/id:{address_id}:

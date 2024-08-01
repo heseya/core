@@ -6,6 +6,7 @@ use App\Rules\ConsentsExists;
 use App\Rules\EmailUnique;
 use App\Rules\IsRegistrationRole;
 use App\Rules\RequiredConsents;
+use Domain\Consent\Enums\ConsentType;
 use Illuminate\Validation\Rules\Password;
 use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Rule;
@@ -43,8 +44,8 @@ class RegisterDto extends Data
                 new EmailUnique(),
             ],
             'password' => ['required', 'string', Password::defaults()],
-            'consents' => ['array', new RequiredConsents()],
-            'consents.*' => ['boolean', new ConsentsExists()],
+            'consents' => ['array', new RequiredConsents(ConsentType::USER)],
+            'consents.*' => ['boolean', new ConsentsExists(ConsentType::USER)],
             'roles.*' => [new IsRegistrationRole()],
         ];
     }

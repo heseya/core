@@ -11,6 +11,7 @@ class AddressResource extends Resource
         return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
+            'company_name' => $this->resource->company_name,
             'address' => $this->resource->address,
             'vat' => $this->resource->vat,
             'zip' => $this->resource->zip,

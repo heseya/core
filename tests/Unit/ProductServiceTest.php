@@ -11,6 +11,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\OptionPriceType;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Heseya\Dto\DtoException;
@@ -238,11 +239,11 @@ class ProductServiceTest extends TestCase
         ], false, false));
         $option = $schema->options()->create([
             'name' => 'Default option',
-            'prices' => [['value' => $schema1Price, 'currency' => self::$currency->value]],
         ]);
         $option->prices()->create([
-            'value' => $schema1Price,
+            'value' => $schema1Price * 100,
             'currency' => self::$currency->value,
+            'price_type' => OptionPriceType::PRICE_BASE,
         ]);
 
         $schema2Price = 7;
@@ -256,8 +257,9 @@ class ProductServiceTest extends TestCase
             'name' => 'Default option',
         ]);
         $option2->prices()->create([
-            'value' => $schema2Price,
+            'value' => $schema2Price * 100,
             'currency' => self::$currency->value,
+            'price_type' => OptionPriceType::PRICE_BASE,
         ]);
 
         $schema3Price = 10;
@@ -271,8 +273,9 @@ class ProductServiceTest extends TestCase
             'name' => 'Default option',
         ]);
         $option3->prices()->create([
-            'value' => $schema3Price,
+            'value' => $schema3Price * 100,
             'currency' => self::$currency->value,
+            'price_type' => OptionPriceType::PRICE_BASE,
         ]);
 
         $this->product->load('schemas');

@@ -151,11 +151,11 @@ final readonly class FakeDto
         return $prices;
     }
 
-    public static function schemaData(array $data = []): array
+    public static function schemaData(array $data = [], bool $addDefaultOption = true): array
     {
         $keys = array_keys($data);
 
-        return Arr::only(self::schemaDto($data, true), $keys);
+        return Arr::only(self::schemaDto($data, true, $addDefaultOption), $keys);
     }
 
     public static function schemaDto(array $data = [], bool $returnArray = false, bool $addDefaultOption = true): SchemaDto|array
@@ -174,6 +174,9 @@ final readonly class FakeDto
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))],
                 ]
             ];
+            if (($data['required'] ?? false) && empty($data['default'])) {
+                $data['default'] = 'Test';
+            }
         }
 
         if (!empty($data['options'])) {

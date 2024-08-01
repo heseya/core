@@ -44,7 +44,10 @@ class SchemaResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'products' => ProductResource::collection($this->resource->products),
+            'product' => ProductResource::make($this->resource->product),
+            'products' => [
+                ProductResource::collection([$this->resource->product]),
+            ],
         ];
     }
 }

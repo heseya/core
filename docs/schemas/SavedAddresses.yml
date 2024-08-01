@@ -9,5 +9,7 @@ SavedAddress:
     name:
       type: string
       example: Home
+    company_name:
+      type: string
     address:
       $ref: './Addresses.yml#/Address'

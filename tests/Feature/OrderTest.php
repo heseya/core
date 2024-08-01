@@ -324,7 +324,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/orders/my')
+            ->json('GET', 'my/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure([
@@ -367,7 +367,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/orders/my', ['limit' => '500'])
+            ->json('GET', 'my/orders', ['limit' => '500'])
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
@@ -460,7 +460,7 @@ class OrderTest extends TestCase
         $this->user->orders()->save($order);
 
         $this
-            ->json('GET', '/orders/my')
+            ->json('GET', 'my/orders')
             ->assertForbidden();
     }
 
@@ -1115,7 +1115,7 @@ class OrderTest extends TestCase
         $this->{$user}->orders()->save($order);
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/orders/my/' . $order->code)
+            ->json('GET', 'my/orders/' . $order->code)
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $order->getKey(),
@@ -1162,7 +1162,7 @@ class OrderTest extends TestCase
         $order = Order::factory()->create();
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/orders/my/' . $order->code)
+            ->json('GET', 'my/orders/' . $order->code)
             ->assertStatus(404);
     }
 
@@ -1181,7 +1181,7 @@ class OrderTest extends TestCase
         $another_user->orders()->save($order);
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/orders/my/' . $order->code)
+            ->json('GET', 'my/orders/' . $order->code)
             ->assertStatus(404);
     }
 
@@ -1192,8 +1192,19 @@ class OrderTest extends TestCase
         $this->user->orders()->save($order);
 
         $this
-            ->json('GET', '/orders/my/' . $order->code)
+            ->json('GET', 'my/orders/' . $order->code)
             ->assertForbidden();
+    }
+
+    public function testViewUserDeprecated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->json('GET', '/orders/my/' . $order->code)
+            ->assertRedirect('my/orders/' . $order->code);
     }
 
     /**

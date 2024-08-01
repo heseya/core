@@ -24,6 +24,7 @@ class Address extends Model
         'city',
         'country',
         'phone',
+        'company_name',
     ];
 
     public function orders(): HasMany

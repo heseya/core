@@ -18,3 +18,9 @@ OrganizationView:
   type: object
   allOf:
     - $ref: '#/Organization'
+    - properties:
+        consents:
+          description: 'User''s consents'
+          type: array
+          items:
+            $ref: './Consents.yml#/ConsentOrganization'
