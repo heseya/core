@@ -288,6 +288,6 @@ class Schema extends Model implements SortableContract, Translatable
 
     public function getMorphClass()
     {
-        return 'schema';
+        return 'Schema';
     }
 }
