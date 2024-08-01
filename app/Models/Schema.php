@@ -285,4 +285,9 @@ class Schema extends Model implements SortableContract, Translatable
 
         return $price;
     }
+
+    public function getMorphClass()
+    {
+        return 'schema';
+    }
 }
