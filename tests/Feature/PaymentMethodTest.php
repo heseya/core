@@ -5,7 +5,8 @@ namespace Tests\Feature;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\App;
 use App\Models\Order;
-use App\Models\PaymentMethod;
+use Domain\PaymentMethods\Enums\PaymentMethodType;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
@@ -214,6 +215,8 @@ class PaymentMethodTest extends TestCase
             'public' => true,
             'url' => 'http://test.com',
             'icon' => 'test icon',
+            'type' => PaymentMethodType::PREPAID->value,
+            'creates_default_payment' => false,
         ];
 
         $response = $this->actingAs($this->application)

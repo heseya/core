@@ -1,34 +1,39 @@
 <?php
 
-namespace App\Services;
+declare(strict_types=1);
 
-use App\Dtos\PaymentMethodDto;
-use App\Dtos\PaymentMethodIndexDto;
+namespace Domain\PaymentMethods\Services;
+
 use App\Exceptions\ClientException;
 use App\Models\App;
-use App\Models\PaymentMethod;
 use App\Models\User;
-use App\Services\Contracts\PaymentMethodServiceContract;
+use Domain\PaymentMethods\Dtos\PaymentMethodCreateDto;
+use Domain\PaymentMethods\Dtos\PaymentMethodIndexDto;
+use Domain\PaymentMethods\Dtos\PaymentMethodUpdateDto;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class PaymentMethodService implements PaymentMethodServiceContract
+final class PaymentMethodService
 {
     /**
      * @throws ClientException
      */
-    public function store(PaymentMethodDto $dto): PaymentMethod
+    public function store(PaymentMethodCreateDto $dto): PaymentMethod
     {
         return PaymentMethod::create($dto->toArray() + ['app_id' => Auth::id()]);
     }
 
-    public function update(PaymentMethod $paymentMethod, PaymentMethodDto $dto): PaymentMethod
+    public function update(PaymentMethod $paymentMethod, PaymentMethodUpdateDto $dto): PaymentMethod
     {
         $paymentMethod->update($dto->toArray());
 
         return $paymentMethod;
     }
 
+    /**
+     * @return Collection<int, PaymentMethod>
+     */
     public function index(PaymentMethodIndexDto $dto): Collection
     {
         $criteria = $dto->toArray();

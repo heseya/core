@@ -24,7 +24,6 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
-use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
@@ -51,7 +50,6 @@ use App\Services\MetadataService;
 use App\Services\NameService;
 use App\Services\OptionService;
 use App\Services\OrderService;
-use App\Services\PaymentMethodService;
 use App\Services\PermissionService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
@@ -77,7 +75,6 @@ use Domain\ShippingMethod\Services\ShippingMethodService;
 use Domain\User\Services\OneTimeSecurityCodeService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -114,7 +111,6 @@ class AppServiceProvider extends ServiceProvider
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
         FavouriteServiceContract::class => FavouriteService::class,
-        PaymentMethodServiceContract::class => PaymentMethodService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
 

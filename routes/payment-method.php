@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\PaymentMethodController;
+use Domain\PaymentMethods\Controllers\PaymentMethodController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('payment-methods')->group(function (): void {

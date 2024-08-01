@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\PaymentMethod;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;

@@ -1,11 +1,17 @@
 <?php
 
-namespace App\Http\Resources;
+declare(strict_types=1);
 
+namespace Domain\PaymentMethods\Resources;
+
+use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 
-class PaymentMethodResource extends Resource
+final class PaymentMethodResource extends Resource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function base(Request $request): array
     {
         return [
@@ -14,6 +20,8 @@ class PaymentMethodResource extends Resource
             'icon' => $this->resource->icon,
             'alias' => $this->resource->alias,
             'public' => $this->resource->public,
+            'type' => $this->resource->type,
+            'creates_default_payment' => $this->resource->creates_default_payment,
         ];
     }
 }

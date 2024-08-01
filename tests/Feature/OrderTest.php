@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -15,7 +14,6 @@ use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -29,6 +27,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;

@@ -11,17 +11,16 @@ use App\Mail\OrderPaid;
 use App\Models\App;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Status;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 final class PaymentTest extends TestCase
