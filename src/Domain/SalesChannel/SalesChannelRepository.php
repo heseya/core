@@ -20,7 +20,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
-use Support\Enum\Status;
 
 final class SalesChannelRepository
 {
@@ -71,8 +70,7 @@ final class SalesChannelRepository
 
     public function getDefault(): SalesChannel
     {
-        return SalesChannel::query()->where('slug', 'default')->first()
-            ?? SalesChannel::query()->where('status', '=', Status::ACTIVE->value)->firstOrFail();
+        return SalesChannel::query()->where('default', '=', true)->firstOrFail();
     }
 
     /**
