@@ -595,6 +595,14 @@ class SchemaTest extends TestCase
     public function testCreateWithOptionMetadataPrivate(string $user, bool $boolean, bool $booleanValue): void
     {
         $this->{$user}->givePermissionTo(['products.add', 'options.show_metadata_private']);
+
+        $prices = [
+            ['value' => 1000, 'currency' => $this->currency->value]
+        ];
+        if ($boolean) {
+            $prices[] = ['value' => 0, 'currency' => $this->currency->value];
+        }
+
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/schemas', FakeDto::schemaData([
@@ -613,7 +621,7 @@ class SchemaTest extends TestCase
                                 'name' => 'A',
                             ],
                         ],
-                        'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
+                        'prices' => $prices,
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
