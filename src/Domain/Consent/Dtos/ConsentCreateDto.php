@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Domain\Consent\Dtos;
 
 use App\Rules\Translations;
+use Domain\Consent\Enums\ConsentType;
 use Spatie\LaravelData\Attributes\Validation\Rule;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 
 final class ConsentCreateDto extends Data
@@ -19,5 +22,7 @@ final class ConsentCreateDto extends Data
         public readonly array $translations,
         public readonly bool $required,
         public readonly array $published,
+        #[WithCast(EnumCast::class, ConsentType::class)]
+        public readonly ConsentType $type,
     ) {}
 }

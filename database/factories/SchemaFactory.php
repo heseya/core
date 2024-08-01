@@ -2,12 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\Schema;
-use Domain\Price\Enums\ProductPriceType;
-use Domain\Price\PriceRepository;
+use App\Enums\SchemaType;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\App;
-use Tests\Utils\FakeDto;
 
 class SchemaFactory extends Factory
 {
@@ -28,35 +26,15 @@ class SchemaFactory extends Factory
             'description' => $this->faker->sentence(10),
             'hidden' => mt_rand(0, 10) === 0,
             'required' => $this->faker->boolean,
-            'max' => null,
-            'min' => null,
             'default' => null,
-            'pattern' => null,
-            'validation' => null,
             'published' => [App::getLocale()],
+            'type' => SchemaType::SELECT->value,
         ];
     }
 
     public function create($attributes = [], ?Model $parent = null)
     {
-        $prices = $attributes['prices'] ?? [];
-        unset($attributes['prices']);
-
         $result = parent::create($attributes, $parent);
-
-        if (!empty($prices)) {
-            if ($result instanceof Model) {
-                $result = collect([$result]);
-            }
-
-            $priceRepository = app(PriceRepository::class);
-
-            $prices = FakeDto::generatePricesInAllCurrencies($prices);
-
-            collect($result)->each(fn (Schema $schema) => $priceRepository->setModelPrices($schema, [
-                ProductPriceType::PRICE_BASE->value => $prices
-            ]));
-        }
 
         return $result->count() > 1 ? $result : $result->first();
     }

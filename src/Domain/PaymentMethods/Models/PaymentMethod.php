@@ -43,9 +43,7 @@ final class PaymentMethod extends Model
         'public' => 'boolean',
         'creates_default_payment' => 'boolean',
     ];
-    /**
-     * @var array|string[]
-     */
+    /** @var array|string[] */
     protected array $criteria = [
         'id',
         'public',

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -17,17 +16,17 @@ use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Setting\Models\Setting;
@@ -115,8 +114,6 @@ class CartTest extends TestCase
 
         $this->schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -129,10 +126,9 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->productWithSchema->getKey(),
             ])
         );
-
-        $this->productWithSchema->schemas()->sync([$this->schema->getKey()]);
 
         $this->option = $this->schema->options->where('name', 'XL')->first();
 
@@ -487,8 +483,6 @@ class CartTest extends TestCase
     public function testCartProcessSameProductNotAvailableWithSchema($user): void
     {
         $this->{$user}->givePermissionTo('cart.verify');
-
-        $this->product->schemas()->sync([$this->schema->getKey()]);
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,
@@ -1244,8 +1238,6 @@ class CartTest extends TestCase
         );
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
                 'hidden' => false,
             ])
         );
@@ -1281,7 +1273,7 @@ class CartTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
                 [
@@ -1310,14 +1302,17 @@ class CartTest extends TestCase
 
         $productDto = FakeDto::productCreateDto([
             'public' => true,
-            'prices_base' => [PriceDto::from(Money::of(10.0, $this->currency->value))],
+            'prices_base' => [PriceDto::from(Money::of(30.0, $this->currency->value))],
         ]);
         $product = $this->productService->create($productDto);
 
         $schemaDto = FakeDto::schemaDto([
-            'type' => 'string',
-            'prices' => [PriceDto::from(Money::of(20.0, $this->currency->value))],
             'hidden' => false,
+            'options' => [
+                [
+                    'name' => 'Test',
+                ]
+            ],
         ]);
         $schema = $this->schemaCrudService->store($schemaDto);
 
@@ -1348,7 +1343,7 @@ class CartTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 3,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -3052,8 +3047,6 @@ class CartTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => true,
                 'options' => [
@@ -3066,6 +3059,7 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(100, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -3083,8 +3077,6 @@ class CartTest extends TestCase
 
         $optionalSchema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -3093,6 +3085,7 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
@@ -3103,8 +3096,6 @@ class CartTest extends TestCase
 
         $noItemSchema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'select',
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'hidden' => false,
                 'required' => true,
                 'options' => [
@@ -3113,12 +3104,11 @@ class CartTest extends TestCase
                         'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                     ],
                 ],
+                'product_id' => $this->product->getKey(),
             ])
         );
 
         $noItemOption = $noItemSchema->options->where('name', 'Tak')->first();
-
-        $this->product->schemas()->sync([$schema->getKey(), $optionalSchema->getKey(), $noItemSchema->getKey()]);
 
         $this->actingAs($this->{$user})->postJson('/cart/process', [
             'currency' => $this->currency,

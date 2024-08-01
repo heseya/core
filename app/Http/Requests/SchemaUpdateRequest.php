@@ -24,17 +24,10 @@ class SchemaUpdateRequest extends FormRequest
 
             'type' => ['sometimes', 'string', new EnumKey(SchemaType::class)],
 
-            'prices' => [new PricesEveryCurrency()],
-            'prices.*' => [new Price(['value'], min: BigDecimal::zero())],
-
-            'hidden' => ['nullable', 'boolean'],
+            'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
-            'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
-            'max' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
-            'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],
-            'default' => ['nullable'],
-            'pattern' => ['nullable', 'string', 'max:255'],
-            'validation' => ['nullable', 'string', 'max:255'],
+
+            'default' => ['nullable', 'required_if:required,true'],
 
             'options' => ['nullable', 'array'],
             'options.*.translations' => [
@@ -46,7 +39,6 @@ class SchemaUpdateRequest extends FormRequest
             'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],
             'options.*.prices.*' => ['sometimes', 'required', new Price(['value'], min: BigDecimal::zero())],
 
-            'options.*.disabled' => ['sometimes', 'required', 'boolean'],
             'options.*.metadata' => ['array'],
             'options.*.metadata_private' => ['array'],
 
@@ -55,6 +47,8 @@ class SchemaUpdateRequest extends FormRequest
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
+
+            'product_id' => ['uuid', 'exists:products,id', 'nullable'],
         ];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -10,13 +9,11 @@ use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
-use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
@@ -30,6 +27,8 @@ use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaService;
 use Domain\ProductSet\ProductSetService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
@@ -44,7 +43,7 @@ final readonly class ProductService
 {
     public function __construct(
         private MediaServiceContract $mediaService,
-        private SchemaServiceContract $schemaService,
+        private SchemaService $schemaService,
         private SeoMetadataService $seoMetadataService,
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
@@ -281,23 +280,14 @@ final readonly class ProductService
             );
 
             $required = $schema->required;
+
             $options = $schema->options->map(
                 fn (Option $option) => $option->getKey(),
             )->toArray();
-            $valueMinMax = [$schema->min, $schema->max];
 
-            $minmax = match ($schema->type) {
-                default => $getBestSchemasPrices(
-                    $required ? ['filled'] : [null, 'filled'],
-                ),
-                SchemaType::BOOLEAN => $getBestSchemasPrices([true, false]),
-                SchemaType::SELECT => $getBestSchemasPrices(
-                    $required ? $options : array_merge($options, [null]),
-                ),
-                SchemaType::MULTIPLY, SchemaType::MULTIPLY_SCHEMA => $getBestSchemasPrices(
-                    $required ? $valueMinMax : array_merge($valueMinMax, [null]),
-                ),
-            };
+            $minmax = $getBestSchemasPrices(
+                $required ? $options : array_merge($options, [null]),
+            );
         } else {
             $price = $allSchemas->reduce(
                 fn (Money $carry, Schema $current) => $carry->plus(

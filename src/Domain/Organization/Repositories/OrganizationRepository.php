@@ -8,6 +8,7 @@ use App\Events\OrganizationDeleted;
 use App\Events\OrganizationUpdated;
 use App\Models\Address;
 use Domain\Address\Dtos\AddressUpdateDto;
+use Domain\Consent\Services\ConsentService;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
 use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
@@ -16,11 +17,16 @@ use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Spatie\LaravelData\Optional;
 
 final readonly class OrganizationRepository
 {
+    public function __construct(
+        private ConsentService $consentService,
+    ) {}
+
     /**
      * @return LengthAwarePaginator<Organization>
      */
@@ -58,6 +64,10 @@ final readonly class OrganizationRepository
             $organization->address()->update($dto->billing_address->toArray());
         }
 
+        if (!($dto->consents instanceof Optional)) {
+            $this->consentService->updateOrganizationConsents(Collection::make($dto->consents), $organization);
+        }
+
         OrganizationUpdated::dispatch($organization);
 
         return $organization;
@@ -90,6 +100,10 @@ final readonly class OrganizationRepository
 
         if ($dto->billing_address instanceof AddressUpdateDto) {
             $organization->address()->update($dto->billing_address->toArray());
+        }
+
+        if (!($dto->consents instanceof Optional)) {
+            $this->consentService->updateOrganizationConsents(Collection::make($dto->consents), $organization);
         }
 
         OrganizationUpdated::dispatch($organization);

@@ -17,6 +17,8 @@ Route::prefix('organizations')->group(function (): void {
         ->middleware('can:organizations.edit');
     Route::delete('id:{organization:id}', [OrganizationController::class, 'delete'])
         ->middleware('can:organizations.remove');
+    Route::get('id:{organization:id}/users', [OrganizationController::class, 'organizationUsers'])
+        ->middleware('can:organizations.show');
     Route::prefix('id:{organization:id}/shipping-addresses')->group(function (): void {
         Route::get('', [OrganizationShippingAddressController::class, 'index'])
             ->middleware('can:organizations.edit');

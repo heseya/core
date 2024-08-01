@@ -7,6 +7,7 @@ namespace Domain\Consent\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ConsentResource;
 use Domain\Consent\Dtos\ConsentCreateDto;
+use Domain\Consent\Dtos\ConsentIndexDto;
 use Domain\Consent\Dtos\ConsentUpdateDto;
 use Domain\Consent\Models\Consent;
 use Domain\Consent\Services\ConsentService;
@@ -23,9 +24,9 @@ final class ConsentController extends Controller
         return ConsentResource::make($consent);
     }
 
-    public function index(): JsonResource
+    public function index(ConsentIndexDto $dto): JsonResource
     {
-        return ConsentResource::collection(Consent::all());
+        return ConsentResource::collection($this->consentService->index($dto));
     }
 
     public function store(ConsentCreateDto $dto): JsonResource

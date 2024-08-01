@@ -6,13 +6,13 @@ use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Price;
-use App\Models\Schema;
-use App\Services\SchemaCrudService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -254,26 +254,23 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto([], false, false));
 
         $option1 = Option::factory()->create([
             'name' => 'A',
             'prices' => [['value' => 10, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 0,
             'schema_id' => $schema->getKey(),
         ]);
         $option2 = Option::factory()->create([
             'name' => 'C',
             'prices' => [['value' => 100, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 2,
             'schema_id' => $schema->getKey(),
         ]);
         $option3 = Option::factory()->create([
             'name' => 'B',
             'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-            'disabled' => false,
             'order' => 1,
             'schema_id' => $schema->getKey(),
         ]);
@@ -334,8 +331,6 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/schemas', FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
-            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -344,7 +339,6 @@ class SchemaTest extends TestCase
                 [
                     'name' => 'L',
                     'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                    'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -371,10 +365,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
-            'prices' => [
-                ['value' => 120, 'currency' => Currency::DEFAULT->value,]
-            ],
             'hidden' => false,
             'required' => false,
             'options' => [
@@ -382,7 +372,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 100, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -394,7 +383,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 1000, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'A',
                     ]],
@@ -403,7 +391,6 @@ class SchemaTest extends TestCase
                     'prices' => [
                         ['value' => 0, 'currency' => Currency::DEFAULT->value,]
                     ],
-                    'disabled' => false,
                     'translations' => [$this->lang => [
                         'name' => 'B',
                     ]],
@@ -436,16 +423,9 @@ class SchemaTest extends TestCase
             'available' => true,
         ]);
 
-        $this->assertDatabaseHas('prices', [
-            'value' => "12000",
-            'model_id' => $schema->id,
-            'model_type' => 'Schema',
-        ]);
-
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
             "name->{$this->lang}" => 'L',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 0,
             'available' => false,
@@ -459,7 +439,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'A',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 1,
             'available' => true,
@@ -473,7 +452,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             "name->{$this->lang}" => 'B',
-            'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 2,
             'available' => true,
@@ -498,24 +476,27 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.add');
 
-        $this
+        $data = FakeDto::schemaData([
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
+            'hidden' => false,
+            'required' => true,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+            'options' => [],
+            'default' => null,
+        ]);
+
+        $response = $this
             ->actingAs($this->{$user})
-            ->json('POST', '/schemas', FakeDto::schemaData([
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                    ],
-                ],
-                'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
-                'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-                'hidden' => true,
-                'required' => true,
-                'metadata' => [
-                    'attributeMeta' => 'attributeValue',
-                ],
-            ]))
-            ->assertValid()
+            ->json('POST', '/schemas', $data);
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'metadata' => [
@@ -539,8 +520,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
-                'prices' => [['value' => 120, 'currency' => $this->currency->value]],
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -551,7 +530,6 @@ class SchemaTest extends TestCase
                             ],
                         ],
                         'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
-                        'disabled' => false,
                         'metadata' => [
                             'attributeMetaOption' => 'attributeValueOption',
                         ],
@@ -565,7 +543,6 @@ class SchemaTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'B',
-                'disabled' => false,
                 'metadata' => [
                     'attributeMetaOption' => 'attributeValueOption',
                 ],
@@ -579,28 +556,30 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['products.add', 'schemas.show_metadata_private']);
 
-        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', FakeDto::schemaData([
+        $data = FakeDto::schemaData([
             'translations' => [
                 $this->lang => [
                     'name' => 'Test',
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
-            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-            'hidden' => $boolean,
+            'hidden' => false,
             'required' => $boolean,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
-        ]));
+            'options' => [],
+            'default' => null,
+        ]);
+
+        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', $data);
 
         $response
             ->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => false,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
@@ -616,7 +595,7 @@ class SchemaTest extends TestCase
     public function testCreateWithOptionMetadataPrivate(string $user, bool $boolean, bool $booleanValue): void
     {
         $this->{$user}->givePermissionTo(['products.add', 'options.show_metadata_private']);
-        $this
+        $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/schemas', FakeDto::schemaData([
                 'translations' => [
@@ -625,9 +604,7 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'type' => SchemaType::SELECT->name,
-                'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-                'hidden' => $boolean,
+                'hidden' => false,
                 'required' => $boolean,
                 'options' => [
                     [
@@ -637,52 +614,27 @@ class SchemaTest extends TestCase
                             ],
                         ],
                         'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
-                        'disabled' => $boolean,
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
                     ],
                 ],
-            ]))
-            ->assertValid()
+                'default' => null,
+            ]));
+
+        $response->assertValid()
             ->assertCreated()
             ->assertJsonFragment([
                 'name' => 'Test',
-                'hidden' => $booleanValue,
+                'hidden' => false,
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
                 'name' => 'A',
-                'disabled' => $booleanValue,
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
             ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateAvailableSchemaNonSelect(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->{$user})->json('POST', '/schemas', FakeDto::schemaData([
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Test',
-                ],
-            ],
-            'published' => [$this->lang],
-            'type' => SchemaType::STRING->name,
-            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
-            'required' => false,
-        ]));
-
-        $response
-            ->assertValid()
-            ->assertCreated()
-            ->assertJsonPath('data.available', true);
     }
 
     /**
@@ -699,8 +651,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::SELECT->name,
-            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'required' => false,
             'options' => [
                 [
@@ -710,7 +660,6 @@ class SchemaTest extends TestCase
                         ],
                     ],
                     'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                    'disabled' => false,
                 ],
             ],
         ]));
@@ -746,67 +695,10 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
             'used_schemas' => [
                 $usedSchema->getKey(),
             ],
         ])->assertForbidden();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateRelationProductsAdd(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.add');
-
-        $this->createRelation($user);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function createRelation(string $user): void
-    {
-        $usedSchema = $this->schemaCrudService->store(FakeDto::schemaDto());
-
-        $response = $this->actingAs($this->{$user})->postJson('/schemas', FakeDto::schemaData([
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Multiplier',
-                ],
-            ],
-            'published' => [$this->lang],
-            'type' => SchemaType::MULTIPLY_SCHEMA->name,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-            'used_schemas' => [
-                $usedSchema->getKey(),
-            ],
-            'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-        ]));
-
-        $response->assertValid()->assertCreated();
-        $schema = $response->getData()->data;
-
-        $this->assertDatabaseHas('schema_used_schemas', [
-            'schema_id' => $schema->id,
-            'used_schema_id' => $usedSchema->getKey(),
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateRelationProductsEdit(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $this->createRelation($user);
     }
 
     /**
@@ -820,7 +712,6 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -833,8 +724,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
                 'published' => [$this->lang],
-                'prices' => [['value' => 200, 'currency' => $this->currency->value]],
-                'type' => SchemaType::SELECT->name,
                 'hidden' => false,
                 'required' => false,
                 'options' => [
@@ -846,7 +735,6 @@ class SchemaTest extends TestCase
                             ],
                         ],
                         'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                        'disabled' => true,
                         'items' => [
                             $item->getKey(),
                         ],
@@ -877,12 +765,10 @@ class SchemaTest extends TestCase
                 [
                     'name' => 'L',
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => false,
                 ] + Option::factory()->definition(),
                 [
                     'name' => 'XL',
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => false,
                 ] + Option::factory()->definition(),
             ]
         ]));
@@ -906,8 +792,6 @@ class SchemaTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
-            'prices' => [PriceDto::from(Money::of(200, Currency::DEFAULT->value))],
-            'type' => SchemaType::SELECT->name,
             'hidden' => false,
             'required' => false,
             'default' => null,
@@ -915,7 +799,6 @@ class SchemaTest extends TestCase
                 [
                     'id' => $option->getKey(),
                     'prices' => [PriceDto::from(Money::of(0, Currency::DEFAULT->value))],
-                    'disabled' => true,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -937,16 +820,9 @@ class SchemaTest extends TestCase
             'default' => null,
         ]);
 
-        $this->assertDatabaseHas('prices', [
-            'value' => "20000",
-            'currency' => Currency::DEFAULT->value,
-            'model_id' => $schema->getKey(),
-        ]);
-
         $this->assertDatabaseHas('options', [
             'id' => $option->getKey(),
             "name->{$this->lang}" => 'L',
-            'disabled' => 1,
             'schema_id' => $schema->getKey(),
         ]);
 
@@ -985,9 +861,6 @@ class SchemaTest extends TestCase
             'description' => 'new schema description',
             'hidden' => false,
             'required' => true,
-            'max' => 10,
-            'min' => 1,
-            'prices' => [['value' => 10, 'currency' => $this->currency->value]]
         ]));
 
         $item = Item::factory()->create();
@@ -995,10 +868,9 @@ class SchemaTest extends TestCase
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
-        $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
+        $option->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
         $option->items()->sync([
             $item->getKey(),
             $item2->getKey(),
@@ -1013,15 +885,13 @@ class SchemaTest extends TestCase
             "description->{$this->lang}" => 'new schema description',
             'hidden' => false,
             'required' => true,
-            'max' => 10,
-            'min' => 1,
         ]);
 
         $this->assertDatabaseHas('prices', [
             'value' => 1000,
             'currency' => Currency::DEFAULT->value,
-            'model_id' => $schema->getKey(),
-            'model_type' => $schema->getMorphClass(),
+            'model_id' => $option->getKey(),
+            'model_type' => $option->getMorphClass(),
         ]);
     }
 
@@ -1078,45 +948,6 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateNoPublished(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
-
-        $this
-            ->actingAs($this->{$user})
-            ->json('PATCH', '/schemas/id:' . $schema->getKey(), [
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'new name',
-                    ],
-                ],
-            ])
-            ->assertValid()
-            ->assertOk()
-            ->assertJsonFragment([
-                'name' => 'new name',
-                'published' => [
-                    $this->lang,
-                ],
-            ])
-            ->assertJsonMissing([
-                'first' => 'new value',
-            ])
-            ->assertJsonMissing([
-                'second' => 'new metadata',
-            ]);
-
-        $this->assertDatabaseHas('schemas', [
-            'id' => $schema->getKey(),
-            'published' => json_encode([$this->lang]),
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testRemoveUnauthorized(string $user): void
     {
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
@@ -1150,7 +981,6 @@ class SchemaTest extends TestCase
             'name' => 'Color',
             'type' => SchemaType::SELECT,
         ]);
-        $colors->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         /** @var Option $red */
         $red = $colors->options()->create([
@@ -1181,22 +1011,6 @@ class SchemaTest extends TestCase
         $this->assertEquals(30, $colors->getPrice($blue->getKey(), [
             $colors->getKey() => $blue->getKey(),
         ], $this->currency)->getAmount()->toFloat());
-
-        /** @var Schema $multiplier */
-        $multiplier = Schema::create([
-            'name' => 'Price Multiplier',
-            'type' => SchemaType::MULTIPLY,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-        ]);
-        $multiplier->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
-        $multiplier->refresh();
-
-        $value = mt_rand(10, 100) / 10;
-        $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
-            $multiplier->getKey() => $value,
-        ], $this->currency)->getAmount()->toFloat());
     }
 
     public function testRelatedPrice(): void
@@ -1206,7 +1020,6 @@ class SchemaTest extends TestCase
             'name' => 'Color',
             'type' => SchemaType::SELECT,
         ]);
-        $colors->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
 
         /** @var Option $red */
         $red = $colors->options()->create([
@@ -1214,24 +1027,7 @@ class SchemaTest extends TestCase
         ]);
         $red->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
 
-        /** @var Schema $multiplier */
-        $multiplier = Schema::create([
-            'name' => 'Multiplier',
-            'type' => SchemaType::MULTIPLY_SCHEMA,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-        ]);
-        $multiplier->usedSchemas()->attach($colors);
-
-        $this->assertEquals(0, $colors->getPrice($red->getKey(), [
-            $colors->getKey() => $red->getKey(),
-            $multiplier->getKey() => 2,
-        ], $this->currency)->getAmount()->toFloat());
-
-        $value = mt_rand(10, 100) / 10;
-        $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
-            $multiplier->getKey() => $value,
+        $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
         ], $this->currency)->getAmount()->toFloat());
     }
@@ -1242,14 +1038,13 @@ class SchemaTest extends TestCase
     public function testUpdateWithOptionPriceAndDisabledNull(string $user): void
     {
         $this->{$user}->givePermissionTo('products.edit');
-        $schema = $this->schemaCrudService->store(FakeDto::schemaDto());
+        $schema = $this->schemaCrudService->store(FakeDto::schemaDto(), false, false);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
 
         $option = Option::factory()->create([
             'name' => 'L',
-            'disabled' => false,
             'schema_id' => $schema->getKey(),
         ]);
         $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
@@ -1261,8 +1056,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test Updated',
-            'prices' => [['value' => 200, 'currency' => $this->currency->value]],
-            'type' => SchemaType::SELECT->name,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1271,7 +1064,6 @@ class SchemaTest extends TestCase
                 [
                     'id' => $option->getKey(),
                     'name' => 'L',
-                    'disabled' => null,
                     'items' => [
                         $item->getKey(),
                     ],
@@ -1295,8 +1087,6 @@ class SchemaTest extends TestCase
 
         $data = FakeDto::schemaData([
             'name' => 'Test',
-            'type' => SchemaType::SELECT->name,
-            'prices' => [['value' => 120, 'currency' => $this->currency->value]],
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1304,7 +1094,6 @@ class SchemaTest extends TestCase
                 [
                     'name' => 'L',
                     'prices' => null,
-                    'disabled' => null,
                     'items' => [
                         $item->getKey(),
                     ],

@@ -48,7 +48,7 @@ use App\Listeners\WebHookFailedListener;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
 use App\Models\Payment;
-use App\Models\Schema;
+use App\Models\Schema as DeprecatedSchema;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
@@ -61,6 +61,7 @@ use Domain\Page\Events\PageDeleted;
 use Domain\Page\Events\PageUpdated;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Observers\AttributeOptionObserver;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\Events\ProductSetCreated;
 use Domain\ProductSet\Events\ProductSetDeleted;
 use Domain\ProductSet\Events\ProductSetUpdated;
@@ -157,6 +158,7 @@ class EventServiceProvider extends ServiceProvider
         Deposit::observe(DepositObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
         Payment::observe(PaymentObserver::class);
+        DeprecatedSchema::observe(SchemaObserver::class);
         Schema::observe(SchemaObserver::class);
     }
 }

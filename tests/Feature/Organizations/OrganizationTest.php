@@ -16,6 +16,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use Domain\Consent\Enums\ConsentType;
+use Domain\Consent\Models\Consent;
 use Domain\Organization\Models\Organization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Support\Facades\Bus;
@@ -154,6 +156,31 @@ class OrganizationTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrganizationUsers(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.show');
+
+        $userIn = User::factory()->create();
+        $anotherUser = User::factory()->create();
+
+        $this->organization->users()->attach($userIn->getKey());
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/organizations/id:' . $this->organization->getKey() . '/users')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $userIn->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $anotherUser->getKey(),
+            ]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $address = Address::factory()->definition();
@@ -192,6 +219,7 @@ class OrganizationTest extends TestCase
                         'address' => $shippingAddress,
                     ],
                 ],
+                'consents' => [],
             ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -256,6 +284,7 @@ class OrganizationTest extends TestCase
                         'address' => $shippingAddress,
                     ],
                 ],
+                'consents' => [],
             ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -628,6 +657,7 @@ class OrganizationTest extends TestCase
                 'creator_email' => 'creator@example.com',
                 'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
                 'creator_name' => 'Jan Kowalski',
+                'consents' => [],
             ])
             ->assertCreated();
 
@@ -718,6 +748,89 @@ class OrganizationTest extends TestCase
             ]);
     }
 
+    public function testRegisterWithConsent(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.organization_register');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '321456987';
+
+        $consent = Consent::factory()->create([
+            'required' => true,
+            'type' => ConsentType::ORGANIZATION,
+        ]);
+
+        Event::fake([OrganizationCreated::class, UserCreated::class]);
+        Mail::fake();
+
+        $response = $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test.organization@example.com',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => true,
+                        'name' =>  'Shipping address',
+                        'address' => $address,
+                    ],
+                ],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+                'consents' => [
+                    $consent->getKey() => true,
+                ],
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('organizations', [
+            'billing_email' => 'test.organization@example.com',
+        ]);
+
+        $this->assertDatabaseHas('consent_organization', [
+            'consent_id' => $consent->getKey(),
+            'organization_id' => $response->getData()->data->id,
+            'value' => true,
+        ]);
+    }
+
+    public function testRegisterWithoutRequiredConsent(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.organization_register');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '321456987';
+
+        Consent::factory()->create([
+            'required' => true,
+            'type' => ConsentType::ORGANIZATION,
+        ]);
+
+        $this
+            ->json('POST', '/organizations/register', [
+                'billing_email' => 'test.organization@example.com',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => true,
+                        'name' =>  'Shipping address',
+                        'address' => $address,
+                    ],
+                ],
+                'creator_email' => 'creator@example.com',
+                'creator_password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'creator_name' => 'Jan Kowalski',
+                'consents' => [],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::REQUIREDCONSENTS->value,
+                'message' => Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS->value,
+            ]);
+    }
+
     public function testShowMyOrganizationUserWithoutOrganization(): void
     {
         $this->actingAs($this->user)
@@ -792,6 +905,36 @@ class OrganizationTest extends TestCase
             ->assertJsonFragment($address);
 
         Event::assertDispatched(OrganizationUpdated::class);
+    }
+
+    public function testEditMyOrganizationRequiredConsent(): void
+    {
+        $this->user->organizations()->attach($this->organization->getKey());
+        $address = Address::factory()->definition();
+        $address['vat'] = '123456789';
+
+        $consent = Consent::factory()->create([
+            'required' => true,
+            'type' => ConsentType::ORGANIZATION,
+        ]);
+
+        $this->organization->consents()->attach($consent->getKey(), ['value' => true]);
+
+        Event::fake(OrganizationUpdated::class);
+
+        $this->actingAs($this->user)
+            ->json('PATCH', 'my/organization', [
+                'billing_email' => 'new.email@example.com',
+                'billing_address' => $address,
+                'consents' => [
+                    $consent->getKey() => false,
+                ],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::REQUIREDCONSENTS->value,
+                'message' => Exceptions::CLIENT_NOT_ACCEPTED_ALL_REQUIRED_CONSENTS->value,
+            ]);
     }
 
     public function testEditMyOrganizationExistingVat(): void

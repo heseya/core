@@ -7,7 +7,6 @@ use App\Http\Middleware\CanDownloadDocument;
 use App\Models\Order;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('orders')->group(function (): void {

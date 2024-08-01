@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Enums\SchemaType;
-use App\Models\Schema;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

@@ -11,6 +11,7 @@ use App\Events\OrganizationCreated;
 use App\Exceptions\ClientException;
 use App\Mail\OrganizationRegistered;
 use App\Models\User;
+use Domain\Consent\Services\ConsentService;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
 use Domain\Organization\Dtos\OrganizationPublicUpdateDto;
@@ -23,6 +24,7 @@ use Domain\User\Services\AuthService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -33,6 +35,7 @@ final readonly class OrganizationService
         private OrganizationRepository $organizationRepository,
         private OrganizationSavedAddressService $organizationSavedAddressService,
         private AuthService $authService,
+        private ConsentService $consentService,
     ) {}
 
     /**
@@ -57,6 +60,8 @@ final readonly class OrganizationService
         foreach ($dto->shipping_addresses as $shipping_address) {
             $this->organizationSavedAddressService->storeAddress($shipping_address, SavedAddressType::SHIPPING, $organization->getKey(), $forceDefault);
         }
+
+        $this->consentService->syncOrganizationConsents($organization, $dto->consents);
         $organization->refresh();
 
         OrganizationCreated::dispatch($organization);
@@ -66,6 +71,7 @@ final readonly class OrganizationService
 
     public function update(Organization $organization, OrganizationUpdateDto $dto): Organization
     {
+        // TODO dodać consents
         return $this->organizationRepository->update($organization, $dto);
     }
 
@@ -87,6 +93,8 @@ final readonly class OrganizationService
             ]));
 
             $organization->users()->attach($user->getKey());
+
+            $this->consentService->syncOrganizationConsents($organization, $dto->consents);
 
             OrganizationCreated::dispatch($organization);
 
@@ -116,7 +124,16 @@ final readonly class OrganizationService
      */
     public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): Organization
     {
+        // TODO dodać consents
         return $this->organizationRepository->myUpdate($this->myOrganization(), $dto);
+    }
+
+    /**
+     * @return LengthAwarePaginator<User>
+     */
+    public function organizationUsers(Organization $organization): LengthAwarePaginator
+    {
+        return $organization->users()->paginate(Config::get('pagination.per_page'));
     }
 
     private function sendNewOrganizationAlert(Organization $organization): void

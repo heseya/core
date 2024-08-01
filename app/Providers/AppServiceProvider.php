@@ -22,14 +22,11 @@ use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
-use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
-use App\Services\Contracts\SchemaCrudServiceContract;
-use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use App\Services\Contracts\SilverboxServiceContract;
 use App\Services\Contracts\SortServiceContract;
@@ -48,14 +45,11 @@ use App\Services\MediaAttachmentService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
-use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PermissionService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
-use App\Services\SchemaCrudService;
-use App\Services\SchemaService;
 use App\Services\ShippingTimeDateService;
 use App\Services\SilverboxService;
 use App\Services\SortService;
@@ -86,10 +80,7 @@ class AppServiceProvider extends ServiceProvider
         ReorderServiceContract::class => ReorderService::class,
         NameServiceContract::class => NameService::class,
         MediaServiceContract::class => MediaService::class,
-        OptionServiceContract::class => OptionService::class,
         OrderServiceContract::class => OrderService::class,
-        SchemaServiceContract::class => SchemaService::class,
-        SchemaCrudServiceContract::class => SchemaCrudService::class,
         SettingsServiceContract::class => SettingsService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
         RoleServiceContract::class => RoleService::class,

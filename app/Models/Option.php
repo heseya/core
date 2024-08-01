@@ -8,6 +8,7 @@ use App\Traits\HasMetadata;
 use Brick\Money\Money;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +32,6 @@ class Option extends Model implements Translatable
 
     protected $fillable = [
         'name',
-        'disabled',
         'schema_id',
         'order',
         'available',
@@ -44,7 +44,6 @@ class Option extends Model implements Translatable
     ];
 
     protected $casts = [
-        'disabled' => 'bool',
         'available' => 'bool',
     ];
 

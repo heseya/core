@@ -14,6 +14,7 @@ use Domain\Metadata\Dtos\MetadataUpdateDto;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +52,7 @@ class MetadataService implements MetadataServiceContract
             'attributes' => $routeSegments[2] === 'options' ? AttributeOption::class : Attribute::class,
             'banners' => Banner::class,
             'media' => Media::class,
+            'schemas' => Schema::class,
             default => $this->getClassFromSegment($routeSegments[0]),
         };
 
@@ -114,16 +116,16 @@ class MetadataService implements MetadataServiceContract
 
     private function getClassFromSegment(string $segment): string
     {
-        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
+        // DDD structure
+        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
+            Str::singular($segment),
+        );
 
         if (class_exists($className)) {
             return $className;
         }
 
-        // DDD structure
-        $className = 'Domain\\' . Str::studly(Str::singular($segment)) . '\\Models\\' . Str::studly(
-            Str::singular($segment),
-        );
+        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
 
         if (class_exists($className)) {
             return $className;
