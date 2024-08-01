@@ -613,7 +613,7 @@ class SchemaTest extends TestCase
                                 'name' => 'A',
                             ],
                         ],
-                        'prices' => [['value' => 1000, 'currency' => $this->currency->value]],
+                        'prices' => [['value' => 0, 'currency' => $this->currency->value]],
                         'metadata_private' => [
                             'attributeMetaPriv' => 'attributeValue',
                         ],
@@ -630,7 +630,7 @@ class SchemaTest extends TestCase
                 'required' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'name' => 'A',
+                'name' => 'Test',
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
