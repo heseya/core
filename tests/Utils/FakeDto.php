@@ -190,6 +190,10 @@ final readonly class FakeDto
             }
         }
 
+        if (($data['required'] ?? false) && empty($data['default']) && !empty($data['options'])) {
+            $data['default'] = $data['options'][0]['name'] ?? $data['options'][0]['translations'][$langId]['name'];
+        }
+
         if ($returnArray) {
             return $data;
         }
