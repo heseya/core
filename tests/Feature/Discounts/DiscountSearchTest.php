@@ -196,6 +196,33 @@ class DiscountSearchTest extends TestCase
             'code' => $kind === 'coupons' ? 'TEST3' : null,
         ]);
 
+        /** @var Discount $discount4 */
+        $discount4 = Discount::factory()->create([
+
+            'code' => $kind === 'coupons' ? 'TEST4' : null,
+        ]);
+
+        /** @var ConditionGroup $conditionGroup4 */
+        $conditionGroup4 = $discount4->conditionGroups()->create();
+
+        DiscountCondition::query()->create([
+            'condition_group_id' => $conditionGroup4->getKey(),
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'is_allow_list' => true,
+                'organizations' => [$organization->getKey()],
+            ],
+        ]);
+
+        DiscountCondition::query()->create([
+            'condition_group_id' => $conditionGroup4->getKey(),
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'is_allow_list' => false,
+                'organizations' => [$organization->getKey()],
+            ],
+        ]);
+
         $this
             ->actingAs($this->user)
             ->json('GET', $kind, ['for_organization' => $organization->getKey()])
@@ -203,6 +230,7 @@ class DiscountSearchTest extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $discount->getKey()])
             ->assertJsonFragment(['id' => $discount2->getKey()])
-            ->assertJsonMissing(['id' => $discount3->getKey()]);
+            ->assertJsonMissing(['id' => $discount3->getKey()])
+            ->assertJsonMissing(['id' => $discount4->getKey()]);
     }
 }

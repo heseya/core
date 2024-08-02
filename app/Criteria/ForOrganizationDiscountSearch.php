@@ -21,7 +21,12 @@ class ForOrganizationDiscountSearch extends Criterion
                         ->where('value->is_allow_list', false)
                         ->where('value', 'NOT LIKE', "%{$this->value}%");
                 });
-            });
+            })
+                ->whereDoesntHave('conditions', function (Builder $query): void {
+                    $query->where('type', ConditionType::USER_IN_ORGANIZATION->value)
+                        ->where('value->is_allow_list', false)
+                        ->where('value', 'LIKE', "%{$this->value}%");
+                });
         });
     }
 }
