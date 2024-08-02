@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Domain\Price\Enums\ProductPriceType;
 use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
@@ -10,7 +9,6 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Price;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
@@ -21,7 +19,9 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
@@ -57,7 +57,7 @@ class ProductSeeder extends Seeder
             ->has(Price::factory()->forAllCurrencies(), 'pricesBase')
             ->create();
 
-            $sets = ProductSet::all();
+        $sets = ProductSet::all();
 
         $brands = ProductSet::factory([
             'name' => 'Brands',
@@ -131,38 +131,25 @@ class ProductSeeder extends Seeder
     private function schemas(Product $product, string $language): void
     {
         /** @var Schema $schema */
-        $schema = Schema::factory()
-            ->has(Price::factory()->forAllCurrencies())
-            ->create([
-                'type' => mt_rand(0, 6), // all types except multiply_schemas
-            ]);
+        $schema = Schema::factory()->create();
         $schemaTranslation = Schema::factory()->definition();
         $schema->setLocale($language)->fill(Arr::only($schemaTranslation, ['name', 'description']));
         $schema->fill(['published' => array_merge($schema->published ?? [], [$language])]);
+        $schema->product_id = $product->getKey();
         $schema->save();
 
-        $priceRepository = App::make(PriceRepository::class);
-        $priceRepository->setModelPrices($schema, [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(),
-        ]);
+        /** @var Item $item */
+        $item = Item::factory()->create();
+        $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
 
-        $product->schemas()->attach($schema->getKey());
-
-        if ($schema->type->is(SchemaType::SELECT)) {
-            /** @var Item $item */
-            $item = Item::factory()->create();
-            $item->deposits()->saveMany(Deposit::factory()->count(mt_rand(0, 2))->make());
-
-
-            Option::factory([
-                'schema_id' => $schema->getKey(),
-            ])->has(Price::factory()->forAllCurrencies())
-                ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
-                    $optionTranslation = Option::factory()->definition();
-                    $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
-                    $option->save();
-                });
-        }
+        Option::factory([
+            'schema_id' => $schema->getKey(),
+        ])->has(Price::factory()->forAllCurrencies())
+            ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
+                $optionTranslation = Option::factory()->definition();
+                $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
+                $option->save();
+            });
     }
 
     private function media(Product $product): void

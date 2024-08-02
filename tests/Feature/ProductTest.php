@@ -4,10 +4,8 @@ namespace Tests\Feature;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
-use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductPriceUpdated;
@@ -19,14 +17,12 @@ use App\Models\Media;
 use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Models\Schema;
 use App\Models\WebHook;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -40,6 +36,8 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
@@ -117,12 +115,10 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'Rozmiar',
-                'type' => SchemaType::SELECT,
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'required' => true,
-            ])
+                'product_id' => $this->product->getKey(),
+            ], false, false)
         );
-        $this->product->schemas()->attach($schema->getKey());
 
         $this->travel(5)->hours();
 
@@ -209,7 +205,6 @@ class ProductTest extends TestCase
                         [
                             'name' => 'XL',
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                            'disabled' => false,
                             'available' => true,
                             'items' => [
                                 [
@@ -222,7 +217,6 @@ class ProductTest extends TestCase
                         [
                             'name' => 'L',
                             //'prices' => [['value' => 0, 'currency' => $this->currency->value]],
-                            'disabled' => false,
                             'available' => false,
                             'items' => [
                                 [
@@ -2103,9 +2097,9 @@ class ProductTest extends TestCase
             'description_html' => null,
         ]);
 
-        $this->assertDatabaseHas('product_schemas', [
+        $this->assertDatabaseHas('schemas', [
             'product_id' => $response->json('data.id'),
-            'schema_id' => $schema->getKey(),
+            'id' => $schema->getKey(),
         ]);
 
         Event::assertDispatched(ProductCreated::class);
@@ -2253,9 +2247,13 @@ class ProductTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::STRING,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -2309,11 +2307,16 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.add');
 
         $schemaPrice = 50;
+
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::STRING,
                 'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
@@ -3252,18 +3255,22 @@ class ProductTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.edit');
 
-        $this->product->schemas()->detach();
+        Schema::where('product_id', $this->product->id)->delete();
 
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $productNewPrice = 250;
@@ -3310,13 +3317,17 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => false,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
 
-        $this->product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($this->product);
 
         $saleValue = 25;
@@ -3381,58 +3392,6 @@ class ProductTest extends TestCase
             'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => ($productNewPrice + $schemaPrice - $saleValue) * 100,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateSchemaMinMaxPrice(string $user): void
-    {
-        $this->{$user}->givePermissionTo('products.edit');
-
-        $schemaPrice = 50;
-        $schema = $this->schemaCrudService->store(
-            FakeDto::schemaDto([
-                'type' => 0,
-                'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
-            ])
-        );
-
-        $this->product->schemas()->attach($schema->getKey());
-        $this->productService->updateMinMaxPrices($this->product);
-
-        $schemaNewPrice = 75;
-        $response = $this->actingAs($this->{$user})->patchJson(
-            '/schemas/id:' . $schema->getKey(),
-            FakeDto::schemaData([
-                'name' => 'Test Updated',
-                'prices' => [['value' => $schemaNewPrice, 'currency' => Currency::DEFAULT->value]],
-                'type' => 'string',
-                'required' => false,
-            ])
-        );
-
-        $response->assertValid()->assertOk();
-
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MIN,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => (100 + $schemaNewPrice) * 100,
-            'currency' => $this->currency->value,
         ]);
     }
 
@@ -3615,13 +3574,16 @@ class ProductTest extends TestCase
         $schemaPrice = 50;
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 0,
                 'required' => true,
-                'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                'product_id' => $this->product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [['value' => $schemaPrice, 'currency' => Currency::DEFAULT->value]],
+                    ]
+                ]
             ])
         );
-
-        $this->product->schemas()->attach($schema->getKey());
 
         $this->productService->updateMinMaxPrices($this->product);
 
@@ -3828,10 +3790,10 @@ class ProductTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test schema',
+                'product_id' => $this->product->getKey(),
             ])
         );
 
-        $this->product->schemas()->save($schema);
         $this->product->update(['has_schemas' => true]);
 
         $this->actingAs($this->{$user})->json('delete', 'schemas/id:' . $schema->getKey());
@@ -3876,12 +3838,12 @@ class ProductTest extends TestCase
         $this->{$user}->givePermissionTo('products.edit');
 
         Schema::query()->delete();
+
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test schema',
             ])
         );
-
         $this->product->schemas()->save($schema);
 
         $this->product->update(['has_schemas' => true]);

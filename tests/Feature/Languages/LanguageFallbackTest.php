@@ -5,13 +5,12 @@ namespace Tests\Feature\Languages;
 use App\Enums\SchemaType;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 

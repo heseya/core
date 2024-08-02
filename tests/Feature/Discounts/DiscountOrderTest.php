@@ -4,7 +4,6 @@ namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -16,7 +15,6 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
-use App\Services\SchemaCrudService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -24,6 +22,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
@@ -477,14 +476,11 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'name' => 'test',
-                'type' => SchemaType::STRING,
                 'required' => true,
-                'prices' => [PriceDto::from(Money::of(0, $this->currency->value))],
                 'published' => [$this->lang],
+                'product_id' => $this->product->getKey(),
             ])
         );
-
-        $this->product->schemas()->attach($schema->getKey());
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -513,7 +509,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 2,
                     'schemas' => [
-                        $schema->getKey() => 'TEST-VALUE',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -547,7 +543,7 @@ class DiscountOrderTest extends TestCase
 
         $this->assertDatabaseHas('order_schemas', [
             'name' => 'test',
-            'value' => 'TEST-VALUE',
+            'value' => 'Test',
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
@@ -557,7 +553,7 @@ class DiscountOrderTest extends TestCase
         ]);
         $this->assertDatabaseHas('order_schemas', [
             'name' => 'test',
-            'value' => 'TEST-VALUE',
+            'value' => 'Test',
             'order_product_id' => OrderProduct::query()
                 ->where('order_id', $order->getKey())
                 ->where('product_id', $this->product->getKey())
@@ -863,13 +859,16 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => 'string',
-                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
                 'hidden' => false,
+                'product_id' => $product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                    ]
+                ]
             ])
         );
-
-        $product->schemas()->save($schema);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -898,7 +897,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => 'Test',
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -929,13 +928,16 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::BOOLEAN,
-                'prices' => [['value' => 20, 'currency' => $this->currency->value]],
                 'hidden' => false,
+                'product_id' => $product->getKey(),
+                'options' => [
+                    [
+                        'name' => 'Default',
+                        'prices' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                    ]
+                ]
             ])
         );
-
-        $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -965,7 +967,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 3,
                     'schemas' => [
-                        $schema->getKey() => true,
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
             ],
@@ -995,13 +997,10 @@ class DiscountOrderTest extends TestCase
 
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
-                'type' => SchemaType::BOOLEAN,
-                'price' => 10,
                 'hidden' => false,
+                'product_id' => $product->getKey(),
             ])
         );
-
-        $product->schemas()->sync([$schema->getKey()]);
 
         $sale = Discount::factory()->create([
             'target_type' => DiscountTargetType::PRODUCTS,
@@ -1031,7 +1030,7 @@ class DiscountOrderTest extends TestCase
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schema->getKey() => true,
+                        $schema->getKey() => $schema->options->first()->getKey(),
                     ],
                 ],
                 [

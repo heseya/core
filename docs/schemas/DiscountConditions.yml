@@ -17,6 +17,7 @@ ConditionGroup:
           - $ref: '#/WeekdayIn'
           - $ref: '#/CartLength'
           - $ref: '#/CouponsCount'
+          - $ref: '#/UserInOrganization'
 
 ConditionGroupShow:
   type: object
@@ -40,6 +41,7 @@ ConditionGroupShow:
           - $ref: '#/WeekdayInShow'
           - $ref: '#/CartLengthShow'
           - $ref: '#/CouponsCountShow'
+          - $ref: '#/UserInOrganizationShow'
 
 OrderValue:
   type: object
@@ -338,6 +340,29 @@ CouponsCountShow:
   type: object
   allOf:
     - $ref: '#CouponsCount'
+    - properties:
+        id:
+          type: string
+          format: uuid
+
+UserInOrganization:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'user-in-role'
+    organizations:
+      type: array
+      items:
+        type: string
+        format: uuid
+    is_allow_list:
+      type: boolean
+
+UserInOrganizationShow:
+  type: object
+  allOf:
+    - $ref: '#UserInOrganization'
     - properties:
         id:
           type: string

@@ -40,6 +40,7 @@ class ConditionGroupDto extends Dto
                 ConditionType::USER_IN => UserInConditionDto::fromArray($condition),
                 ConditionType::USER_IN_ROLE => UserInRoleConditionDto::fromArray($condition),
                 ConditionType::WEEKDAY_IN => WeekDayInConditionDto::fromArray($condition),
+                ConditionType::USER_IN_ORGANIZATION => UserInOrganizationConditionDto::fromArray($condition),
                 default => throw new Exception('Unknown condition type.'),
             };
         }

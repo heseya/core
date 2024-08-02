@@ -157,3 +157,21 @@ MyOrganizations:
                 data:
                   $ref: './../schemas/Organizations.yml#/OrganizationView'
               type: object
+
+OrganizationUsers:
+  get:
+    tags:
+      - Organizations
+    summary: 'organization users'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Users.yml#/User'
+              type: object

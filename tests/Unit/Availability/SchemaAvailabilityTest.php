@@ -11,35 +11,6 @@ class SchemaAvailabilityTest extends TestCase
 {
     use AvailabilityUntiles;
 
-    /**
-     * All schema types without SELECT.
-     */
-    public static function schemaTypesProvider(): array
-    {
-        return Collection::make(SchemaType::cases())
-            ->where(fn ($type) => $type !== SchemaType::SELECT)
-            ->mapWithKeys(fn ($type) => [$type->name => [$type->value]])
-            ->all();
-    }
-
-    /**
-     * Without any options schema should be available.
-     *
-     * @dataProvider schemaTypesProvider
-     */
-    public function testNoOptions(int $type): void
-    {
-        $schema = $this->createSchema([
-            'type' => $type,
-        ]);
-
-        $availability = $this->availabilityService->getCalculateSchemaAvailability($schema);
-
-        $this->assertTrue($availability['available']);
-        $this->assertNull($availability['shipping_time']);
-        $this->assertNull($availability['shipping_date']);
-    }
-
     public function testWithoutOptions(): void
     {
         $schema = $this->createSchema([

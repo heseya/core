@@ -14,11 +14,11 @@ use App\Exceptions\ClientException;
 use App\Models\Item;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\Schema;
 use App\Models\User;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use Domain\Metadata\Models\Metadata;
+use Domain\ProductSchema\Models\Schema;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -149,6 +149,16 @@ class ItemService implements ItemServiceContract
             }
 
             $schemas = $item->getSchemas();
+
+            if (!empty($schemas)) {
+                $schema_ids = array_keys($schemas);
+                $schema_ids = array_unique($schema_ids);
+
+                if ($product->schemas()->whereIn('id', $schema_ids)->count() !== count($schema_ids)) {
+                    $cartItemToRemove[] = $item->getCartItemId();
+                    continue;
+                }
+            }
 
             $productItems = [];
             /** @var Item $productItem */

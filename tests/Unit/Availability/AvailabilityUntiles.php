@@ -4,9 +4,9 @@ namespace Tests\Unit\Availability;
 
 use App\Models\Item;
 use App\Models\Option;
-use App\Models\Schema;
 use App\Services\AvailabilityService;
 use App\Services\DepositService;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Support\Collection;
 
 trait AvailabilityUntiles

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\SchemaType;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
@@ -19,21 +20,16 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->name),
+            'type' => Str::lower(SchemaType::SELECT->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
-            'prices' => PriceResource::collection($this->resource->prices),
             'hidden' => $this->resource->hidden,
             'required' => $this->resource->required,
             'available' => $this->resource->available,
-            'max' => $this->resource->max,
-            'min' => $this->resource->min,
-            'step' => $this->resource->step,
             'default' => $this->resource->default,
-            'pattern' => $this->resource->pattern,
-            'validation' => $this->resource->validation,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
+            'product_id' => $this->resource->product_id,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
             ...$this->metadataResource('schemas.show_metadata_private'),
@@ -48,7 +44,10 @@ class SchemaResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'products' => ProductResource::collection($this->resource->products),
+            'product' => ProductResource::make($this->resource->product),
+            'products' => [
+                ProductResource::collection([$this->resource->product]),
+            ],
         ];
     }
 }

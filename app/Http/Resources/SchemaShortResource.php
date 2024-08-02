@@ -13,11 +13,11 @@ class SchemaShortResource extends Resource
             'id' => $this->resource->getKey(),
             'type' => Str::lower($this->resource->type->name),
             'name' => $this->resource->name,
-            'price' => $this->resource->price,
             'hidden' => $this->resource->hidden,
             'required' => $this->resource->required,
             'available' => $this->resource->available,
             'default' => $this->resource->default,
+            'product_id' => $this->resource->product_id,
         ];
     }
 }

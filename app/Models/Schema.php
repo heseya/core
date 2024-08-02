@@ -33,6 +33,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 /**
+ * @deprecated
+ *
  * @property string $name
  * @property string $description
  * @property SchemaType $type
@@ -56,16 +58,12 @@ class Schema extends Model implements SortableContract, Translatable
         'description',
         'hidden',
         'required',
-        'max',
-        'min',
-        'step',
         'default',
-        'pattern',
-        'validation',
         'available',
         'shipping_time',
         'shipping_date',
         'published',
+        'product_id',
     ];
 
     protected array $translatable = [
@@ -115,14 +113,6 @@ class Schema extends Model implements SortableContract, Translatable
             return;
         }
 
-        if ($this->max) {
-            $validation->push('max:' . $this->max);
-        }
-
-        if ($this->min) {
-            $validation->push('min:' . $this->min);
-        }
-
         if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this));
@@ -140,8 +130,6 @@ class Schema extends Model implements SortableContract, Translatable
 
         $validationStrings = [
             'attribute' => $this->name,
-            'min' => $this->min,
-            'max' => $this->max,
         ];
 
         $validator = Validator::make(
@@ -296,5 +284,10 @@ class Schema extends Model implements SortableContract, Translatable
         }
 
         return $price;
+    }
+
+    public function getMorphClass()
+    {
+        return 'Schema';
     }
 }

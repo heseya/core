@@ -3,13 +3,14 @@
 use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\Schema;
+use App\Models\Schema as DeprecatedSchema;
 use App\Models\Status;
 use Domain\Banner\Models\BannerMedia;
 use Domain\Consent\Models\Consent;
 use Domain\Page\Page;
-use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Models\Attribute;
+use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Seo\Models\SeoMetadata;
@@ -36,6 +37,7 @@ return [
         ProductSet::class,
         Option::class,
         Product::class,
+        DeprecatedSchema::class,
         Schema::class,
         Consent::class,
         Attribute::class,

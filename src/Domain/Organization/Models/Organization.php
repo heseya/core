@@ -8,6 +8,8 @@ use App\Enums\SavedAddressType;
 use App\Models\Address;
 use App\Models\Model;
 use App\Models\User;
+use Domain\Consent\Models\Consent;
+use Domain\Consent\Models\ConsentOrganization;
 use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @mixin IdeHelperOrganization
+ */
 final class Organization extends Model
 {
     use HasCriteria;
@@ -82,5 +87,15 @@ final class Organization extends Model
     public function salesChannel(): BelongsTo
     {
         return $this->belongsTo(SalesChannel::class);
+    }
+
+    /**
+     * @return BelongsToMany<Consent>
+     */
+    public function consents(): BelongsToMany
+    {
+        return $this->belongsToMany(Consent::class)
+            ->using(ConsentOrganization::class)
+            ->withPivot('value');
     }
 }
