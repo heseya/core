@@ -8,8 +8,10 @@ use Domain\Language\Events\LanguageCreated;
 use Domain\Language\Events\LanguageDeleted;
 use Domain\Language\Events\LanguageUpdated;
 use Domain\Language\Language;
+use Domain\Organization\Models\Organization;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Seo\Models\SeoMetadata;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -325,6 +327,35 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateToHiddenWithSalesChannel($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
+        $channel = SalesChannel::factory()->create(['language_id' => $language->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$language->getKey()}", [
+                'hidden' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('sales_channels', [
+            'id' => $channel->getKey(),
+            'language_id' => $this->language->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateToVisible($user): void
     {
         $this->$user->givePermissionTo('languages.edit');
@@ -332,7 +363,7 @@ class LanguageTest extends TestCase
         $language = Language::create([
             'iso' => 'nl',
             'name' => 'Netherland',
-            'hidden' => true,
+            'hidden' => false,
             'default' => false,
         ]);
 
@@ -341,7 +372,7 @@ class LanguageTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('PATCH', "/languages/id:{$language->getKey()}", [
-                'hidden' => false,
+                'hidden' => true,
             ])
             ->assertOk();
 

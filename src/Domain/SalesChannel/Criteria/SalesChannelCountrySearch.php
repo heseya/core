@@ -8,7 +8,7 @@ use Domain\SalesChannel\Models\SalesChannel;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-final class CountrySearch extends Criterion
+final class SalesChannelCountrySearch extends Criterion
 {
     /**
      * @param Builder<SalesChannel> $query
@@ -17,8 +17,10 @@ final class CountrySearch extends Criterion
      */
     public function query(Builder $query): Builder
     {
-        return $query->whereHas('countries', function (Builder $query): void {
-            $query->where('code', '=', $this->value);
+        return $query->whereHas('shippingMethods', function (Builder $query): void {
+            $query->whereHas('countries', function (Builder $query): void {
+                $query->where('code', '=', $this->value);
+            });
         });
     }
 }

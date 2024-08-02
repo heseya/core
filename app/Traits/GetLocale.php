@@ -15,8 +15,8 @@ trait GetLocale
             $salesChannel = request()->header('X-Sales-Channel');
             if ($salesChannel) {
                 $salesChannel = app(SalesChannelRepository::class)->getOne($salesChannel);
-                if ($salesChannel->defaultLanguage) {
-                    return explode('-', $salesChannel->defaultLanguage->iso)[0];
+                if ($salesChannel->language) {
+                    return explode('-', $salesChannel->language->iso)[0];
                 }
             }
         }

@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -28,10 +29,10 @@ return new class extends Migration
             $table->text('name');
             $table->string('vat_rate', 9);
             $table->string('slug', 32);
-            $table->enum('status', array_map(fn ($enum) => $enum->value, Status::cases()));
-            $table->boolean('countries_block_list');
-            $table->string('default_currency', 9);
-            $table->uuid('default_language_id');
+            $table->enum('status', array_map(fn ($enum) => $enum->value, SalesChannelStatus::cases()));
+            $table->boolean('countries_block_list')->default(true);
+            $table->string('default_currency', 9)->default(Currency::DEFAULT);
+            $table->uuid('default_language_id')->default(Language::default()?->getKey());
             $table->timestamps();
         });
 
@@ -45,7 +46,7 @@ return new class extends Migration
         /** @var SalesChannel $channel */
         $channel = SalesChannel::query()->make([
             'slug' => 'default',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
             'countries_block_list' => true,
             'default_currency' => Currency::DEFAULT,
             'default_language_id' => Language::default()?->getKey(),

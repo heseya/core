@@ -31,6 +31,7 @@ use App\Models\UserPreference;
 use App\Models\WebHook;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Domain\Language\Language;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\User\Services\OneTimeSecurityCodeService;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -1011,7 +1012,7 @@ class AuthTest extends TestCase
             'default' => false,
         ]);
 
-        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+        $salesChannel = SalesChannel::factory()->create(['status' => SalesChannelStatus::PUBLIC->value, 'language_id' => $en->getKey()]);
 
         $user = User::factory()->create([
             'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
@@ -2707,7 +2708,7 @@ class AuthTest extends TestCase
             'default' => false,
         ]);
 
-        $salesChannel = SalesChannel::factory()->create(['status' => Status::ACTIVE, 'default_language_id' => $en->getKey()]);
+        $salesChannel = SalesChannel::factory()->create(['status' => SalesChannelStatus::PUBLIC, 'language_id' => $en->getKey()]);
 
         $email = $this->faker->email();
         $this->json('POST', '/register', [

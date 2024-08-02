@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;
 use Domain\ProductSchema\Services\SchemaCrudService;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
@@ -103,7 +104,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '0.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -143,7 +144,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '25.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -183,7 +184,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '12',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -231,7 +232,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '0.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -271,7 +272,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '25.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -311,7 +312,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '12',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
