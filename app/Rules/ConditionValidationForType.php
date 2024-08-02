@@ -97,6 +97,11 @@ class ConditionValidationForType implements DataAwareRule, ValidationRule, Valid
                         'weekday' => ['required', 'array', 'min:7', 'max:7'],
                         'weekday.*' => ['required', 'boolean'],
                     ],
+                    ConditionType::USER_IN_ORGANIZATION->value => [
+                        'is_allow_list' => ['required', 'boolean'],
+                        'organizations' => ['required', 'array'],
+                        'organizations.*' => ['uuid', 'exists:organizations,id'],
+                    ],
                     default => [],
                 },
             ],
