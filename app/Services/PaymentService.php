@@ -38,6 +38,10 @@ final class PaymentService
             throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
         }
 
+        if (!$order->payable) {
+            throw new ClientException(Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT);
+        }
+
         if (!PaymentMethod::searchByCriteria([
             'id' => $paymentMethod->getKey(),
             'public' => true,
@@ -147,6 +151,10 @@ final class PaymentService
     {
         /** @var Order $order */
         $order = Order::query()->findOrFail($dto->getOrderId());
+
+        if (!$order->payable) {
+            throw new ClientException(Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT);
+        }
 
         return Payment::create([
             'currency' => $order->currency,

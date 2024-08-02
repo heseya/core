@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
 use App\Enums\RoleType;
 use App\Enums\ShippingType;
 use App\Enums\ValidationError;
@@ -38,6 +39,8 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\PaymentMethods\Enums\PaymentMethodType;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSchema\Services\SchemaCrudService;
@@ -77,6 +80,7 @@ class OrderCreateTest extends TestCase
     private DiscountRepository $discountRepository;
     private SchemaCrudService $schemaCrudService;
     private ProductRepository $productRepository;
+    private PaymentMethod $paymentMethod;
 
     /**
      * @throws UnknownCurrencyException
@@ -134,6 +138,10 @@ class OrderCreateTest extends TestCase
 
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+
+        $this->paymentMethod = PaymentMethod::factory()->create([
+            'type' => PaymentMethodType::PREPAID,
+        ]);
     }
 
     public function testCreateOrderUnauthorized(): void
@@ -154,6 +162,7 @@ class OrderCreateTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertForbidden();
@@ -195,6 +204,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -274,6 +284,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 20,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])->assertCreated();
 
         Mail::assertSent(\App\Mail\OrderCreated::class);
@@ -312,6 +323,7 @@ class OrderCreateTest extends TestCase
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
                 ],
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -354,6 +366,7 @@ class OrderCreateTest extends TestCase
                 'metadata_private' => [
                     'attributeMetaPriv' => 'attributeValue',
                 ],
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -410,6 +423,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -467,6 +481,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -519,6 +534,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 20,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
@@ -548,6 +564,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 20,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
@@ -591,6 +608,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -696,6 +714,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -782,6 +801,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -849,6 +869,7 @@ class OrderCreateTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -916,6 +937,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -965,6 +987,7 @@ class OrderCreateTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -1022,6 +1045,7 @@ class OrderCreateTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -1145,6 +1169,7 @@ class OrderCreateTest extends TestCase
                 $discount->code,
                 $couponShipping->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated()
@@ -1217,6 +1242,7 @@ class OrderCreateTest extends TestCase
                 'country' => 'PL',
             ],
             'items' => [],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1251,6 +1277,7 @@ class OrderCreateTest extends TestCase
                             'quantity' => 20,
                         ],
                     ],
+                    'payment_method_id' => $this->paymentMethod->getKey(),
                 ],
             )
             ->assertUnprocessable();
@@ -1310,6 +1337,7 @@ class OrderCreateTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1367,6 +1395,7 @@ class OrderCreateTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1421,6 +1450,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -1490,6 +1520,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -1555,6 +1586,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();
@@ -1619,6 +1651,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1674,6 +1707,7 @@ class OrderCreateTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1733,6 +1767,7 @@ class OrderCreateTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1790,6 +1825,7 @@ class OrderCreateTest extends TestCase
             'sale_ids' => [
                 $discount->getKey(),
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertStatus(422);
@@ -1816,6 +1852,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -1859,6 +1896,7 @@ class OrderCreateTest extends TestCase
                         'quantity' => 20,
                     ],
                 ],
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated();
 
@@ -1899,6 +1937,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])->assertUnprocessable()
             ->assertJsonFragment([
                 'message' => Exceptions::PRODUCT_PURCHASE_LIMIT,
@@ -1944,6 +1983,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
@@ -1989,6 +2029,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
@@ -2034,6 +2075,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated();
     }
@@ -2079,6 +2121,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])->assertCreated();
     }
 
@@ -2129,7 +2172,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
-            'currency' => Currency::DEFAULT->value,
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertValid()->assertCreated();
@@ -2158,7 +2201,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
-            'currency' => Currency::DEFAULT->value,
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertUnprocessable();
@@ -2220,6 +2263,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'language' => 'en',
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ], [
             'Accept-Language' => 'en, pl, es',
         ])
@@ -2285,6 +2329,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'language' => $language,
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -2352,6 +2397,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'language' => 'en',
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ], [
             'Accept-Language' => 'en, pl, es',
         ])
@@ -2414,6 +2460,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertJsonFragment([
                 'shipping_place.name' => [[
@@ -2467,6 +2514,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertJsonMissing([
                 'shipping_place.name' => [[
@@ -2513,6 +2561,7 @@ class OrderCreateTest extends TestCase
                     ]
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
@@ -2572,6 +2621,7 @@ class OrderCreateTest extends TestCase
                     ]
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
@@ -2626,11 +2676,129 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertUnprocessable()
             ->assertJsonFragment([
                 'key' => Exceptions::CLIENT_PRODUCT_OPTION->name,
                 'message' => Exceptions::CLIENT_PRODUCT_OPTION->value,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderDefaultPayment($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->paymentMethod->update([
+            'creates_default_payment' => true,
+            'type' => PaymentMethodType::POSTPAID,
+        ]);
+
+        $productQuantity = 2;
+
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'payable' => false,
+            ])
+            ->assertJsonFragment([
+                'id' => $this->paymentMethod->getKey(),
+                'type' => $this->paymentMethod->type,
+            ]);
+
+        /** @var Order $order */
+        $order = Order::find($response->getData()->data->id);
+
+        $orderTotal = $this->productPrice->multipliedBy($productQuantity);
+
+        $shippingPrice = $this->shippingMethod->getPrice($orderTotal);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'email' => $this->email,
+            'payment_method_type' => $this->paymentMethod->type,
+        ]);
+        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->getKey(),
+            'method_id' => $this->paymentMethod->getKey(),
+            'status' => PaymentStatus::PENDING,
+            'amount' => $orderTotal->plus($shippingPrice)->getMinorAmount(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderNoDefaultPayment($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->paymentMethod->update([
+            'creates_default_payment' => false,
+        ]);
+
+        $productQuantity = 2;
+
+        $response = $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'payable' => true,
+                'payment_method' => null,
+            ]);
+
+        /** @var Order $order */
+        $order = Order::find($response->getData()->data->id);
+
+        $orderTotal = $this->productPrice->multipliedBy($productQuantity);
+
+        $shippingPrice = $this->shippingMethod->getPrice($orderTotal);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'email' => $this->email,
+            'payment_method_type' => $this->paymentMethod->type,
+        ]);
+        $this->assertDatabaseMissing('payments', [
+            'order_id' => $order->getKey(),
+            'method_id' => $this->paymentMethod->getKey(),
+            'status' => PaymentStatus::PENDING,
+            'amount' => $orderTotal->plus($shippingPrice)->getMinorAmount(),
+        ]);
     }
 }

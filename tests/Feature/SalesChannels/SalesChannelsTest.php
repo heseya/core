@@ -8,6 +8,7 @@ use App\Enums\ShippingType;
 use App\Services\ProductService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Mail;
@@ -101,6 +102,9 @@ final class SalesChannelsTest extends TestCase
             'value' => Money::of(10, $currency->value),
         ]);
 
+        /** @var PaymentMethod $paymentMethod */
+        $paymentMethod = PaymentMethod::factory()->create();
+
         /** @var ProductService $productService */
         $productService = app(ProductService::class);
 
@@ -144,6 +148,7 @@ final class SalesChannelsTest extends TestCase
                         'quantity' => 2,
                     ],
                 ],
+                'payment_method_id' => $paymentMethod->getKey(),
             ])
             ->assertCreated();
 
@@ -152,6 +157,7 @@ final class SalesChannelsTest extends TestCase
             'summary' => '3460',
             'cart_total' => '2460', // without shipping
             'cart_total_initial' => '2460',
+            'payment_method_type' => $paymentMethod->type,
         ]);
 
         $this->assertDatabaseHas('order_products', [

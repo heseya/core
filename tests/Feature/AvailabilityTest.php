@@ -23,6 +23,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -49,6 +50,7 @@ class AvailabilityTest extends TestCase
     private ShippingMethodServiceContract $shippingMethodService;
     private SchemaCrudService $schemaCrudService;
     private Currency $currency;
+    private PaymentMethod $paymentMethod;
 
     public static function multipleSchemasProvider(): array
     {
@@ -84,6 +86,7 @@ class AvailabilityTest extends TestCase
         $this->schemaCrudService = App::make(SchemaCrudService::class);
 
         $this->currency = Currency::DEFAULT;
+        $this->paymentMethod = PaymentMethod::factory()->create();
     }
 
     /**
@@ -391,6 +394,7 @@ class AvailabilityTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $this->assertTrue(!$this->product->refresh()->available);
@@ -470,6 +474,7 @@ class AvailabilityTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])->assertCreated();
 
         $order = Order::find($response->getData()->data->id);
@@ -659,6 +664,7 @@ class AvailabilityTest extends TestCase
                     'schemas' => $schemas,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated();
 

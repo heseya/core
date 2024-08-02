@@ -21,6 +21,8 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Enums\PaymentMethodType;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Criteria\Like;
@@ -72,6 +74,7 @@ final class Order extends Model implements SortableContract
         'shipping_price',
         'summary',
         'language',
+        'payment_method_type',
     ];
 
     protected array $criteria = [
@@ -110,6 +113,7 @@ final class Order extends Model implements SortableContract
         'shipping_price_initial' => MoneyCast::class,
         'shipping_price' => MoneyCast::class,
         'summary' => MoneyCast::class,
+        'payment_method_type' => PaymentMethodType::class,
     ];
 
     /**
@@ -136,16 +140,25 @@ final class Order extends Model implements SortableContract
             ->orderBy('updated_at', 'DESC');
     }
 
+    public function getPaymentMethodAttribute(): ?PaymentMethod
+    {
+        /** @var Payment|null $payment */
+        $payment = $this->payments
+            ->sortBy('created_at')
+            ->first();
+
+        return $payment?->paymentMethod;
+    }
+
     public function getPayableAttribute(): bool
     {
-        $paymentMethodCount = $this->shippingMethod?->paymentMethods->count()
-            ?? $this->digitalShippingMethod?->paymentMethods->count()
-            ?? 0;
+        if ($this->payment_method_type === PaymentMethodType::POSTPAID) {
+            return false;
+        }
 
         return !$this->paid
             && $this->status !== null
-            && !$this->status->cancel
-            && $paymentMethodCount > 0;
+            && !$this->status->cancel;
     }
 
     public function getShippingTypeAttribute(): ?ShippingType

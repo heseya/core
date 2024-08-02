@@ -20,6 +20,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSchema\Services\SchemaCrudService;
@@ -44,6 +45,7 @@ class DiscountOrderTest extends TestCase
     private Currency $currency;
     private SchemaCrudService $schemaCrudService;
     private DiscountRepository $discountRepository;
+    private PaymentMethod $paymentMethod;
 
     /**
      * @throws UnknownCurrencyException
@@ -87,6 +89,8 @@ class DiscountOrderTest extends TestCase
 
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
+
+        $this->paymentMethod = PaymentMethod::factory()->create();
     }
 
     /**
@@ -112,6 +116,7 @@ class DiscountOrderTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -158,6 +163,7 @@ class DiscountOrderTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -188,6 +194,7 @@ class DiscountOrderTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -432,6 +439,7 @@ class DiscountOrderTest extends TestCase
                 $sale2->getKey(),
                 $sale3->getKey(),
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '542.00']);
@@ -513,6 +521,7 @@ class DiscountOrderTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -653,6 +662,7 @@ class DiscountOrderTest extends TestCase
                 $sale2->getKey(),
                 $sale3->getKey(),
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -708,6 +718,7 @@ class DiscountOrderTest extends TestCase
             'sales_ids' => [
                 $sale1->getKey(),
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -774,6 +785,7 @@ class DiscountOrderTest extends TestCase
             'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '34.00']); // 3 * (10 - 2) + 10 (delivery)
@@ -833,6 +845,7 @@ class DiscountOrderTest extends TestCase
             'shipping_place' => $this->address,
             'billing_address' => $this->address,
             'items' => $items,
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '110.01']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
@@ -902,6 +915,7 @@ class DiscountOrderTest extends TestCase
                 ],
             ],
             'email' => 'info@example.com',
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '20.00']); // (10 + 20 - 20) + 10 (delivery)
@@ -971,6 +985,7 @@ class DiscountOrderTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '70.00']); // 3 * (30 - 10) + 10 (delivery)
@@ -1038,6 +1053,7 @@ class DiscountOrderTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
             ->assertJsonFragment(['summary' => '110.01']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
@@ -1089,6 +1105,7 @@ class DiscountOrderTest extends TestCase
                     'quantity' => 3,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response
@@ -1189,6 +1206,7 @@ class DiscountOrderTest extends TestCase
             'coupons' => [
                 $discount->code,
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $response->assertCreated();

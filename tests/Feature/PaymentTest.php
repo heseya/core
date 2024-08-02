@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\Status;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Config;
@@ -712,5 +713,70 @@ final class PaymentTest extends TestCase
             'status' => PaymentStatus::SUCCESSFUL->value,
             'method_id' => $paymentMethod->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPaymentPostpaidOrder($user): void
+    {
+        $this->{$user}->givePermissionTo('payments.add');
+
+        $code = $this->order->code;
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+            'type' => PaymentMethodType::POSTPAID,
+            'creates_default_payment' => true,
+        ]);
+
+        $this->order->update([
+            'payment_method_type' => $paymentMethod->type,
+        ]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson("/orders/{$code}/pay/id:" . $paymentMethod->getKey(), [
+                'continue_url' => 'continue_url',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT->name,
+                'message' => Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT->value,
+            ]);
+    }
+
+    public function testStorePostpaidOrder(): void
+    {
+        $this->appUser->givePermissionTo('payments.add');
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $this->appUser->getKey(),
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+            'type' => PaymentMethodType::POSTPAID,
+            'creates_default_payment' => true,
+        ]);
+
+        $this->order->update([
+            'payment_method_type' => $paymentMethod->type,
+        ]);
+
+        $response = $this->actingAs($this->appUser)->json('POST', '/payments', [
+            'amount' => 100,
+            'currency' => $this->order->currency->value,
+            'status' => PaymentStatus::PENDING,
+            'order_id' => $this->order->getKey(),
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT->name,
+                'message' => Exceptions::CLIENT_ORDER_POSTPAID_PAYMENT->value,
+            ]);
     }
 }
