@@ -7,13 +7,10 @@ use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;
 use Domain\ProductSchema\Services\SchemaCrudService;
-use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
-use Support\Enum\Status;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
 

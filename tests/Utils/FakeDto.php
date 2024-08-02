@@ -184,6 +184,10 @@ final readonly class FakeDto
 
                 $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
             }
+
+            if (($data['required'] ?? false) && empty($data['default'])) {
+                $data['default'] = $data['options'][0]['name'] ?? $data['options'][0]['translations'][$langId]['name'];
+            }
         }
 
         if (($data['required'] ?? false) && empty($data['default']) && !empty($data['options'])) {

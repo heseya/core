@@ -26,6 +26,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
@@ -60,6 +61,7 @@ class DiscountTest extends TestCase
     private array $expectedStructure;
     private ProductRepositoryContract $productRepository;
     private Currency $currency;
+    private Organization $organization;
 
     public static function timeConditionProvider(): array
     {
@@ -136,6 +138,7 @@ class DiscountTest extends TestCase
         $this->conditionUser = User::factory()->create();
         $this->conditionProduct = Product::factory()->create();
         $this->conditionProductSet = ProductSet::factory()->create();
+        $this->organization = Organization::factory()->create();
 
         $this->minValues = [];
         $this->maxValues = [];
@@ -227,6 +230,13 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::COUPONS_COUNT,
                 'min_value' => 1,
                 'max_value' => 10,
+            ],
+            [
+                'type' => ConditionType::USER_IN_ORGANIZATION,
+                'organizations' => [
+                    $this->organization->getKey(),
+                ],
+                'is_allow_list' => true,
             ],
         ];
 
