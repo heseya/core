@@ -33,7 +33,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
-use Domain\PriceMap\PriceMapPrice;
+use Domain\PriceMap\PriceMapProductPrice;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
@@ -359,9 +359,9 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->morphMany(Price::class, 'model');
     }
 
-    public function mapPrices(): MorphMany
+    public function mapPrices(): HasMany
     {
-        return $this->morphMany(PriceMapPrice::class, 'model');
+        return $this->hasMany(PriceMapProductPrice::class);
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder

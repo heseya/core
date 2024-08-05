@@ -1,0 +1,19 @@
+PriceMapCreate:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - name
+          - currency
+          - is_net
+        allOf:
+          - $ref: "./../schemas/PriceMap.yml#/PriceMap"
+
+PriceMapUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: "./../schemas/PriceMap.yml#/PriceMap"

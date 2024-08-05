@@ -1,0 +1,17 @@
+PriceMap:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      description: "Name of the price map"
+    description:
+      type: string
+      description: "Description of the permission"
+    currency:
+      type: string
+      example: "PLN"
+    is_net:
+      type: boolean

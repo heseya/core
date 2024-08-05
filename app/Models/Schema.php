@@ -21,11 +21,13 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
@@ -175,6 +177,11 @@ class Schema extends Model implements SortableContract, Translatable
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
+    }
+
+    public function mapPrices(): HasManyThrough
+    {
+        return $this->hasManyThrough(PriceMapSchemaOptionPrice::class, Option::class, 'schema_id', 'option_id');
     }
 
     public function setTypeAttribute(mixed $value): void

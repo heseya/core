@@ -1,47 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\PriceMap;
 
 use App\Models\Model;
+use App\Models\Product;
 use Brick\Money\Money;
-use Database\Factories\PriceFactory;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\LaravelData\WithData;
 
 /**
- * @property Money $value
- * @property string $currency
- *
- * @method static PriceFactory factory()
- *
- * @mixin IdeHelperPriceMapPrice
+ * @mixin IdeHelperPriceMapProductPrice
  */
-class PriceMapPrice extends Model
+final class PriceMapProductPrice extends Model
 {
     use HasFactory;
+    /**
+     * @use WithData<PriceDto>
+     */
     use WithData;
 
     protected string $dataClass = PriceDto::class;
 
     protected $fillable = [
-        'value',
         'currency',
-        'price_map_id',
-        'model_id',
-        'model_type',
         'is_net',
+        'price_map_id',
+        'product_id',
+        'value',
     ];
 
     protected $casts = [
-        'is_net' => 'bool',
         'currency' => Currency::class,
+        'is_net' => 'bool',
     ];
 
+    /**
+     * @return Attribute<Money,int|Money|string>
+     */
     public function value(): Attribute
     {
         return Attribute::make(
@@ -61,11 +62,17 @@ class PriceMapPrice extends Model
         );
     }
 
-    public function model(): MorphTo
+    /**
+     * @return BelongsTo<Product,self>
+     */
+    public function product(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * @return BelongsTo<PriceMap,self>
+     */
     public function map(): BelongsTo
     {
         return $this->belongsTo(PriceMap::class, 'price_map_id');
