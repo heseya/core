@@ -43,6 +43,7 @@ final class PaymentTest extends TestCase
             'public' => true,
             'name' => 'Payu',
             'alias' => 'payu',
+            'type' => PaymentMethodType::PREPAID,
         ]);
         $this->shippingMethod->paymentMethods()->save($this->paymentMethod);
         $status = Status::factory()->create();
@@ -206,6 +207,7 @@ final class PaymentTest extends TestCase
             'public' => true,
             'name' => 'Payu',
             'alias' => 'payu',
+            'type' => PaymentMethodType::PREPAID,
         ]);
         $digitalShippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
@@ -620,6 +622,43 @@ final class PaymentTest extends TestCase
         ]);
     }
 
+    public function testUpdateSuccessful(): void
+    {
+        $this->appUser->givePermissionTo('payments.edit');
+        $paymentMethod = PaymentMethod::factory()->create([
+            'name' => 'test',
+            'app_id' => $this->appUser->getKey(),
+        ]);
+
+        $payment = Payment::factory()->create([
+            'method_id' => $paymentMethod->getKey(),
+            'order_id' => $this->order->getKey(),
+            'currency' => $this->order->currency,
+            'status' => PaymentStatus::PENDING,
+            'amount' => 100,
+        ]);
+
+        $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
+            'status' => PaymentStatus::SUCCESSFUL,
+        ])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    'method' => $paymentMethod->name,
+                    'method_id' => $paymentMethod->getKey(),
+                    'status' => PaymentStatus::SUCCESSFUL->value,
+                    'amount' => 100,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->getKey(),
+            'method_id' => $paymentMethod->getKey(),
+            'status' => PaymentStatus::SUCCESSFUL->value,
+            'amount' => 10000, // database stores minor units
+        ]);
+    }
+
     public function testUpdateOtherAppPayment(): void
     {
         $this->appUser->givePermissionTo('payments.edit');
@@ -683,6 +722,7 @@ final class PaymentTest extends TestCase
         $paymentMethod = PaymentMethod::factory()->create([
             'alias' => null,
             'public' => true,
+            'type' => PaymentMethodType::PREPAID,
         ]);
         $this->shippingMethod->paymentMethods()->attach($paymentMethod->getKey());
 
