@@ -67,6 +67,9 @@ OrderCreate:
             $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
+          payment_method_id:
+            type: string
+            format: uuid
 
 OrderUpdate:
   content:
