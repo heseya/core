@@ -52,9 +52,9 @@ class ProductAttributeSearch extends Criterion
                             } elseif (Arr::has($value, 'value')) {
                                 if ($key === 'attribute_options.name') {
                                     if (is_array($value['value'])) {
-                                        $query->where(function (QueryBuilder $q) use ($value): void {
+                                        $query->where(function (QueryBuilder $q) use ($value, $key): void {
                                             foreach ($value['value'] as $search) {
-                                                $q->orWhere('name', 'like', "%{$search}%");
+                                                $q->orWhere($key, 'like', "%{$search}%");
                                             }
                                         });
                                     } else {
