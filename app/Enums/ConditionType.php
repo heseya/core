@@ -24,4 +24,5 @@ enum ConditionType: string
     case USER_IN = 'user-in';
     case USER_IN_ROLE = 'user-in-role';
     case WEEKDAY_IN = 'weekday-in';
+    case USER_IN_ORGANIZATION = 'user-in-organization';
 }

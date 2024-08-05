@@ -20,6 +20,7 @@ final readonly class SchemaService
         if ($product->schemas->isEmpty() && $product->has_schemas) {
             $product->update(['has_schemas' => false]);
         }
+
         if ($product->schemas->isNotEmpty() && !$product->has_schemas) {
             $product->update(['has_schemas' => true]);
         }
@@ -29,6 +30,7 @@ final readonly class SchemaService
                 $schema->product()
                     ->associate($product)
                     ->save();
+                $product->oldSchemas()->detach($schema->getKey());
             }
         });
     }
