@@ -9,9 +9,6 @@ use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\PriceMap\Dtos\PriceMapCreateDto;
 use Domain\PriceMap\Dtos\PriceMapUpdateDto;
-use Domain\PriceMap\PriceMap;
-use Domain\PriceMap\PriceMapProductPrice;
-use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Illuminate\Database\Eloquent\Collection;
 
 final readonly class PriceMapService
