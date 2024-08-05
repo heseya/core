@@ -17,6 +17,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
@@ -1652,6 +1653,90 @@ class DiscountConditionsCheckTest extends TestCase
                 Money::zero($this->currency->value),
                 $cart
             ) === $result
+        );
+    }
+
+    public function testCheckConditionUserInOrganizationPass(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->users()->attach($user->getKey());
+
+        Auth::setUser($user);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'organizations' => [$organization->getKey()],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
+    }
+
+    public function testCheckConditionUserInOrganizationAllowListFalsePass(): void
+    {
+        $user = User::factory()->create();
+        $userOrganization = Organization::factory()->create();
+        $organization = Organization::factory()->create();
+
+        $userOrganization->users()->attach($user->getKey());
+        Auth::setUser($user);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'organizations' => [$organization->getKey()],
+                'is_allow_list' => false,
+            ],
+        ]);
+
+        $this->assertTrue(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
+    }
+
+    public function testCheckConditionUserInOrganizationFail(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+
+        Auth::setUser($user);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'organizations' => [$organization->getKey()],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
+        );
+    }
+
+    public function testCheckConditionUserInOrganizationAllowListFalseFail(): void
+    {
+        $user = User::factory()->create();
+        $organization = Organization::factory()->create();
+        $organization->users()->attach($user->getKey());
+
+        Auth::setUser($user);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::USER_IN_ORGANIZATION,
+            'value' => [
+                'organizations' => [$organization->getKey()],
+                'is_allow_list' => false,
+            ],
+        ]);
+
+        $this->assertFalse(
+            $this->discountService->checkCondition($discountCondition, Money::zero($this->currency->value))
         );
     }
 

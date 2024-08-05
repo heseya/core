@@ -23,6 +23,7 @@ class CouponIndexDto extends SaleIndexDto implements InstantiateFromRequest
             code: $request->input('code', new Missing()),
             for_role: $request->input('for_role', new Missing()),
             ids: $request->input('ids', new Missing()),
+            for_organization: $request->input('for_organization', new Missing()),
         );
     }
 

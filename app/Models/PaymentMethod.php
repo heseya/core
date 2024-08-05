@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\WhereHasOrderWithCode;
 use App\Criteria\WhereHasShippingMethod;
 use App\Criteria\WhereInIds;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,5 +56,13 @@ class PaymentMethod extends Model
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);
+    }
+
+    /**
+     * @return BelongsToMany<SalesChannel>
+     */
+    public function salesChannels(): BelongsToMany
+    {
+        return $this->belongsToMany(SalesChannel::class, 'sales_channel_payment_method');
     }
 }

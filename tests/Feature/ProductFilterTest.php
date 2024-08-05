@@ -7,10 +7,10 @@ use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;
 use Domain\ProductSchema\Services\SchemaCrudService;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
-use Support\Enum\Status;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
 
@@ -103,7 +103,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '0.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -143,7 +143,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '25.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -177,13 +177,56 @@ class ProductFilterTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testProductMaxPriceWithVatHiddenChannel(string $user): void
+    {
+        $this->{$user}->givePermissionTo(['products.show']);
+
+        // Default from migration with vat_rate 0
+        $defaultChannel = SalesChannel::query()->where('default', '=', true)->first();
+
+        $saleChannel = SalesChannel::factory()->create([
+            'vat_rate' => '25.0',
+            'status' => SalesChannelStatus::PRIVATE->value,
+        ]);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'GET',
+                '/products?price.currency=' . Currency::DEFAULT->value . '&price.max=10',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '8.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testProductMaxPriceWithVatRoundingCheck(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '12',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -231,7 +274,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '0.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -271,7 +314,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '25.0',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -311,7 +354,7 @@ class ProductFilterTest extends TestCase
 
         $saleChannel = SalesChannel::factory()->create([
             'vat_rate' => '12',
-            'status' => Status::ACTIVE->value,
+            'status' => SalesChannelStatus::PUBLIC->value,
         ]);
 
         $product1 = $this->prepareProduct('10.00');

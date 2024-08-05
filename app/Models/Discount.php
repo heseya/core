@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\DiscountSearch;
+use App\Criteria\ForOrganizationDiscountSearch;
 use App\Criteria\ForRoleDiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
@@ -89,6 +90,7 @@ class Discount extends Model implements SeoContract, Translatable
         'ids' => WhereInIds::class,
         'published' => Like::class,
         'discounts.published' => Like::class,
+        'for_organization' => ForOrganizationDiscountSearch::class,
     ];
 
     public function scopeWithOrdersCount(Builder $query): Builder

@@ -153,6 +153,10 @@ enum Exceptions: string
     case CLIENT_ORGANIZATION_ADDRESS_REMOVE_DEFAULT = 'You cannot delete default organization address.';
     case CLIENT_USER_NOT_IN_ORGANIZATION = 'You don\'t belong to an organization';
     case CLIENT_ORGANIZATION_INVALID_ADDRESS = 'Invalid organization address';
+    case CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC = 'Default sales channel must be active and public';
+    case CLIENT_SALES_CHANNEL_ORGANIZATION_ACTIVE = 'Sales channel in organization cannot be deactivated';
+    case CLIENT_SALES_CHANNEL_DEFAULT = 'There must be exactly one default sales channel.';
+    case CLIENT_SALES_CHANNEL_DEFAULT_DELETE = 'You cannot delete default sales channel.';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
