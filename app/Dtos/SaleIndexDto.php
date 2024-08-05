@@ -17,6 +17,7 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
     protected Missing|string $for_role;
     protected bool $coupon;
     protected array|Missing $ids;
+    protected Missing|string $for_organization;
 
     public static function instantiateFromRequest(FormRequest|SaleIndexRequest $request): self
     {
@@ -28,6 +29,7 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
             for_role: $request->input('for_role', new Missing()),
             coupon: false,
             ids: $request->input('ids', new Missing()),
+            for_organization: $request->input('for_organization', new Missing()),
         );
     }
 
