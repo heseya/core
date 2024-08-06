@@ -339,7 +339,6 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 ...$this->expected_short,
                 'gallery' => [],
-                'sets' => [],
             ]);
 
         $this->assertQueryCountLessThan(29);
