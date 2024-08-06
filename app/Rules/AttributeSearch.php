@@ -46,6 +46,9 @@ class AttributeSearch implements Rule
             if (Arr::hasAny($value, ['min', 'max'])) {
                 return true;
             }
+            if (Arr::has($value, 'value')) {
+                return true;
+            }
             if (!empty($value)) {
                 foreach ($value as $option) {
                     if (!Uuid::isValid($option)) {
@@ -78,6 +81,20 @@ class AttributeSearch implements Rule
             return false;
         }
 
+        if (Arr::has($value, 'value')) {
+            if (is_array($value['value'])) {
+                foreach ($value['value'] as $item) {
+                    if (!is_numeric($item)) {
+                        return false;
+                    }
+                }
+            } elseif (!is_numeric($value['value'])) {
+                $this->message = "Field 'value' for attribute `{$this->attributeName}` must be a number or array of numbers.";
+
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -105,6 +122,10 @@ class AttributeSearch implements Rule
             /** @var string $value */
             $value = Str::replace('%2C', ',', $value);
             $value = explode(',', $value);
+        }
+
+        if (array_key_exists('value', $value)) {
+            return true;
         }
 
         foreach ($value as $option) {
