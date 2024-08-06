@@ -368,9 +368,9 @@ paths:
     $ref: ./paths/Organizations.yml#/OrganizationRegister
   /my/organization:
     $ref: ./paths/Organizations.yml#/MyOrganizations
-  /my/organization/saved-addresses:
+  /my/organization/shipping-addresses:
     $ref: ./paths/OrganizationSavedAddresses.yml#/MyOrganizationSavedAddresses
-  /my/organization/saved-addresses/id:{id}:
+  /my/organization/shipping-addresses/id:{id}:
     $ref: ./paths/OrganizationSavedAddresses.yml#/MyOrganizationSavedAddressesParams
 components:
   schemas:

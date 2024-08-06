@@ -681,6 +681,12 @@ class OrganizationTest extends TestCase
             'email' => 'creator@example.com',
         ]);
 
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'organization_id' => $response->getData()->data->id,
+            'name' => 'Shipping address',
+            'default' => true,
+        ]);
+
         /** @var User $user */
         $user = User::query()->where('email', '=', 'creator@example.com')->first();
 

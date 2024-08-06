@@ -71,7 +71,6 @@ final readonly class OrganizationService
 
     public function update(Organization $organization, OrganizationUpdateDto $dto): Organization
     {
-        // TODO dodać consents
         return $this->organizationRepository->update($organization, $dto);
     }
 
@@ -84,6 +83,12 @@ final readonly class OrganizationService
     {
         return DB::transaction(function () use ($dto): Organization {
             $organization = $this->organizationRepository->registerOrganization($dto);
+
+            $forceDefault = count($dto->shipping_addresses) === 1;
+            /** @var OrganizationSavedAddressCreateDto $shipping_address */
+            foreach ($dto->shipping_addresses as $shipping_address) {
+                $this->organizationSavedAddressService->storeAddress($shipping_address, SavedAddressType::SHIPPING, $organization->getKey(), $forceDefault);
+            }
 
             $user = $this->authService->register(RegisterDto::from([
                 'email' => $dto->creator_email,

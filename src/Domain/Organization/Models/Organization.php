@@ -8,6 +8,7 @@ use App\Enums\SavedAddressType;
 use App\Models\Address;
 use App\Models\Model;
 use App\Models\User;
+use App\Traits\HasDiscountConditions;
 use Domain\Consent\Models\Consent;
 use Domain\Consent\Models\ConsentOrganization;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class Organization extends Model
 {
     use HasCriteria;
+    use HasDiscountConditions;
     use HasFactory;
 
     protected $fillable = [

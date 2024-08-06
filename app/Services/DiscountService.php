@@ -979,6 +979,10 @@ readonly class DiscountService implements DiscountServiceContract
                 $discountCondition->users()->attach($condition->getUsers());
             }
 
+            if (method_exists($condition, 'getOrganizations')) {
+                $discountCondition->organizations()->attach($condition->getOrganizations());
+            }
+
             if (method_exists($condition, 'getMinValues')) {
                 if ($condition->getMinValues() instanceof Missing) {
                     if ($discountCondition->exists) {

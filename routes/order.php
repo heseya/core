@@ -25,7 +25,7 @@ Route::prefix('orders')->group(function (): void {
     });
     /** @deprecated  */
     Route::get('my-products', function (): Application|RedirectResponse|\Illuminate\Foundation\Application {
-        return redirect('my/products');
+        return redirect('my/orders/products');
     });
 
     Route::get('id:{order:id}', [OrderController::class, 'show'])
