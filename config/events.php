@@ -48,6 +48,9 @@ return [
         EventType::FAILED_LOGIN_ATTEMPT->value => ['users.show_details'],
         EventType::ORDER_UPDATED_SHIPPING_NUMBER->value => ['orders.show_details', 'orders.show'],
         EventType::SEND_ORDER_URLS->value => ['orders.show_details', 'orders.show'],
+        EventType::ORGANIZATION_CREATED->value => ['organizations.show'],
+        EventType::ORGANIZATION_UPDATED->value => ['organizations.show'],
+        EventType::ORGANIZATION_DELETED->value => ['organizations.show'],
     ],
 
     'permissions_hidden' => [

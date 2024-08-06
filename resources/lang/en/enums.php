@@ -49,5 +49,8 @@ return [
         EventType::LANGUAGE_CREATED->value => 'Event triggered when new language are created',
         EventType::LANGUAGE_UPDATED->value => 'Event triggered after language is updated',
         EventType::LANGUAGE_DELETED->value => 'Event triggered after language is deleted',
+        EventType::ORGANIZATION_CREATED->value => 'Event triggered when new organizations are created',
+        EventType::ORGANIZATION_UPDATED->value => 'Event triggered after organization is updated',
+        EventType::ORGANIZATION_DELETED->value => 'Event triggered after organization is deleted',
     ],
 ];

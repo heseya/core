@@ -49,5 +49,8 @@ return [
         EventType::LANGUAGE_CREATED->value => 'Zdarzenie wyzwalane po utworzeniu nowego języka',
         EventType::LANGUAGE_UPDATED->value => 'Zdarzenie wyzwalane po aktualizacji języka',
         EventType::LANGUAGE_DELETED->value => 'Zdarzenie wyzwalane po usunięciu języka',
+        EventType::ORGANIZATION_CREATED->value => 'Zdarzenie wyzwalane po utworzeniu nowej organizacji',
+        EventType::ORGANIZATION_UPDATED->value => 'Zdarzenie wyzwalane po aktualizacji organizacji',
+        EventType::ORGANIZATION_DELETED->value => 'Zdarzenie wyzwalane po usunięciu organizacji',
     ],
 ];

@@ -4,12 +4,10 @@ Organizations:
       - Organizations
     summary: 'organizations list'
     parameters:
-      - name: status
+      - name: is_complete
         in: query
-        description: 'Sorting string.'
         schema:
-          type: string
-          example: 'Verified'
+          type: boolean
     security:
       - BearerAuth: [ organizations.show ]
     responses:

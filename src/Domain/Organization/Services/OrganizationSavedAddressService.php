@@ -14,6 +14,7 @@ use Domain\Organization\Dtos\OrganizationSavedAddressUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationSavedAddress;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -73,10 +74,7 @@ final class OrganizationSavedAddressService
     public function updateAddress(OrganizationSavedAddress $address, OrganizationSavedAddressUpdateDto $dto, SavedAddressType $type): OrganizationSavedAddress
     {
         DB::transaction(function () use ($address, $dto, $type): void {
-            $address->update([
-                'name' => $dto->name,
-                'default' => $dto->default,
-            ]);
+            $address->update(Arr::except($dto->toArray(), 'address'));
 
             if (!($dto->address instanceof Optional)) {
                 $address->address?->update($dto->address->toArray());
