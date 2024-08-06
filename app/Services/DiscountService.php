@@ -816,10 +816,13 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         $products = $products->unique();
-        $this->applyDiscountsOnProductsLazy(
-            $products,
-            $this->getSalesWithBlockList(),
-        );
+
+        if ($products->isNotEmpty()) {
+            $this->applyDiscountsOnProductsLazy(
+                $products,
+                $this->getSalesWithBlockList(),
+            );
+        }
 
         Cache::put('sales.active', $activeSalesIds);
     }

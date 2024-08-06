@@ -123,6 +123,19 @@ class ProductRepository implements ProductRepositoryContract
             ]);
         }
 
+        if (is_bool($dto->with_sets) && $dto->with_sets) {
+            $query->with([
+                'sets',
+                'sets.metadata',
+                'sets.metadataPrivate',
+                'sets.media',
+                'sets.media.metadata',
+                'sets.media.metadataPrivate',
+                'sets.childrenPublic',
+                'sets.parent',
+            ]);
+        }
+
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
