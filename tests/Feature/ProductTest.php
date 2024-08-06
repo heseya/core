@@ -319,6 +319,90 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexWithGallery(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['with_gallery' => true])
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonFragment([
+                ...$this->expected_short,
+                'gallery' => [],
+            ]);
+
+        $this->assertQueryCountLessThan(29);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithSets(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['with_sets' => true])
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonFragment([
+                ...$this->expected_short,
+                'sets' => [],
+            ]);
+
+        $this->assertQueryCountLessThan(29);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithDescription(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['with_description' => true])
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonFragment([
+                ...$this->expected_short,
+                'description_html' => $this->product->description_html,
+            ]);
+
+        $this->assertQueryCountLessThan(29);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowWithTranslationsFlagHidden(string $user): void
     {
         $this->{$user}->givePermissionTo(['products.show_details', 'products.show_hidden']);

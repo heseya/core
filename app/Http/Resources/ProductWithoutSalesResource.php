@@ -27,6 +27,16 @@ class ProductWithoutSalesResource extends Resource
 
     public function base(Request $request): array
     {
+        $sets = [];
+        if ($request->boolean('with_sets')) {
+            $sets = Gate::denies('product_sets.show_hidden')
+                ? $this->resource->sets->filter(
+                    fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
+                )
+                : $this->resource->sets;
+            $sets = ['sets' => ProductSetResource::collection($sets)];
+        }
+
         $data = [
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
@@ -49,12 +59,15 @@ class ProductWithoutSalesResource extends Resource
             'quantity' => $this->resource->quantity,
             'shipping_digital' => $this->resource->shipping_digital,
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
+            'description_html' => $this->when($request->boolean('with_description'), $this->resource->description_html),
+            'gallery' => $this->when($request->boolean('with_gallery'), MediaResource::collection($this->resource->media)),
         ];
 
         return array_merge(
             $data,
             $request->boolean('with_translations') ? $this->getAllTranslations('products.show_hidden') : [],
             $this->metadataResource('products.show_metadata_private'),
+            $sets,
         );
     }
 

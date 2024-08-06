@@ -63,6 +63,7 @@ final class ProductSearchDto extends Data
         public array|Optional $metadata_public,
         public Optional|ProductSearchPriceDto $price,
         public bool|Optional $full,
+        public bool|Optional $with_sets,
     ) {
         if ($this->sort instanceof Optional) {
             $this->sort = null;
