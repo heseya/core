@@ -188,6 +188,24 @@ Products:
         schema:
           type: string
         description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
+      - name: with_gallery
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "If true returns product gallery"
+      - name: with_sets
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "If true returns product sets"
+      - name: with_description
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "If true returns product descriptions on list"
     responses:
       200:
         description: Success
