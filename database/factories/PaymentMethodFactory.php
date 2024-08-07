@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Illuminate\Support\Str;
 
@@ -31,6 +32,8 @@ class PaymentMethodFactory extends Factory
             'public' => $this->faker->boolean,
             'icon' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
             'url' => $this->faker->url,
+            'type' => $this->faker->randomElement(PaymentMethodType::cases())->value,
+            'creates_default_payment' => $this->faker->boolean,
         ];
     }
 

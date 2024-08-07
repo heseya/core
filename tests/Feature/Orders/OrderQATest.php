@@ -16,6 +16,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -42,6 +43,7 @@ class OrderQATest extends TestCase
     private Product $product;
     private ShippingMethod $shippingMethod;
     private DiscountRepository $discountRepository;
+    private PaymentMethod $paymentMethod;
 
     /**
      * @throws RoundingNecessaryException
@@ -71,6 +73,8 @@ class OrderQATest extends TestCase
         ]);
         $this->shippingMethod->priceRanges()->save($freeRange);
         $this->discountRepository = App::make(DiscountRepository::class);
+
+        $this->paymentMethod = PaymentMethod::factory()->create();
     }
 
     public function testSalesAndCode(): void
@@ -206,6 +210,7 @@ class OrderQATest extends TestCase
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
                 'currency' => $currency,
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated();
 
@@ -259,6 +264,7 @@ class OrderQATest extends TestCase
                 'shipping_place' => self::ADDRESS,
                 'billing_address' => self::ADDRESS,
                 'currency' => $currency,
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated();
 

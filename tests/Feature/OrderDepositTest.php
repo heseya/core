@@ -19,6 +19,7 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
@@ -48,6 +49,7 @@ class OrderDepositTest extends TestCase
     private Currency $currency;
 
     private SchemaCrudService $schemaCrudService;
+    private PaymentMethod $paymentMethod;
 
     /**
      * @throws UnknownCurrencyException
@@ -90,6 +92,7 @@ class OrderDepositTest extends TestCase
         $this->address = Address::factory()->create();
         $this->addressExpected = $this->address->only(['name', 'phone', 'address', 'zip', 'city', 'country', 'id']);
 
+        $this->paymentMethod = PaymentMethod::factory()->create();
         $this->request = [
             'currency' => $this->currency,
             'sales_channel_id' => SalesChannel::query()->value('id'),
@@ -106,6 +109,7 @@ class OrderDepositTest extends TestCase
                     ],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ];
     }
 
@@ -431,6 +435,7 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -496,6 +501,7 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -555,6 +561,7 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [
@@ -719,6 +726,7 @@ class OrderDepositTest extends TestCase
                     'schemas' => [],
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/cart/process', [

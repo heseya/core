@@ -51,6 +51,7 @@ class OrderCreateRequest extends OrderItemsRequest
                 ],
 
                 'invoice_requested' => ['boolean'],
+                'payment_method_id' => ['required', 'uuid', 'exists:payment_methods,id'],
             ],
         );
     }

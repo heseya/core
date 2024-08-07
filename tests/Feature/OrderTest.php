@@ -53,6 +53,7 @@ class OrderTest extends TestCase
     private array $expected_full_structure;
     private array $expected_full_view_structure;
     private Currency $currency;
+    private PaymentMethod $paymentMethod;
 
     public function setUp(): void
     {
@@ -165,6 +166,8 @@ class OrderTest extends TestCase
             'billing_address',
             'shipping_number',
         ];
+
+        $this->paymentMethod = PaymentMethod::factory()->create();
     }
 
     public function testIndexUnauthorized(): void
@@ -1665,6 +1668,7 @@ class OrderTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -1727,6 +1731,7 @@ class OrderTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
         ]);
 
         $this->assertDatabaseHas('orders', [

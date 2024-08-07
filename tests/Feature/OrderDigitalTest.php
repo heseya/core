@@ -7,6 +7,7 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ class OrderDigitalTest extends TestCase
     private ShippingMethod $physicalShippingMethod;
     private array $billingAddress;
     private Currency $currency;
+    private PaymentMethod $paymentMethod;
 
     public function setUp(): void
     {
@@ -59,6 +61,8 @@ class OrderDigitalTest extends TestCase
             'city' => 'Bydgoszcz',
             'country' => 'PL',
         ];
+
+        $this->paymentMethod = PaymentMethod::factory()->create();
     }
 
     /**
@@ -82,6 +86,7 @@ class OrderDigitalTest extends TestCase
                         'quantity' => 1,
                     ],
                 ],
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated()
             ->assertJsonPath('data.shipping_method', null)
@@ -120,6 +125,7 @@ class OrderDigitalTest extends TestCase
                         'quantity' => 1,
                     ],
                 ],
+                'payment_method_id' => $this->paymentMethod->getKey(),
             ])
             ->assertCreated()
             ->assertJsonPath('data.shipping_method.id', $this->physicalShippingMethod->getKey())

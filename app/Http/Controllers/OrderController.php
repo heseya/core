@@ -69,6 +69,7 @@ class OrderController extends Controller
                 'metadata',
                 'metadataPrivate',
                 'payments',
+                'payments.paymentMethod',
             ]);
 
         return OrderResource::collection(

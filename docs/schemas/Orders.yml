@@ -70,6 +70,10 @@ Order:
     language:
       type: string
       example: pl
+    payment_method_type:
+      type: string
+    payment_method:
+      $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
 
 OrderProduct:
   type: object

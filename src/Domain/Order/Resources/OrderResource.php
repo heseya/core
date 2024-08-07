@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Traits\MetadataResource;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
+use Domain\PaymentMethods\Resources\PaymentMethodResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -61,6 +62,8 @@ final class OrderResource extends Resource
             'created_at' => $this->resource->created_at,
             'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
+            'payment_method' => $this->resource->payment_method ? PaymentMethodResource::make($this->resource->payment_method) : null,
+            'payment_method_type' => $this->resource->payment_method_type,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 

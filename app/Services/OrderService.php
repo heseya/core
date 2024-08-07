@@ -11,6 +11,7 @@ use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
@@ -28,6 +29,7 @@ use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Status;
 use App\Models\User;
@@ -43,6 +45,7 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Order\Resources\OrderResource;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSchema\Models\Schema;
 use Domain\SalesChannel\SalesChannelService;
@@ -175,6 +178,9 @@ final readonly class OrderService implements OrderServiceContract
             /** @var User|App $buyer */
             $buyer = Auth::user();
 
+            /** @var PaymentMethod $paymentMethod */
+            $paymentMethod = PaymentMethod::query()->where('id', '=', $dto->getPaymentMethodId())->first();
+
             /** @var Order $order */
             $order = Order::query()->create(
                 [
@@ -193,6 +199,7 @@ final readonly class OrderService implements OrderServiceContract
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
+                    'payment_method_type' => $paymentMethod->type,
                 ] + $dto->toArray(),
             );
 
@@ -349,6 +356,14 @@ final readonly class OrderService implements OrderServiceContract
                 throw $exception;
             }
 
+            if ($paymentMethod->creates_default_payment) {
+                $order->payments()->save(new Payment([
+                    'amount' => $order->summary,
+                    'method_id' => $paymentMethod->getKey(),
+                    'status' => PaymentStatus::PENDING->value,
+                ]));
+            }
+
             DB::commit();
             OrderCreated::dispatch($order);
 
@@ -456,6 +471,7 @@ final readonly class OrderService implements OrderServiceContract
                 'products',
                 'discounts',
                 'payments',
+                'payments.paymentMethod',
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
