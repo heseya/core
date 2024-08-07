@@ -8,7 +8,7 @@ use App\Models\Model;
 use App\Models\Product;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
+use Domain\PriceMap\Resources\PriceMapProductPriceData;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,11 +21,11 @@ final class PriceMapProductPrice extends Model
 {
     use HasFactory;
     /**
-     * @use WithData<PriceDto>
+     * @use WithData<PriceMapProductPriceData>
      */
     use WithData;
 
-    protected string $dataClass = PriceDto::class;
+    protected string $dataClass = PriceMapProductPriceData::class;
 
     protected $fillable = [
         'currency',
