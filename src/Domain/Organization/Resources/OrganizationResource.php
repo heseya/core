@@ -21,7 +21,7 @@ final class OrganizationResource extends Resource
             'client_id' => $this->resource->client_id,
             'billing_email' => $this->resource->billing_email,
             'billing_address' => AddressResource::make($this->resource->address),
-            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
+            'sales_channel' => SalesChannelResource::make($this->resource->salesChannel)->baseOnly(),
         ];
     }
 

@@ -129,7 +129,6 @@ final readonly class OrganizationService
      */
     public function myOrganizationEdit(OrganizationPublicUpdateDto $dto): Organization
     {
-        // TODO dodać consents
         return $this->organizationRepository->myUpdate($this->myOrganization(), $dto);
     }
 
