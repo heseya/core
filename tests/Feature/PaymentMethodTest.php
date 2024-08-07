@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
 use App\Models\App;
 use App\Models\Order;
+use App\Models\Payment;
 use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -25,10 +27,12 @@ class PaymentMethodTest extends TestCase
 
         $this->payment_method = PaymentMethod::factory()->create([
             'public' => true,
+            'type' => PaymentMethodType::PREPAID,
         ]);
 
         $this->payment_method_related = PaymentMethod::factory()->create([
             'public' => true,
+            'type' => PaymentMethodType::PREPAID,
         ]);
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
@@ -37,6 +41,7 @@ class PaymentMethodTest extends TestCase
 
         $this->payment_method_hidden = PaymentMethod::factory()->create([
             'public' => false,
+            'type' => PaymentMethodType::PREPAID,
         ]);
     }
 
@@ -101,6 +106,44 @@ class PaymentMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexByOrderCodePostpaid($user): void
+    {
+        $this->{$user}->givePermissionTo('payment_methods.show');
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'type' => PaymentMethodType::POSTPAID,
+        ]);
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+        ]);
+
+        $paymentMethod->shippingMethods()->attach($shippingMethod->getKey());
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'payment_method_type' => PaymentMethodType::POSTPAID,
+        ]);
+
+        Payment::factory()->create([
+            'status' => PaymentStatus::SUCCESSFUL,
+            'amount' => $order->summary,
+            'created_at' => $order->created_at,
+            'currency' => $order->currency,
+            'order_id' => $order->getKey(),
+            'method_id' => $paymentMethod->getKey(),
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/payment-methods', ['order_code' => $order->code])
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexByOrderCodeDigitalShipping($user): void
     {
         $this->{$user}->givePermissionTo('payment_methods.show');
@@ -124,7 +167,7 @@ class PaymentMethodTest extends TestCase
         $this->{$user}->givePermissionTo('payment_methods.show');
 
         $digitalShipping = ShippingMethod::factory()->create(['public' => true]);
-        $digitalPayment = PaymentMethod::factory()->create(['public' => true]);
+        $digitalPayment = PaymentMethod::factory()->create(['public' => true, 'type' => PaymentMethodType::PREPAID]);
         $digitalPayment->shippingMethods()->attach($digitalShipping);
 
         $order = Order::factory()->create([
