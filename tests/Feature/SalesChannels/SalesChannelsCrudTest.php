@@ -183,7 +183,6 @@ final class SalesChannelsCrudTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/sales-channels/id:{$channel->getKey()}", [
                 'vat_rate' => '20',
-                'default' => false,
             ])
             ->assertOk();
 

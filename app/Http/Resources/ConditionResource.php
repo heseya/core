@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\DiscountCondition;
+use Domain\Organization\Resources\OrganizationResource;
 use Domain\ProductSet\Resources\ProductSetResource;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,10 @@ class ConditionResource extends Resource
 
         if (array_key_exists('product_sets', $value)) {
             $value['product_sets'] = ProductSetResource::collection($this->resource->productSets);
+        }
+
+        if (array_key_exists('organizations', $value)) {
+            $value['organizations'] = OrganizationResource::collection($this->resource->organizations);
         }
 
         if (array_key_exists('min_values', $value)) {

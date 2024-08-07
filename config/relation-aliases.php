@@ -15,6 +15,7 @@ use App\Models\Status;
 use App\Models\User;
 use App\Models\WebHook;
 use Domain\Banner\Models\Banner;
+use Domain\Organization\Models\Organization;
 use Domain\Page\Page;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -34,6 +35,7 @@ return [
     'Option' => Option::class,
     'Order' => Order::class,
     'OrderProduct' => OrderProduct::class,
+    'Organization' => Organization::class,
     'Page' => Page::class,
     'Permission' => Permission::class,
     'Product' => Product::class,

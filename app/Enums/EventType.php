@@ -55,6 +55,9 @@ enum EventType: string
     case USER_CREATED = 'UserCreated';
     case USER_DELETED = 'UserDeleted';
     case USER_UPDATED = 'UserUpdated';
+    case ORGANIZATION_CREATED = 'OrganizationCreated';
+    case ORGANIZATION_UPDATED = 'OrganizationUpdated';
+    case ORGANIZATION_DELETED = 'OrganizationDeleted';
 
     public const SECURED_EVENTS = [
         self::FAILED_LOGIN_ATTEMPT,

@@ -6,6 +6,9 @@ Address:
     name:
       type: string
       example: 'Johny Mielony'
+    company_name:
+      type: string
+      example: 'Johny Mielony Company'
     address:
       type: string
       example: 'Gdańska 89/1'

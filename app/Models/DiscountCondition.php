@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ConditionType;
 use Carbon\Carbon;
+use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\ProductSet\ProductSet;
@@ -102,6 +103,15 @@ class DiscountCondition extends Model
     {
         return $this->morphedByMany(
             Role::class,
+            'model',
+            'model_has_discount_conditions',
+        );
+    }
+
+    public function organizations(): MorphToMany
+    {
+        return $this->morphedByMany(
+            Organization::class,
             'model',
             'model_has_discount_conditions',
         );

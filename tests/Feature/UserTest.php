@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use Domain\Consent\Enums\ConsentType;
 use Domain\Consent\Models\Consent;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Metadata\Models\Metadata;
@@ -365,7 +366,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang], 'type' => ConsentType::USER]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -391,6 +392,7 @@ class UserTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'type' => $consent->type,
                     ],
                 ],
                 'birthday_date' => null,
@@ -415,7 +417,7 @@ class UserTest extends TestCase
             'is_tfa_active' => false,
         ])->create();
 
-        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang]]);
+        $consent = Consent::factory()->create(['required' => false, 'published' => [$this->lang], 'type' => ConsentType::USER]);
 
         $otherUser->consents()->save($consent, ['value' => true]);
 
@@ -441,6 +443,7 @@ class UserTest extends TestCase
                         'published' => [
                             $this->lang,
                         ],
+                        'type' => $consent->type,
                     ],
                 ],
                 'birthday_date' => null,

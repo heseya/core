@@ -1512,6 +1512,7 @@ class DiscountTest extends TestCase
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
                         ConditionType::ORDER_VALUE,
+                        ConditionType::USER_IN_ORGANIZATION,
                     ],
                 )
             ) {
@@ -1570,6 +1571,14 @@ class DiscountTest extends TestCase
                     'net' => $value['value'],
                     'gross' => $value['value'],
                 ], $this->maxValues),
+            ])
+            ->assertJsonFragment([
+                'type' => ConditionType::USER_IN_ORGANIZATION,
+                'is_allow_list' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'billing_email' => $this->organization->billing_email,
             ]);
 
         $discountId = $response->getData()->data->id;
@@ -2181,6 +2190,7 @@ class DiscountTest extends TestCase
                         ConditionType::PRODUCT_IN,
                         ConditionType::PRODUCT_IN_SET,
                         ConditionType::ORDER_VALUE,
+                        ConditionType::USER_IN_ORGANIZATION,
                     ],
                 )
             ) {
@@ -2239,6 +2249,14 @@ class DiscountTest extends TestCase
                     'net' => $value['value'],
                     'gross' => $value['value'],
                 ], $this->maxValues),
+            ])
+            ->assertJsonFragment([
+                'type' => ConditionType::USER_IN_ORGANIZATION,
+                'is_allow_list' => true,
+            ])
+            ->assertJsonFragment([
+                'id' => $this->organization->getKey(),
+                'billing_email' => $this->organization->billing_email,
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);

@@ -41,7 +41,7 @@ final class SalesChannelUpdateDto extends Data
         public readonly array|Optional $shipping_method_ids,
         public readonly array|Optional $payment_method_ids,
         #[Rule(new SalesChannelDefault())]
-        public readonly bool $default,
+        public readonly bool|Optional $default,
 
         // TODO: remove temp field
         #[Numeric]

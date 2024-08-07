@@ -40,14 +40,14 @@ final class AddressStoreDto extends Data
     {
         if (Str::contains(request()->url(), 'billing-addresses')) {
             return [
-                'name' => ['required_without:company_name', 'string', 'max:255'],
-                'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
+                'name' => ['required_without:address.company_name', 'string', 'max:255'],
+                'company_name' => ['string', 'nullable', 'max:255', 'required_without:address.name'],
             ];
         }
 
         return [
-            'name' => ['required_without:company_name', 'string', 'max:255', new FullName()],
-            'company_name' => ['string', 'nullable', 'max:255', 'required_without:name'],
+            'name' => ['required_without:address.company_name', 'string', 'max:255', new FullName()],
+            'company_name' => ['string', 'nullable', 'max:255', 'required_without:address.name'],
         ];
     }
 }
