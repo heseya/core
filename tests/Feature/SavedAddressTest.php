@@ -294,7 +294,7 @@ class SavedAddressTest extends TestCase
             'type' => SavedAddressType::SHIPPING,
         ]);
 
-        $response = $this->actingAs($this->{$user})
+        $this->actingAs($this->{$user})
             ->patchJson('/my/shipping-addresses/id:' . $savedAddress->getKey(), [
                 'name' => 'test2',
                 'default' => true,
