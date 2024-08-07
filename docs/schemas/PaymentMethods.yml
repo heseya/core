@@ -15,4 +15,8 @@ PaymentMethod:
       type: string
     url:
       type: string
+    type:
+      type: string
+    creates_default_payment:
+      type: boolean
   type: object

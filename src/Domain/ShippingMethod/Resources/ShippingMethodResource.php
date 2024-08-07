@@ -7,11 +7,11 @@ namespace Domain\ShippingMethod\Resources;
 use App\Http\Resources\AddressResource;
 use App\Http\Resources\CountryResource;
 use App\Http\Resources\MediaResource;
-use App\Http\Resources\PaymentMethodResource;
 use App\Http\Resources\PriceRangeResource;
 use App\Http\Resources\Resource;
 use App\Traits\MetadataResource;
 use Brick\Money\Money;
+use Domain\PaymentMethods\Resources\PaymentMethodResource;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\Request;
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\SalesChannel\Resources;
 
 use App\Http\Resources\LanguageResource;
-use App\Http\Resources\PaymentMethodResource;
 use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
+use Domain\PaymentMethods\Resources\PaymentMethodResource;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;

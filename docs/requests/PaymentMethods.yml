@@ -9,4 +9,9 @@ PaymentMethod:
       type: string
     url:
       type: string
+    type:
+      type: string
+      enum: [ 'prepaid', 'postpaid' ]
+    creates_default_payment:
+      type: boolean
   type: object

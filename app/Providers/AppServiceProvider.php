@@ -23,7 +23,6 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OrderServiceContract;
-use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
@@ -47,7 +46,6 @@ use App\Services\MediaService;
 use App\Services\MetadataService;
 use App\Services\NameService;
 use App\Services\OrderService;
-use App\Services\PaymentMethodService;
 use App\Services\PermissionService;
 use App\Services\ProviderService;
 use App\Services\ReorderService;
@@ -104,7 +102,6 @@ class AppServiceProvider extends ServiceProvider
         ProviderServiceContract::class => ProviderService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
         FavouriteServiceContract::class => FavouriteService::class,
-        PaymentMethodServiceContract::class => PaymentMethodService::class,
         MediaAttachmentServiceContract::class => MediaAttachmentService::class,
         SilverboxServiceContract::class => SilverboxService::class,
 

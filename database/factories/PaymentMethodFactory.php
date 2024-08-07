@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\PaymentMethod;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Illuminate\Support\Str;
 
 class PaymentMethodFactory extends Factory

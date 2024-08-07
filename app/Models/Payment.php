@@ -6,6 +6,7 @@ use App\Casts\MoneyCast;
 use App\Enums\PaymentStatus;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

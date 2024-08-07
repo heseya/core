@@ -6,9 +6,9 @@ namespace Tests\Feature\SalesChannels;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\ValidationError;
-use App\Models\PaymentMethod;
 use Domain\Language\Language;
 use Domain\Organization\Models\Organization;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;

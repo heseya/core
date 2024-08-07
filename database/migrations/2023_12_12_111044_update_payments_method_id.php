@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\PaymentMethod;
+use Domain\PaymentMethods\Models\PaymentMethod;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
