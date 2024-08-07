@@ -622,9 +622,9 @@ final class PaymentTest extends TestCase
         ]);
     }
 
-    public function testUpdateSuccessful(): void
+    public function testUpdateAsUser(): void
     {
-        $this->appUser->givePermissionTo('payments.edit');
+        $this->user->givePermissionTo('payments.edit');
         $paymentMethod = PaymentMethod::factory()->create([
             'name' => 'test',
             'app_id' => $this->appUser->getKey(),
@@ -638,7 +638,7 @@ final class PaymentTest extends TestCase
             'amount' => 100,
         ]);
 
-        $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
+        $this->actingAs($this->user)->json('PATCH', '/payments/id:' . $payment->getKey(), [
             'status' => PaymentStatus::SUCCESSFUL,
         ])
             ->assertOk()
