@@ -79,6 +79,49 @@ class SavedAddressTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateCompanyName(string $user): void
+    {
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
+
+        $response = $this->actingAs($this->{$user})->postJson('/my/shipping-addresses', [
+            'name' => 'test',
+            'default' => false,
+            'address' => [
+                'company_name' => 'Jan Nowak company',
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ],
+        ]);
+
+        $savedAddress = SavedAddress::where('name', 'test')->with('address')->first();
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('saved_addresses', [
+            'name' => 'test',
+            'default' => 0,
+            'type' => SavedAddressType::SHIPPING,
+            'address_id' => $savedAddress->address->getKey(),
+        ])
+            ->assertDatabaseHas('addresses', [
+                'name' => null,
+                'company_name' => 'Jan Nowak company',
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateNonLatinDefaultWithEmptyVat(string $user): void
     {
         $this->{$user}->givePermissionTo('profile.addresses_manage');
@@ -227,6 +270,61 @@ class SavedAddressTest extends TestCase
             ])
             ->assertDatabaseHas('addresses', [
                 'name' => 'Jan Nowak',
+                'phone' => '123456789',
+                'address' => 'Testowa 12',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => '10',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateCompanyName(string $user): void
+    {
+        $this->{$user}->givePermissionTo('profile.addresses_manage');
+
+        $savedAddress = SavedAddress::create([
+            'name' => 'test',
+            'default' => false,
+            'user_id' => $this->{$user}->getKey(),
+            'address_id' => $this->address->getKey(),
+            'type' => SavedAddressType::SHIPPING,
+        ]);
+
+        $response = $this->actingAs($this->{$user})
+            ->patchJson('/my/shipping-addresses/id:' . $savedAddress->getKey(), [
+                'name' => 'test2',
+                'default' => true,
+                'address' => [
+                    'name' => null,
+                    'company_name' => 'Jan Nowak company',
+                    'phone' => '123456789',
+                    'address' => 'Testowa 12',
+                    'zip' => '123',
+                    'city' => 'testcity',
+                    'country' => 'ts',
+                    'vat' => '10',
+                ],
+            ]);
+
+        $this
+            ->assertDatabaseMissing('saved_addresses', [
+                'name' => 'test',
+                'default' => false,
+                'address_id' => $this->address->getKey(),
+                'type' => SavedAddressType::SHIPPING,
+            ])
+            ->assertDatabaseHas('saved_addresses', [
+                'name' => 'test2',
+                'default' => true,
+                'address_id' => $savedAddress->address->getKey(),
+                'type' => SavedAddressType::SHIPPING,
+            ])
+            ->assertDatabaseHas('addresses', [
+                'company_name' => 'Jan Nowak company',
                 'phone' => '123456789',
                 'address' => 'Testowa 12',
                 'zip' => '123',
