@@ -12,10 +12,11 @@ return new class extends Migration
     {
         Schema::create('price_maps', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('name');
-            $table->string('description');
+            $table->string('name');
+            $table->string('description')->nullable();
             $table->string('currency');
-            $table->boolean('is_net');
+            $table->boolean('is_net')->default(false);
+            $table->boolean('prices_generated')->default(false);
 
             $table->timestamps();
         });

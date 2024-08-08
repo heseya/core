@@ -17,6 +17,7 @@ use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdateOptionDto;
 use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdatePartialDto;
 use Domain\PriceMap\Dtos\PriceMapUpdateDto;
+use Domain\PriceMap\Jobs\CreatePricesForAllProductsAndOptionsJob;
 use Domain\PriceMap\Resources\PriceMapData;
 use Domain\PriceMap\Resources\PriceMapPricesForProductData;
 use Domain\PriceMap\Resources\PriceMapProductPriceData;
@@ -50,7 +51,7 @@ final readonly class PriceMapService
         $priceMap = new PriceMap($dto->toArray());
         $priceMap->save();
 
-        $this->createPricesForAllMissingProductsAndSchemas($priceMap);
+        CreatePricesForAllProductsAndOptionsJob::dispatch($priceMap);
 
         return $priceMap;
     }

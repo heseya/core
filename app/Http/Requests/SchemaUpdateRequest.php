@@ -27,13 +27,10 @@ class SchemaUpdateRequest extends FormRequest
             'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
 
-            'default' => ['nullable', 'required_if:required,true'],
+            'default' => ['nullable', 'required_if:required,true', 'in_array:options.*.translations.*'],
 
             'options' => ['nullable', 'array'],
-            'options.*.translations' => [
-                'sometimes',
-                new Translations(['name']),
-            ],
+            'options.*.translations' => ['sometimes', new Translations(['name'])],
             'options.*.translations.*.name' => ['sometimes', 'string', 'max:255'],
 
             'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],

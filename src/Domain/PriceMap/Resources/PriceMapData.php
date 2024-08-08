@@ -15,5 +15,6 @@ final class PriceMapData extends DataWithGlobalMetadata
         public string|null $description,
         public Currency|string $currency,
         public bool $is_net,
+        public bool $prices_generated,
     ) {}
 }

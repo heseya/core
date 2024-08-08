@@ -12,14 +12,16 @@ final class CreatePricesInPriceMapsAfterOptionCreated
 {
     public function handle(OptionCreated $event): void
     {
+        $insert = [];
         foreach (PriceMap::all() as $priceMap) {
-            PriceMapSchemaOptionPrice::create([
+            $insert[] = [
                 'price_map_id' => $priceMap->getKey(),
                 'option_id' => $event->getOption()->getKey(),
                 'currency' => $priceMap->currency,
                 'is_net' => $priceMap->is_net,
                 'value' => 0,
-            ]);
+            ];
         }
+        PriceMapSchemaOptionPrice::query()->insert($insert);
     }
 }

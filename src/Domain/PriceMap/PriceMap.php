@@ -34,6 +34,7 @@ final class PriceMap extends Model
     protected $casts = [
         'currency' => Currency::class,
         'is_net' => 'bool',
+        'prices_generated' => 'bool',
     ];
 
     /**
