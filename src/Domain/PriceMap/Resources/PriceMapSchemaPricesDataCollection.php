@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\PriceMap\Resources;
 
 use Domain\PriceMap\PriceMap;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
