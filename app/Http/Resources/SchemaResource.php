@@ -2,11 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\SchemaType;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
