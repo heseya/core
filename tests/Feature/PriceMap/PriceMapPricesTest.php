@@ -4,6 +4,7 @@ namespace Tests\Feature\Organizations;
 
 use App\Models\Option;
 use App\Models\Product;
+use Database\Seeders\PriceMapSeeder;
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
@@ -47,9 +48,9 @@ class PriceMapPricesTest extends TestCase
         $this->option2a = Option::factory()->create(['schema_id' => $this->schema2->id]);
         $this->option2b = Option::factory()->create(['schema_id' => $this->schema2->id]);
 
-        $this->priceMap1 = PriceMap::factory()->create([
-            'currency' => Currency::DEFAULT->value,
-        ]);
+        App::make(PriceMapSeeder::class)->run();
+        $this->priceMap1 = PriceMap::find(PriceMapSeeder::DEFAULT_MAP_UUID);
+
         $this->priceMap2 = PriceMap::factory()->create([
             'currency' => Currency::DEFAULT->value,
         ]);
@@ -221,8 +222,8 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 0.00'])
             ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissing(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissing(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
     }
 
     /**
@@ -262,8 +263,8 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 1.05'])
             ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 1.06'])
-            ->assertJsonMissing(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissing(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
 
         $response = $this
             ->actingAs($this->{$user})
@@ -272,7 +273,7 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 1.05'])
             ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 1.06'])
-            ->assertJsonMissing(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissing(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
     }
 }

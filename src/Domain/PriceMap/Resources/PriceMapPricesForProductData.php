@@ -15,7 +15,7 @@ use Support\Dtos\DataWithGlobalMetadata;
 final class PriceMapPricesForProductData extends DataWithGlobalMetadata
 {
     /**
-     * @param array<int,PriceMapPricesForProductPartialSchemaOptionData|array<int,string>>|DataCollection<int,PriceMapPricesForProductPartialSchemaOptionData> $schema_options
+     * @param DataCollection<int,PriceMapPricesForProductPartialSchemaOptionData> $schema_options
      */
     public function __construct(
         public string $product_id,

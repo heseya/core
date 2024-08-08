@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductSchema\Services;
 
+use App\Events\OptionCreated;
 use App\Models\Option;
 use App\Services\Contracts\MetadataServiceContract;
 use Domain\ProductSchema\Dtos\OptionDto;
@@ -61,6 +62,10 @@ final readonly class OptionService
             }
 
             $keep[] = $option->getKey();
+
+            if ($option->wasRecentlyCreated) {
+                OptionCreated::dispatch($option);
+            }
         }
 
         $schema->options()->whereNotIn('id', $keep)->delete();

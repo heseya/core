@@ -8,17 +8,17 @@ use App\Events\ProductCreated;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 
-final class ProductCreatedListener
+final class CreatePricesInPriceMapsAfterProductCreated
 {
     public function handle(ProductCreated $event): void
     {
         foreach (PriceMap::all() as $priceMap) {
             PriceMapProductPrice::create([
                 'price_map_id' => $priceMap->getKey(),
-                'product_id' => $event->getProductId(),
+                'product_id' => $event->getProduct()->getKey(),
                 'currency' => $priceMap->currency,
                 'is_net' => $priceMap->is_net,
-                'value' => 0
+                'value' => 0,
             ]);
         }
     }

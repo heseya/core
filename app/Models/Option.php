@@ -8,7 +8,6 @@ use App\Traits\HasMetadata;
 use Brick\Money\Money;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
-use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Collection;

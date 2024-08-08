@@ -30,8 +30,8 @@ abstract class ProductEvent extends WebHookEvent
         return $this->getModelClass($this->product);
     }
 
-    public function getProductId(): string
+    public function getProduct(): Product
     {
-        return $this->product->getKey();
+        return $this->product;
     }
 }

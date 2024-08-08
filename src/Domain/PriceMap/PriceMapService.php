@@ -60,7 +60,7 @@ final readonly class PriceMapService
         Product::query()
             ->whereNotIn('id', $priceMap->productPrices()->pluck('product_id'))
             ->select('id')
-            ->chunk(1000, function (Collection $products) use ($priceMap) {
+            ->chunk(1000, function (Collection $products) use ($priceMap): void {
                 PriceMapProductPrice::insert(
                     $products->pluck('id')->map(fn (string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
@@ -69,14 +69,14 @@ final readonly class PriceMapService
                         'price_map_id' => $priceMap->id,
                         'product_id' => $uuid,
                         'value' => 0,
-                    ])->toArray()
+                    ])->toArray(),
                 );
             });
 
         Option::query()
             ->whereNotIn('id', $priceMap->schemaOptionsPrices()->pluck('option_id'))
             ->select('id')
-            ->chunk(1000, function (Collection $options) use ($priceMap) {
+            ->chunk(1000, function (Collection $options) use ($priceMap): void {
                 PriceMapSchemaOptionPrice::insert(
                     $options->pluck('id')->map(fn (string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
@@ -85,7 +85,7 @@ final readonly class PriceMapService
                         'option_id' => $uuid,
                         'price_map_id' => $priceMap->id,
                         'value' => 0,
-                    ])->toArray()
+                    ])->toArray(),
                 );
             });
     }
@@ -145,7 +145,6 @@ final readonly class PriceMapService
     public function searchPrices(PriceMap $priceMap, ProductSearchDto $dto): PaginatedDataCollection
     {
         if (Config::get('search.use_scout') && is_string($dto->search) && !empty($dto->search)) {
-
             $scoutResults = Product::search($dto->search)->keys()->toArray();
             $dto->search = new Optional();
             $dto->ids = is_array($dto->ids) && !empty($dto->ids)

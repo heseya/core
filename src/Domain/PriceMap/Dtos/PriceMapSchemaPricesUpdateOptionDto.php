@@ -15,6 +15,5 @@ final class PriceMapSchemaPricesUpdateOptionDto extends Data
         public string $id,
         #[Required()]
         public float|int|string $price,
-    ) {
-    }
+    ) {}
 }

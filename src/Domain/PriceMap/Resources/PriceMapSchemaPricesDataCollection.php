@@ -6,6 +6,7 @@ namespace Domain\PriceMap\Resources;
 
 use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
+use Illuminate\Support\Collection;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -20,24 +21,14 @@ final class PriceMapSchemaPricesDataCollection extends DataCollection
         $items = [];
 
         foreach ($priceMaps as $priceMap) {
-            /*
-            $prices = $schema->mapPrices->where('price_map_id', '=', $priceMap->id);
-
-            $options = [];
-            foreach ($prices as $price) {
-                $options[] = [
-                    'id' => $price->option_id,
-                    'price' => $price->value,
-                ];
-            }
-                */
-
+            /** @var Collection<int,PriceMapSchemaOptionPrice> $mapPrices */
+            $mapPrices = $schema->mapPrices->where('price_map_id', '=', $priceMap->id);
             $items[] = [
                 'price_map_id' => $priceMap->id,
                 'price_map_name' => $priceMap->name,
                 'currency' => $priceMap->currency->value,
                 'is_net' => $priceMap->is_net,
-                'options' => $schema->mapPrices->where('price_map_id', '=', $priceMap->id)->toArray(),
+                'options' => $mapPrices->values()->all(),
             ];
         }
 
