@@ -22,7 +22,7 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         public string $product_price,
         public string|null $product_name = null,
         #[DataCollectionOf(PriceMapPricesForProductPartialSchemaOptionData::class)]
-        public array|DataCollection $schema_options = [],
+        public DataCollection $schema_options,
     ) {}
 
     public static function fromProduct(Product $product): static

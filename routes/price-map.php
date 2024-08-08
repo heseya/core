@@ -21,6 +21,6 @@ Route::prefix('products')->group(function (): void {
 });
 
 Route::prefix('schemas')->group(function (): void {
-    Route::get('id:{schema:id}/prices', [PriceMapController::class, 'listSchemaPrices'])->middleware('can:schemas.show', 'can:price-maps.show_details');
-    Route::patch('id:{schema:id}/prices', [PriceMapController::class, 'updateSchemaPrices'])->middleware('can:schemas.edit', 'can:price-maps.edit');
+    Route::get('id:{schema:id}/prices', [PriceMapController::class, 'listSchemaPrices'])->middleware('can:products.show', 'can:price-maps.show_details');
+    Route::patch('id:{schema:id}/prices', [PriceMapController::class, 'updateSchemaPrices'])->middleware('can:products.edit', 'can:price-maps.edit');
 });

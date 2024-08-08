@@ -25,8 +25,10 @@ use Domain\PriceMap\Resources\PriceMapUpdatedPricesData;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
@@ -55,31 +57,37 @@ final readonly class PriceMapService
 
     public function createPricesForAllMissingProductsAndSchemas(PriceMap $priceMap): void
     {
-        PriceMapProductPrice::insert(
-            Product::query()
-                ->whereNotIn('id', $priceMap->productPrices()->pluck('product_id'))
-                ->pluck('id')
-                ->map(fn (string $uuid) => [
-                    'currency' => $priceMap->currency,
-                    'is_net' => $priceMap->is_net,
-                    'price_map_id' => $priceMap->id,
-                    'product_id' => $uuid,
-                    'value' => 0,
-                ])->toArray(),
-        );
+        Product::query()
+            ->whereNotIn('id', $priceMap->productPrices()->pluck('product_id'))
+            ->select('id')
+            ->chunk(1000, function (Collection $products) use ($priceMap) {
+                PriceMapProductPrice::insert(
+                    $products->pluck('id')->map(fn (string $uuid) => [
+                        'id' => Str::orderedUuid()->toString(),
+                        'currency' => $priceMap->currency,
+                        'is_net' => $priceMap->is_net,
+                        'price_map_id' => $priceMap->id,
+                        'product_id' => $uuid,
+                        'value' => 0,
+                    ])->toArray()
+                );
+            });
 
-        PriceMapSchemaOptionPrice::insert(
-            Option::query()
-                ->whereNotIn('id', $priceMap->schemaOptionsPrices()->pluck('option_id'))
-                ->pluck('id')
-                ->map(fn (string $uuid) => [
-                    'currency' => $priceMap->currency,
-                    'is_net' => $priceMap->is_net,
-                    'option_id' => $uuid,
-                    'price_map_id' => $priceMap->id,
-                    'value' => 0,
-                ])->toArray(),
-        );
+        Option::query()
+            ->whereNotIn('id', $priceMap->schemaOptionsPrices()->pluck('option_id'))
+            ->select('id')
+            ->chunk(1000, function (Collection $options) use ($priceMap) {
+                PriceMapSchemaOptionPrice::insert(
+                    $options->pluck('id')->map(fn (string $uuid) => [
+                        'id' => Str::orderedUuid()->toString(),
+                        'currency' => $priceMap->currency,
+                        'is_net' => $priceMap->is_net,
+                        'option_id' => $uuid,
+                        'price_map_id' => $priceMap->id,
+                        'value' => 0,
+                    ])->toArray()
+                );
+            });
     }
 
     public function update(PriceMap $priceMap, PriceMapUpdateDto $dto): PriceMap
@@ -137,6 +145,7 @@ final readonly class PriceMapService
     public function searchPrices(PriceMap $priceMap, ProductSearchDto $dto): PaginatedDataCollection
     {
         if (Config::get('search.use_scout') && is_string($dto->search) && !empty($dto->search)) {
+
             $scoutResults = Product::search($dto->search)->keys()->toArray();
             $dto->search = new Optional();
             $dto->ids = is_array($dto->ids) && !empty($dto->ids)
@@ -147,10 +156,10 @@ final readonly class PriceMapService
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
-                'mapPrices' => fn (Builder|HasMany $subquery) => $subquery->where('price_map_id', '=', $priceMap->id),
+                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
                 'schemas',
                 'schemas.options',
-                'schemas.options.mapPrices' => fn (Builder|HasMany $subquery) => $subquery->where('price_map_id', '=', $priceMap->id),
+                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
             ]);
 
         if (is_string($dto->price_sort_direction)) {
@@ -178,7 +187,7 @@ final readonly class PriceMapService
 
         if (is_string($dto->sort)) {
             $query->reorder();
-            $query->sort($dto->sort); // @phpstan-ignore-line
+            $query->sort($dto->sort);
         }
 
         $products = $query->paginate();
@@ -191,8 +200,10 @@ final readonly class PriceMapService
      */
     public function updateProductPrices(Product $product, PriceMapProductPricesUpdateDto $dto): DataCollection
     {
+        /**
+         * @var PriceMapProductPricesUpdatePartialDto $partial
+         */
         foreach ($dto->prices as $partial) {
-            // @var PriceMapProductPricesUpdatePartialDto $partial
             PriceMapProductPrice::query()->where(['price_map_id' => $partial->price_map_id, 'product_id' => $product->id])->update(['value' => $partial->price]);
         }
 
@@ -201,10 +212,14 @@ final readonly class PriceMapService
 
     public function updateSchemaPrices(Schema $schema, PriceMapSchemaPricesUpdateDto $dto): PriceMapSchemaPricesDataCollection
     {
+        /**
+         * @var PriceMapSchemaPricesUpdatePartialDto $partial
+         */
         foreach ($dto->prices as $partial) {
-            /** @var PriceMapSchemaPricesUpdatePartialDto $partial */
+            /**
+             * @var PriceMapSchemaPricesUpdateOptionDto $option
+             */
             foreach ($partial->options as $option) {
-                // @var PriceMapSchemaPricesUpdateOptionDto $option
                 PriceMapSchemaOptionPrice::query()->where(['price_map_id' => $partial->price_map_id, 'option_id' => $option->id])->update(['value' => $option->price]);
             }
         }

@@ -10,6 +10,9 @@ use Spatie\LaravelData\DataCollection;
 
 final class PriceMapProductPricesUpdateDto extends Data
 {
+    /**
+     * @param DataCollection<int,PriceMapProductPricesUpdatePartialDto> $prices
+     */
     public function __construct(
         #[DataCollectionOf(PriceMapProductPricesUpdatePartialDto::class)]
         public DataCollection $prices,

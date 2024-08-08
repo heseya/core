@@ -12,6 +12,9 @@ use Spatie\LaravelData\DataCollection;
 
 final class PriceMapSchemaPricesUpdatePartialDto extends Data
 {
+    /**
+     * @param DataCollection<int,PriceMapSchemaPricesUpdateOptionDto> $options
+     */
     public function __construct(
         #[Required(), Exists('price_maps', 'id')]
         public string $price_map_id,

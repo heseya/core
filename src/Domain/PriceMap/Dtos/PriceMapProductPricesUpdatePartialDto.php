@@ -14,6 +14,6 @@ final class PriceMapProductPricesUpdatePartialDto extends Data
         #[Required(), Exists('price_maps', 'id')]
         public string $price_map_id,
         #[Required()]
-        public string $price,
+        public float|int|string $price,
     ) {}
 }

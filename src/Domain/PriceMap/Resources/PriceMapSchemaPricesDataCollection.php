@@ -35,7 +35,7 @@ final class PriceMapSchemaPricesDataCollection extends DataCollection
             $items[] = [
                 'price_map_id' => $priceMap->id,
                 'price_map_name' => $priceMap->name,
-                'currency' => $priceMap->currency,
+                'currency' => $priceMap->currency->value,
                 'is_net' => $priceMap->is_net,
                 'options' => $schema->mapPrices->where('price_map_id', '=', $priceMap->id)->toArray(),
             ];

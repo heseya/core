@@ -14,6 +14,7 @@ final class PriceMapSchemaPricesUpdateOptionDto extends Data
         #[Required(), Exists('options', 'id')]
         public string $id,
         #[Required()]
-        public string $price,
-    ) {}
+        public float|int|string $price,
+    ) {
+    }
 }
