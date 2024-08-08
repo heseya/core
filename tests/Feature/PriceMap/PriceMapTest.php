@@ -32,7 +32,7 @@ class PriceMapTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('GET', '/price-maps');
 
-        $response->assertOk()->assertJsonCount(11, 'data');
+        $response->assertOk()->assertJsonCount(12, 'data');
     }
 
     public function testCreateUnauthorized(): void
