@@ -20,7 +20,6 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower(SchemaType::SELECT->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
             'hidden' => $this->resource->hidden,
@@ -45,9 +44,6 @@ class SchemaResource extends Resource
     {
         return [
             'product' => ProductResource::make($this->resource->product),
-            'products' => [
-                ProductResource::collection([$this->resource->product]),
-            ],
         ];
     }
 }
