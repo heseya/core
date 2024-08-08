@@ -8,7 +8,7 @@ use App\Traits\HasMetadata;
 use Brick\Money\Money;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
-use Domain\PriceMap\PriceMapProductPrice;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -68,7 +68,7 @@ class Option extends Model implements Translatable
 
     public function mapPrices(): HasMany
     {
-        return $this->hasMany(PriceMapProductPrice::class);
+        return $this->hasMany(PriceMapSchemaOptionPrice::class);
     }
 
     public function getPriceForCurrency(Currency $currency): Money

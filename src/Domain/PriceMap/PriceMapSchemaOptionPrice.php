@@ -8,11 +8,9 @@ use App\Models\Model;
 use App\Models\Option;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperPriceMapSchemaOptionPrice
@@ -20,12 +18,6 @@ use Spatie\LaravelData\WithData;
 final class PriceMapSchemaOptionPrice extends Model
 {
     use HasFactory;
-    /**
-     * @use WithData<PriceDto>
-     */
-    use WithData;
-
-    protected string $dataClass = PriceDto::class;
 
     protected $fillable = [
         'currency',

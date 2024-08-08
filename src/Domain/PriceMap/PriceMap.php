@@ -6,8 +6,10 @@ namespace Domain\PriceMap;
 
 use App\Models\Model;
 use Domain\Currency\Currency;
+use Domain\PriceMap\Resources\PriceMapData;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperPriceMap
@@ -15,6 +17,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 final class PriceMap extends Model
 {
     use HasFactory;
+    /**
+     * @use WithData<PriceMapData>
+     */
+    use WithData;
+
+    protected string $dataClass = PriceMapData::class;
 
     protected $fillable = [
         'currency',
