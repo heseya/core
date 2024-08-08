@@ -291,6 +291,48 @@ final class SalesChannelsCrudTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateDefaultOnlyInactive(string $user): void
+    {
+        $channel = SalesChannel::factory()
+            ->create(['activity' => SalesChannelActivityType::ACTIVE, 'status' => SalesChannelStatus::PUBLIC, 'default' => true]);
+
+        $this->{$user}->givePermissionTo('sales_channels.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/sales-channels/id:{$channel->getKey()}", [
+                'activity' => SalesChannelActivityType::INACTIVE->value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC->name,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC->value,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDefaultOnlyPrivate(string $user): void
+    {
+        $channel = SalesChannel::factory()
+            ->create(['activity' => SalesChannelActivityType::ACTIVE, 'status' => SalesChannelStatus::PUBLIC, 'default' => true]);
+
+        $this->{$user}->givePermissionTo('sales_channels.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/sales-channels/id:{$channel->getKey()}", [
+                'status' => SalesChannelStatus::PRIVATE->value,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => Exceptions::CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC->name,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC->value,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDelete(string $user): void
     {
         $channel = SalesChannel::factory()->create();

@@ -13,6 +13,7 @@ use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -108,6 +109,10 @@ final class SalesChannelRepository
 
     public function update(SalesChannel $channel, SalesChannelUpdateDto $dto): SalesChannel
     {
+        if ($channel->default && (($dto->status instanceof SalesChannelStatus && $dto->status !== SalesChannelStatus::PUBLIC) || ($dto->activity instanceof SalesChannelActivityType && $dto->activity !== SalesChannelActivityType::ACTIVE))) {
+            throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_DEFAULT_ACTIVE_AND_PUBLIC);
+        }
+
         if (!$channel->default && $dto->default) {
             SalesChannel::query()->where('default', '=', true)->update(['default' => false]);
         }
