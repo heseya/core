@@ -49,7 +49,7 @@ class PriceMapPricesTest extends TestCase
         $this->option2b = Option::factory()->create(['schema_id' => $this->schema2->id]);
 
         App::make(PriceMapSeeder::class)->run();
-        $this->priceMap1 = PriceMap::find(PriceMapSeeder::DEFAULT_MAP_UUID);
+        $this->priceMap1 = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
 
         $this->priceMap2 = PriceMap::factory()->create([
             'currency' => Currency::DEFAULT->value,
