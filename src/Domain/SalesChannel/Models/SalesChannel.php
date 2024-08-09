@@ -125,7 +125,7 @@ final class SalesChannel extends Model implements Translatable
     }
 
     /**
-     * @return BelongsTo<PriceMap>
+     * @return BelongsTo<PriceMap, self>
      */
     public function priceMap(): BelongsTo
     {
