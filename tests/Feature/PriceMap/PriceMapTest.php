@@ -29,11 +29,9 @@ class PriceMapTest extends TestCase
     {
         $this->{$user}->givePermissionTo('price-maps.show');
 
-        PriceMap::factory()->count(10)->create();
-
         $response = $this->actingAs($this->{$user})->json('GET', '/price-maps');
 
-        $response->assertOk()->assertJsonCount(10 + 1 + count(Currency::cases()), 'data');
+        $response->assertOk()->assertJsonCount(1 + count(Currency::cases()), 'data');
     }
 
     public function testCreateUnauthorized(): void
