@@ -26,7 +26,7 @@ class SalesChannelFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'slug' => Str::limit($this->faker->unique()->slug(2), 30),
+            'slug' => Str::limit($this->faker->unique()->slug(2), 20),
             'status' => $this->faker->randomElement(SalesChannelStatus::cases())->value,
             'language_id' => Language::default(),
             'default' => false,

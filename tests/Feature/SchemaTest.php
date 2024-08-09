@@ -988,7 +988,6 @@ class SchemaTest extends TestCase
         /** @var Schema $colors */
         $colors = Schema::create([
             'name' => 'Color',
-            'type' => SchemaType::SELECT,
         ]);
 
         /** @var Option $red */
@@ -1027,7 +1026,6 @@ class SchemaTest extends TestCase
         /** @var Schema $colors */
         $colors = Schema::create([
             'name' => 'Color',
-            'type' => SchemaType::SELECT,
         ]);
 
         /** @var Option $red */

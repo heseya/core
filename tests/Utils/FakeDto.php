@@ -161,6 +161,7 @@ final readonly class FakeDto
     public static function schemaDto(array $data = [], bool $returnArray = false, bool $addDefaultOption = true): SchemaDto|array
     {
         $data = $data + Schema::factory()->definition();
+        unset($data['type']);
 
         $langId = App::getLocale();
 

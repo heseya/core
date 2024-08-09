@@ -29,7 +29,8 @@ abstract class SchemaDto extends Data
     #[MapOutputName('metadata')]
     public array|Optional $metadata_computed;
 
-    public SchemaType $type = SchemaType::SELECT;
+    #[Computed]
+    public SchemaType $type;
 
     /**
      * @param string[]|Optional $used_schemas
