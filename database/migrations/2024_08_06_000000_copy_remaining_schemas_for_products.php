@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Option;
+use App\Models\Price;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\Migration;
 use Domain\ProductSchema\Models\Schema;
