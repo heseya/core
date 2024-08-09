@@ -8,6 +8,7 @@ use App\Http\Resources\LanguageResource;
 use App\Http\Resources\Resource;
 use App\Traits\GetAllTranslations;
 use Domain\PaymentMethods\Resources\PaymentMethodResource;
+use Domain\PriceMap\Resources\PriceMapData;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Resources\ShippingMethodResource;
 use Illuminate\Http\Request;
@@ -44,8 +45,7 @@ final class SalesChannelResource extends Resource
     public function view(Request $request): array
     {
         return [
-            // TODO price_map
-            //            'price_map' => '',
+            'price_map' => $this->resource->priceMap ? PriceMapData::fromModel($this->resource->priceMap) : null,
             'shipping_methods' => ShippingMethodResource::collection($this->resource->shippingMethods),
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'organization_count' => $this->resource->organizations_count,
