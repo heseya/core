@@ -477,7 +477,6 @@ class ShippingMethodTest extends TestCase
             'shipping_type' => ShippingType::DIGITAL->value,
             'shipping_time_max' => 0,
             'shipping_time_min' => 0,
-            'payment_on_delivery' => false,
         ];
 
         $response = $this->actingAs($this->{$user})->postJson(
@@ -617,7 +616,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -678,7 +676,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
             'is_block_list_products' => true,
             'product_ids' => [$product->getKey()],
             'product_set_ids' => [$productSet->getKey()],
@@ -718,7 +715,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => false,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
             ],
@@ -752,7 +748,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
             ],
@@ -786,7 +781,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -823,7 +817,6 @@ class ShippingMethodTest extends TestCase
                 'shipping_time_max' => 2,
                 'shipping_type' => ShippingType::ADDRESS->value,
                 'price_ranges' => $this->priceRanges,
-                'payment_on_delivery' => false,
             ]);
 
         $response->assertStatus(422);
@@ -843,7 +836,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => false,
         ];
 
         $response = $this->actingAs($this->{$user})
@@ -880,7 +872,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::POINT->value,
-            'payment_on_delivery' => false,
         ];
         $shipping_points = [
             'shipping_points' => [
@@ -930,40 +921,6 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreatePaymentOnDeliveryWithPaymentMethods($user): void
-    {
-        $this->{$user}->givePermissionTo('shipping_methods.add');
-
-        ShippingMethod::query()->delete();
-
-        $paymentMethod = PaymentMethod::factory()->create([
-            'public' => true,
-        ]);
-
-        $shipping_method = [
-            'name' => 'Test',
-            'public' => true,
-            'block_list' => false,
-            'shipping_time_min' => 2,
-            'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::ADDRESS,
-            'payment_on_delivery' => true,
-            'payment_methods' => [
-                $paymentMethod->getKey(),
-            ],
-        ];
-
-        $this->actingAs($this->{$user})
-            ->postJson('/shipping-methods', $shipping_method)
-            ->assertUnprocessable()
-            ->assertJsonFragment([
-                'key' => ValidationError::PROHIBITEDIF,
-            ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateWithLogo($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.add');
@@ -979,7 +936,6 @@ class ShippingMethodTest extends TestCase
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'shipping_type' => ShippingType::ADDRESS->value,
-            'payment_on_delivery' => true,
             'logo_id' => $media->getKey(),
         ];
 
@@ -1343,46 +1299,6 @@ class ShippingMethodTest extends TestCase
             'shipping_methods',
             $shipping_method + ['id' => $this->shipping_method->getKey()],
         );
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdatePaymentOnDelivery($user): void
-    {
-        $this->{$user}->givePermissionTo('shipping_methods.edit');
-
-        $this->shipping_method->update([
-            'payment_on_delivery' => false,
-        ]);
-
-        $paymentMethod = PaymentMethod::factory()->create([
-            'public' => true,
-        ]);
-
-        $this->shipping_method->paymentMethods()->sync([
-            $paymentMethod->getKey(),
-        ]);
-
-        $shipping_method = [
-            'name' => 'Test 2',
-            'public' => false,
-            'is_block_list_countries' => false,
-            'payment_on_delivery' => true,
-            'payment_methods' => [],
-        ];
-
-        $this->actingAs($this->{$user})->patchJson(
-            '/shipping-methods/id:' . $this->shipping_method->getKey(),
-            $shipping_method,
-        )
-            ->assertOk()
-            ->assertJson(['data' => $shipping_method]);
-
-        $this->assertDatabaseMissing('shipping_method_payment_method', [
-            'payment_method_id' => $paymentMethod->getKey(),
-            'shipping_method_id' => $this->shipping_method->getKey(),
-        ]);
     }
 
     /**
