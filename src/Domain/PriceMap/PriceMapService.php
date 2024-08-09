@@ -50,6 +50,7 @@ final readonly class PriceMapService
     {
         $priceMap = new PriceMap($dto->toArray());
         $priceMap->save();
+        $priceMap->refresh();
 
         CreatePricesForAllProductsAndOptionsJob::dispatch($priceMap);
 
@@ -63,7 +64,7 @@ final readonly class PriceMapService
             ->select('id')
             ->chunk(1000, function (Collection $products) use ($priceMap): void {
                 PriceMapProductPrice::insert(
-                    $products->pluck('id')->map(fn (string $uuid) => [
+                    $products->pluck('id')->map(fn(string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
                         'currency' => $priceMap->currency,
                         'is_net' => $priceMap->is_net,
@@ -79,7 +80,7 @@ final readonly class PriceMapService
             ->select('id')
             ->chunk(1000, function (Collection $options) use ($priceMap): void {
                 PriceMapSchemaOptionPrice::insert(
-                    $options->pluck('id')->map(fn (string $uuid) => [
+                    $options->pluck('id')->map(fn(string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
                         'currency' => $priceMap->currency,
                         'is_net' => $priceMap->is_net,
@@ -156,16 +157,16 @@ final readonly class PriceMapService
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
-                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
+                'mapPrices' => fn(Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
                 'schemas',
                 'schemas.options',
-                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
+                'schemas.options.mapPrices' => fn(Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
             ]);
 
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
+                    'pricesMin as price' => fn(Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -173,7 +174,7 @@ final readonly class PriceMapService
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where(
+                    'pricesMax as price' => fn(Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
