@@ -596,39 +596,40 @@ class SchemaTest extends TestCase
     {
         $this->{$user}->givePermissionTo(['products.add', 'options.show_metadata_private']);
 
-        $prices = [
-            ['value' => 1000, 'currency' => $this->currency->value]
-        ];
         if ($boolean) {
-            $prices[] = ['value' => 0, 'currency' => $this->currency->value];
+            $prices = FakeDto::generatePricesInAllCurrencies(['value' => 0, 'currency' => $this->currency->value]);
+        } else {
+            $prices = [['value' => 1000, 'currency' => $this->currency->value]];
         }
+
+        $data = FakeDto::schemaData([
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
+            'hidden' => false,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'A',
+                        ],
+                    ],
+                    'prices' => $prices,
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ],
+            ],
+            'default' => null,
+        ]);
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('POST', '/schemas', FakeDto::schemaData([
-                'translations' => [
-                    $this->lang => [
-                        'name' => 'Test',
-                    ],
-                ],
-                'published' => [$this->lang],
-                'hidden' => false,
-                'required' => $boolean,
-                'options' => [
-                    [
-                        'translations' => [
-                            $this->lang => [
-                                'name' => 'A',
-                            ],
-                        ],
-                        'prices' => $prices,
-                        'metadata_private' => [
-                            'attributeMetaPriv' => 'attributeValue',
-                        ],
-                    ],
-                ],
-                'default' => null,
-            ]));
+            ->json('POST', '/schemas', $data);
 
         $response->assertValid()
             ->assertCreated()
