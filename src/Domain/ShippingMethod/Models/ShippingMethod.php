@@ -65,7 +65,6 @@ final class ShippingMethod extends Model
         'integration_key',
         'app_id',
         'shipping_type',
-        'payment_on_delivery',
         'logo_id',
     ];
     /**
@@ -78,7 +77,6 @@ final class ShippingMethod extends Model
         'is_block_list_products' => 'boolean',
         'is_block_list_countries' => 'boolean',
         'shipping_type' => ShippingType::class,
-        'payment_on_delivery' => 'boolean',
     ];
     /** @var array<string, class-string> */
     protected array $criteria = [

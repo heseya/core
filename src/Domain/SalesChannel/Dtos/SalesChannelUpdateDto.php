@@ -36,7 +36,7 @@ final class SalesChannelUpdateDto extends Data
         public readonly Optional|SalesChannelActivityType $activity,
         #[Uuid, Exists('languages', 'id')]
         public readonly Optional|string $language_id,
-        #[Uuid]
+        #[Uuid, Exists('price_maps', 'id')]
         public readonly Optional|string $price_map_id,
         public readonly array|Optional $shipping_method_ids,
         public readonly array|Optional $payment_method_ids,

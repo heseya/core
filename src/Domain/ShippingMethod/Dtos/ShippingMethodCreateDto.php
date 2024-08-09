@@ -53,7 +53,6 @@ final class ShippingMethodCreateDto extends Data
      * @param string $name
      * @param bool $public
      * @param DataCollection<int, PriceRangeDto> $price_ranges
-     * @param bool $payment_on_delivery
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
      * @param array<int>|Optional $payment_methods
@@ -80,8 +79,6 @@ final class ShippingMethodCreateDto extends Data
 
         #[DataCollectionOf(PriceRangeDto::class)]
         public readonly DataCollection $price_ranges,
-        #[BooleanType]
-        public readonly bool $payment_on_delivery,
 
         #[IntegerType, Min(0)]
         public readonly int|Optional $shipping_time_min,
@@ -141,7 +138,7 @@ final class ShippingMethodCreateDto extends Data
             'metadata_private' => ['array'],
             'price_ranges' => ['required', new ShippingMethodPriceRanges()],
             'price_ranges.*' => [new Price(['value', 'start'], min: BigDecimal::zero())],
-            'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
+            'payment_methods' => ['array'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
             'product_ids.*' => ['uuid', 'exists:products,id'],

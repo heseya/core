@@ -51,7 +51,6 @@ final class ShippingMethodUpdateDto extends Data
      * @param int|Optional $shipping_time_min
      * @param int|Optional $shipping_time_max
      * @param Optional|ShippingType $shipping_type
-     * @param bool|Optional $payment_on_delivery
      * @param array<array<string>>|Optional $shipping_points
      * @param array<int>|Optional $payment_methods
      * @param array<string>|Optional $countries
@@ -85,9 +84,6 @@ final class ShippingMethodUpdateDto extends Data
         #[WithCast(EnumCast::class, ShippingType::class)]
         #[Enum(ShippingType::class)]
         public readonly Optional|ShippingType $shipping_type,
-
-        #[BooleanType]
-        public bool|Optional $payment_on_delivery,
 
         #[ArrayType]
         public readonly array|Optional $shipping_points,
@@ -139,7 +135,7 @@ final class ShippingMethodUpdateDto extends Data
             'metadata_private' => ['array'],
             'price_ranges' => [new ShippingMethodPriceRanges()],
             'price_ranges.*' => [new Price(['value', 'start'], min: BigDecimal::zero())],
-            'payment_methods' => ['array', 'prohibited_if:payment_on_delivery,true'],
+            'payment_methods' => ['array'],
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'shipping_points.*.id' => ['string', 'exists:addresses,id'],
         ];

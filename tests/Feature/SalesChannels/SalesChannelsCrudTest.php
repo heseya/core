@@ -9,6 +9,7 @@ use App\Enums\ValidationError;
 use Domain\Language\Language;
 use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
+use Domain\PriceMap\PriceMap;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -100,6 +101,10 @@ final class SalesChannelsCrudTest extends TestCase
         PaymentMethod::factory()->count(5)->create();
         ShippingMethod::factory()->count(5)->create();
 
+        $priceMap = PriceMap::factory()->create([
+            'prices_generated' => true,
+        ]);
+
         $this->{$user}->givePermissionTo('sales_channels.add');
         $this
             ->actingAs($this->{$user})
@@ -118,12 +123,14 @@ final class SalesChannelsCrudTest extends TestCase
                 'default' => false,
                 'shipping_method_ids' => [],
                 'payment_method_ids' => [],
-                // TODO replace with real price map
-                'price_map_id' => Str::uuid()->toString(),
+                'price_map_id' => $priceMap->getKey(),
             ])
             ->assertCreated()
             ->assertJsonCount(5, 'data.shipping_methods')
-            ->assertJsonCount(5, 'data.payment_methods');
+            ->assertJsonCount(5, 'data.payment_methods')
+            ->assertJsonFragment([
+                'id' => $priceMap->getKey(),
+            ]);
 
         $this->assertDatabaseHas('sales_channels', [
             'id' => $id,
@@ -143,6 +150,8 @@ final class SalesChannelsCrudTest extends TestCase
         PaymentMethod::factory()->count(5)->create();
         ShippingMethod::factory()->count(5)->create();
 
+        $priceMap = PriceMap::factory()->create();
+
         $this->{$user}->givePermissionTo('sales_channels.add');
         $this
             ->actingAs($this->{$user})
@@ -161,8 +170,7 @@ final class SalesChannelsCrudTest extends TestCase
                 'default' => true,
                 'shipping_method_ids' => [],
                 'payment_method_ids' => [],
-                // TODO replace with real price map
-                'price_map_id' => Str::uuid()->toString(),
+                'price_map_id' => $priceMap->getKey(),
             ])
             ->assertUnprocessable()
             ->assertJsonFragment([

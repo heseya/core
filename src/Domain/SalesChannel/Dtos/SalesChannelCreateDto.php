@@ -34,7 +34,7 @@ final class SalesChannelCreateDto extends Data
         public readonly string $slug,
         public readonly SalesChannelStatus $status,
         public readonly SalesChannelActivityType $activity,
-        #[Uuid]
+        #[Uuid, Exists('price_maps', 'id')]
         public readonly string $price_map_id,
         #[Uuid, Exists('languages', 'id')]
         public readonly string $language_id,
