@@ -17,6 +17,8 @@ use App\Models\WebHook;
 use Domain\Banner\Models\Banner;
 use Domain\Organization\Models\Organization;
 use Domain\Page\Page;
+use Domain\PriceMap\PriceMap;
+use Domain\PriceMap\PriceMapPrice;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
@@ -38,6 +40,8 @@ return [
     'Organization' => Organization::class,
     'Page' => Page::class,
     'Permission' => Permission::class,
+    'PriceMap' => PriceMap::class,
+    'PriceMapPrice' => PriceMapPrice::class,
     'Product' => Product::class,
     'ProductSet' => ProductSet::class,
     'Role' => Role::class,
