@@ -10,23 +10,23 @@ use Illuminate\Support\Facades\App;
 
 class PriceMapSeeder extends Seeder
 {
-    public const DEFAULT_MAP_UUID = '019130e4-d59b-78fb-989a-f0d4431dab7c';
-
     public function run(): void
     {
-        if (!PriceMap::find(self::DEFAULT_MAP_UUID)) {
-            $defaultMap = new PriceMap([
-                'name' => 'Default',
-                'description' => 'Default',
-                'currency' => Currency::DEFAULT->value,
-                'is_net' => true,
-            ]);
-            $defaultMap->id = self::DEFAULT_MAP_UUID;
-            $defaultMap->save();
+        foreach (Currency::cases() as $case) {
+            if (!PriceMap::find($case->getDefaultPriceMapId())) {
+                $defaultMap = new PriceMap([
+                    'name' => 'Default',
+                    'description' => 'Default',
+                    'currency' => $case->value,
+                    'is_net' => true,
+                ]);
+                $defaultMap->id = $case->getDefaultPriceMapId();
+                $defaultMap->save();
 
-            /** @var PriceMapService $productService */
-            $priceMapService = App::make(PriceMapService::class);
-            $priceMapService->createPricesForAllMissingProductsAndSchemas($defaultMap);
+                /** @var PriceMapService $productService */
+                $priceMapService = App::make(PriceMapService::class);
+                $priceMapService->createPricesForAllMissingProductsAndSchemas($defaultMap);
+            }
         }
     }
 }

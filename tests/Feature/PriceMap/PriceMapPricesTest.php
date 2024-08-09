@@ -49,7 +49,7 @@ class PriceMapPricesTest extends TestCase
         $this->option2b = Option::factory()->create(['schema_id' => $this->schema2->id]);
 
         App::make(PriceMapSeeder::class)->run();
-        $this->priceMap1 = PriceMap::find(PriceMapSeeder::DEFAULT_MAP_UUID);
+        $this->priceMap1 = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
 
         $this->priceMap2 = PriceMap::factory()->create([
             'currency' => Currency::DEFAULT->value,
@@ -81,10 +81,6 @@ class PriceMapPricesTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/price-maps/id:' . $this->priceMap1->getKey() . '/prices');
 
-        if ($response->getStatusCode() >= 400) {
-            var_dump($response->getContent());
-        }
-
         $response->assertOk()
             ->assertJsonFragment(['product_name' => 'foofoo'])
             ->assertJsonFragment(['product_name' => 'barbar'])
@@ -96,10 +92,6 @@ class PriceMapPricesTest extends TestCase
             ->json('GET', '/price-maps/id:' . $this->priceMap1->getKey() . '/prices', [
                 'search' => 'barbar'
             ]);
-
-        if ($response->getStatusCode() >= 400) {
-            var_dump($response->getContent());
-        }
 
         $response->assertOk()
             ->assertJsonMissing(['product_name' => 'foofoo'])
@@ -131,10 +123,6 @@ class PriceMapPricesTest extends TestCase
                     ]
                 ]
             ]);
-
-        if ($response->getStatusCode() >= 400) {
-            var_dump($response->getContent());
-        }
 
         $response->assertOk()
             ->assertJsonFragment(['product_price' => 'PLN 13.37'])
@@ -185,10 +173,6 @@ class PriceMapPricesTest extends TestCase
                     ]
                 ]
             ]);
-
-        if ($response->getStatusCode() >= 400) {
-            var_dump($response->getContent());
-        }
 
         $response->assertOk()
             ->assertJsonFragment(['price' => 'PLN 1.03'])
@@ -255,10 +239,6 @@ class PriceMapPricesTest extends TestCase
                     ]
                 ]
             ]);
-
-        if ($response->getStatusCode() >= 400) {
-            var_dump($response->getContent());
-        }
 
         $response->assertOk()
             ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 1.05'])
