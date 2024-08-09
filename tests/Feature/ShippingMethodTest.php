@@ -17,6 +17,9 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -437,6 +440,40 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(2, 'data') // Should show only public shipping methods.
             ->assertJsonFragment(['id' => $this->shipping_method->getKey()])
             ->assertJsonFragment(['id' => $shippingMethod2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexBySalesChannel($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        /** @var SalesChannel $salesChannel */
+        $salesChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE,
+            'status' => SalesChannelStatus::PUBLIC,
+        ]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'is_block_list_countries' => true,
+        ]);
+
+        $salesChannel->shippingMethods()->attach($shippingMethod->getKey());
+
+        $shippingMethod2 = ShippingMethod::factory()->create([
+            'public' => true,
+            'is_block_list_countries' => false,
+        ]);
+
+        $response = $this->actingAs($this->{$user})
+            ->json('GET', '/shipping-methods', ['sales_channel_id' => $salesChannel->getKey()]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $shippingMethod->getKey()])
+            ->assertJsonMissing(['id' => $this->shipping_method->getKey()])
+            ->assertJsonMissing(['id' => $shippingMethod2->getKey()]);
     }
 
     /**

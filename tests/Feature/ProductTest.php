@@ -196,7 +196,6 @@ class ProductTest extends TestCase
             'schemas' => [
                 [
                     'name' => 'Rozmiar',
-                    'type' => 'select',
                     'required' => true,
                     'available' => true,
                     //'prices' => [['value' => 0, 'currency' => $this->currency->value]],

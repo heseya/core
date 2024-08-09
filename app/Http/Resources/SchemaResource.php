@@ -2,11 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\SchemaType;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
@@ -20,7 +18,6 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'type' => Str::lower(SchemaType::SELECT->name),
             'name' => $this->resource->name,
             'description' => $this->resource->description,
             'hidden' => $this->resource->hidden,
@@ -45,9 +42,6 @@ class SchemaResource extends Resource
     {
         return [
             'product' => ProductResource::make($this->resource->product),
-            'products' => [
-                ProductResource::collection([$this->resource->product]),
-            ],
         ];
     }
 }

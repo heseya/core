@@ -143,12 +143,6 @@ SchemaRequest:
       type: boolean
     required:
       type: boolean
-    min:
-      type: string
-    max:
-      type: string
-    step:
-      type: string
     default:
       type: string
     shipping_time:

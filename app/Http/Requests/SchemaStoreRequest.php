@@ -4,11 +4,12 @@ namespace App\Http\Requests;
 
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
-use App\Rules\SchemaRequire;
+use App\Rules\SchemaZeroOptionExistsForEachCurrency;
 use App\Rules\Translations;
 use App\Traits\MetadataRules;
 use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class SchemaStoreRequest extends FormRequest
 {
@@ -19,10 +20,7 @@ final class SchemaStoreRequest extends FormRequest
         return array_merge(
             $this->metadataRules(),
             [
-                'translations' => [
-                    'required',
-                    new Translations(['name', 'description']),
-                ],
+                'translations' => ['required', new Translations(['name', 'description'])],
                 'translations.*.name' => ['string', 'max:255'],
                 'translations.*.description' => ['nullable', 'string', 'max:255'],
 
@@ -30,15 +28,14 @@ final class SchemaStoreRequest extends FormRequest
                 'published.*' => ['uuid', 'exists:languages,id'],
 
                 'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
-                'required' => ['nullable', 'boolean', new SchemaRequire($this->input('options'))],
 
-                'default' => ['nullable', 'required_if:required,true'],
+                'required' => ['nullable', 'boolean'],
 
-                'options' => ['required', 'array'],
-                'options.*.translations' => [
-                    'required',
-                    new Translations(['name']),
-                ],
+                'default' => ['nullable', 'required_if:required,true', 'in_array:options.*.translations.*'],
+
+                'options' => ['required', 'array', Rule::when($this->required, [new SchemaZeroOptionExistsForEachCurrency()])],
+
+                'options.*.translations' => ['required', new Translations(['name'])],
                 'options.*.translations.*.name' => ['string', 'max:255'],
 
                 'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],

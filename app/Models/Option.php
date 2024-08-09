@@ -8,11 +8,13 @@ use App\Traits\HasMetadata;
 use Brick\Money\Money;
 use Database\Factories\OptionFactory;
 use Domain\Currency\Currency;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
@@ -62,6 +64,11 @@ class Option extends Model implements Translatable
     public function prices(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');
+    }
+
+    public function mapPrices(): HasMany
+    {
+        return $this->hasMany(PriceMapSchemaOptionPrice::class);
     }
 
     public function getPriceForCurrency(Currency $currency): Money

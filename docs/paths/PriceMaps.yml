@@ -1,0 +1,77 @@
+PriceMaps:
+  get:
+    tags:
+      - PriceMaps
+    summary: "price map list"
+    security:
+      - BearerAuth: [price-maps.show]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: "./../schemas/PriceMap.yml#/PriceMap"
+              type: object
+  post:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.add]
+    requestBody:
+      $ref: "./../requests/PriceMap.yml#/PriceMapCreate"
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/PriceMap.yml#/PriceMap"
+              type: object
+
+PriceMapsParams:
+  patch:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.edit]
+    requestBody:
+      $ref: "./../requests/PriceMap.yml#/PriceMapUpdate"
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/PriceMap.yml#/PriceMap"
+              type: object
+  delete:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.remove]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Success

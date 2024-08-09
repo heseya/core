@@ -9,6 +9,7 @@ use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\Exists;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Attributes\Validation\StringType;
+use Spatie\LaravelData\Attributes\Validation\Uuid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
@@ -34,6 +35,8 @@ final class ShippingMethodIndexDto extends Data
         public array|Optional $metadata,
         #[ArrayType]
         public array|Optional $metadata_private,
+        #[Uuid, Exists('sales_channels', 'id')]
+        public Optional|string $sales_channel_id,
         #[ArrayType]
         public array $items = [],
     ) {}
