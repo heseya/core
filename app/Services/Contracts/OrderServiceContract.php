@@ -4,7 +4,6 @@ namespace App\Services\Contracts;
 
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
-use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderUpdateDto;
@@ -12,6 +11,7 @@ use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use Brick\Money\Money;
+use Domain\Order\Dtos\OrderIndexDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 
@@ -32,4 +32,6 @@ interface OrderServiceContract
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
 
     public function sendUrls(Order $order): void;
+
+    public function index(OrderIndexDto $dto): LengthAwarePaginator;
 }
