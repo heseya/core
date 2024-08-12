@@ -14,11 +14,12 @@ enum Currency: string
 
     public const DEFAULT = self::PLN;
 
-    public const DEFAULT_PRICE_MAP_PLN = '019130e4-d59b-78fb-989a-f0d4431dapln';
-    public const DEFAULT_PRICE_MAP_GBP = '019130e4-d59b-78fb-989a-f0d4431dagbp';
-    public const DEFAULT_PRICE_MAP_EUR = '019130e4-d59b-78fb-989a-f0d4431daeur';
-    public const DEFAULT_PRICE_MAP_CZK = '019130e4-d59b-78fb-989a-f0d4431daczk';
-    public const DEFAULT_PRICE_MAP_BGN = '019130e4-d59b-78fb-989a-f0d4431dabgn';
+    /** ISO 4217 Numeric Code */
+    public const DEFAULT_PRICE_MAP_PLN = '00000000-0000-0000-0000-000000000985';
+    public const DEFAULT_PRICE_MAP_EUR = '00000000-0000-0000-0000-000000000978';
+    public const DEFAULT_PRICE_MAP_GBP = '00000000-0000-0000-0000-000000000826';
+    public const DEFAULT_PRICE_MAP_CZK = '00000000-0000-0000-0000-000000000203';
+    public const DEFAULT_PRICE_MAP_BGN = '00000000-0000-0000-0000-000000000975';
 
     case PLN = 'PLN';
     case GBP = 'GBP';
@@ -37,11 +38,11 @@ enum Currency: string
     public function getDefaultPriceMapId(): string
     {
         return match ($this) {
-            self::PLN => self::DEFAULT_PRICE_MAP_PLN,
-            self::GBP => self::DEFAULT_PRICE_MAP_GBP,
-            self::EUR => self::DEFAULT_PRICE_MAP_EUR,
-            self::CZK => self::DEFAULT_PRICE_MAP_CZK,
             self::BGN => self::DEFAULT_PRICE_MAP_BGN,
+            self::CZK => self::DEFAULT_PRICE_MAP_CZK,
+            self::EUR => self::DEFAULT_PRICE_MAP_EUR,
+            self::GBP => self::DEFAULT_PRICE_MAP_GBP,
+            self::PLN => self::DEFAULT_PRICE_MAP_PLN,
         };
     }
 }

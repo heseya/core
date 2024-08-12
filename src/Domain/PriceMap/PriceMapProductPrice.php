@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\LaravelData\WithData;
 
 /**
+ * @property Money $value
+ *
  * @mixin IdeHelperPriceMapProductPrice
  */
 final class PriceMapProductPrice extends Model

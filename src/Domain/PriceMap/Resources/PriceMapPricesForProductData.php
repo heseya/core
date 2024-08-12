@@ -6,6 +6,7 @@ namespace Domain\PriceMap\Resources;
 
 use App\Models\Option;
 use App\Models\Product;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Exception;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -49,15 +50,18 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         }
 
         $schema_options = [];
+        /** @var Schema $schema */
         foreach ($product->schemas as $schema) {
+            /** @var Option $option */
             foreach ($schema->options as $option) {
+                /** @var PriceMapSchemaOptionPrice $price */
                 foreach ($option->mapPrices as $price) {
                     $schema_options[] = [
                         'schema_id' => $schema->id,
                         'schema_name' => $schema->name,
                         'schema_option_id' => $option->id,
                         'schema_option_name' => $option->name,
-                        'schema_option_price' => $price->value,
+                        'schema_option_price' => $price->value->getAmount(),
                     ];
                 }
             }
@@ -65,7 +69,7 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
 
         return new self(
             $product->id,
-            (string) ($product->mapPrices->first()?->value ?? '0'),
+            (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
             $product->name,
             PriceMapPricesForProductPartialSchemaOptionData::collection($schema_options),
         );

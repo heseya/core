@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property Money $value
+ *
  * @mixin IdeHelperPriceMapSchemaOptionPrice
  */
 final class PriceMapSchemaOptionPrice extends Model

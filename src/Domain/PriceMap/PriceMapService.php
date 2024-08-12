@@ -114,7 +114,7 @@ final readonly class PriceMapService
                     'product_id' => $priceDto->id,
                     'price_map_id' => $priceMap->id,
                 ], [
-                    'value' => $priceDto->value,
+                    'value' => ((float) $priceDto->value) * 100,
                     'currency' => $priceMap->currency,
                     'is_net' => $priceMap->is_net,
                 ]);
@@ -128,7 +128,7 @@ final readonly class PriceMapService
                     'option_id' => $priceDto->id,
                     'price_map_id' => $priceMap->id,
                 ], [
-                    'value' => $priceDto->value,
+                    'value' => ((float) $priceDto->value) * 100,
                     'currency' => $priceMap->currency,
                     'is_net' => $priceMap->is_net,
                 ]);
@@ -205,7 +205,7 @@ final readonly class PriceMapService
          * @var PriceMapProductPricesUpdatePartialDto $partial
          */
         foreach ($dto->prices as $partial) {
-            PriceMapProductPrice::query()->where(['price_map_id' => $partial->price_map_id, 'product_id' => $product->id])->update(['value' => $partial->price]);
+            PriceMapProductPrice::query()->where(['price_map_id' => $partial->price_map_id, 'product_id' => $product->id])->update(['value' => ((float) $partial->price) * 100]);
         }
 
         return PriceMapProductPriceData::collection($product->mapPrices);
@@ -221,7 +221,7 @@ final readonly class PriceMapService
              * @var PriceMapSchemaPricesUpdateOptionDto $option
              */
             foreach ($partial->options as $option) {
-                PriceMapSchemaOptionPrice::query()->where(['price_map_id' => $partial->price_map_id, 'option_id' => $option->id])->update(['value' => $option->price]);
+                PriceMapSchemaOptionPrice::query()->where(['price_map_id' => $partial->price_map_id, 'option_id' => $option->id])->update(['value' => ((float) $option->price) * 100]);
             }
         }
 

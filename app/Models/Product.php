@@ -359,6 +359,9 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->morphMany(Price::class, 'model');
     }
 
+    /**
+     * @return HasMany<PriceMapProductPrice>
+     */
     public function mapPrices(): HasMany
     {
         return $this->hasMany(PriceMapProductPrice::class);

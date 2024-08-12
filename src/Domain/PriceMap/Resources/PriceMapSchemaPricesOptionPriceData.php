@@ -18,7 +18,7 @@ final class PriceMapSchemaPricesOptionPriceData extends DataWithGlobalMetadata
     {
         return new self(
             $price->option_id,
-            (string) $price->value,
+            (string) $price->value->getAmount(),
         );
     }
 }

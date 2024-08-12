@@ -59,10 +59,10 @@ class PriceMapPricesTest extends TestCase
         $priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap1);
         $priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap2);
 
-        PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product1->getKey()])->update(['value' => 101]);
-        PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product2->getKey()])->update(['value' => 102]);
-        PriceMapProductPrice::where(['price_map_id' => $this->priceMap2->getKey(), 'product_id' => $this->product1->getKey()])->update(['value' => 201]);
-        PriceMapProductPrice::where(['price_map_id' => $this->priceMap2->getKey(), 'product_id' => $this->product2->getKey()])->update(['value' => 202]);
+        PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product1->getKey()])->update(['value' => 10100]);
+        PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product2->getKey()])->update(['value' => 10200]);
+        PriceMapProductPrice::where(['price_map_id' => $this->priceMap2->getKey(), 'product_id' => $this->product1->getKey()])->update(['value' => 20100]);
+        PriceMapProductPrice::where(['price_map_id' => $this->priceMap2->getKey(), 'product_id' => $this->product2->getKey()])->update(['value' => 20200]);
     }
 
     /**
@@ -84,8 +84,8 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['product_name' => 'foofoo'])
             ->assertJsonFragment(['product_name' => 'barbar'])
-            ->assertJsonFragment(['product_price' => 'PLN 1.01'])
-            ->assertJsonFragment(['product_price' => 'PLN 1.02']);
+            ->assertJsonFragment(['product_price' => '101.00'])
+            ->assertJsonFragment(['product_price' => '102.00']);
 
         $response = $this
             ->actingAs($this->{$user})
@@ -96,8 +96,8 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonMissing(['product_name' => 'foofoo'])
             ->assertJsonFragment(['product_name' => 'barbar'])
-            ->assertJsonMissing(['product_price' => 'PLN 1.01'])
-            ->assertJsonFragment(['product_price' => 'PLN 1.02']);
+            ->assertJsonMissing(['product_price' => '101.00'])
+            ->assertJsonFragment(['product_price' => '102.00']);
     }
 
     /**
@@ -125,8 +125,8 @@ class PriceMapPricesTest extends TestCase
             ]);
 
         $response->assertOk()
-            ->assertJsonFragment(['product_price' => 'PLN 13.37'])
-            ->assertJsonFragment(['schema_option_price' => 'PLN 21.37']);
+            ->assertJsonFragment(['product_price' => '1337.00'])
+            ->assertJsonFragment(['schema_option_price' => '2137.00']);
     }
 
     /**
@@ -143,10 +143,10 @@ class PriceMapPricesTest extends TestCase
             ->json('GET', '/products/id:' . $this->product1->getKey() . '/prices');
 
         $response->assertOk()
-            ->assertJsonFragment(['price' => 'PLN 1.01'])
-            ->assertJsonFragment(['price' => 'PLN 2.01'])
-            ->assertJsonMissing(['price' => 'PLN 1.02'])
-            ->assertJsonMissing(['price' => 'PLN 2.02']);
+            ->assertJsonFragment(['price' => '101.00'])
+            ->assertJsonFragment(['price' => '201.00'])
+            ->assertJsonMissing(['price' => '102.00'])
+            ->assertJsonMissing(['price' => '202.00']);
     }
 
     /**
@@ -175,20 +175,20 @@ class PriceMapPricesTest extends TestCase
             ]);
 
         $response->assertOk()
-            ->assertJsonFragment(['price' => 'PLN 1.03'])
-            ->assertJsonFragment(['price' => 'PLN 2.03'])
-            ->assertJsonMissing(['price' => 'PLN 1.02'])
-            ->assertJsonMissing(['price' => 'PLN 2.02']);
+            ->assertJsonFragment(['price' => '103.00'])
+            ->assertJsonFragment(['price' => '203.00'])
+            ->assertJsonMissing(['price' => '102.00'])
+            ->assertJsonMissing(['price' => '202.00']);
 
         $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/products/id:' . $this->product1->getKey() . '/prices');
 
         $response->assertOk()
-            ->assertJsonFragment(['price' => 'PLN 1.03'])
-            ->assertJsonFragment(['price' => 'PLN 2.03'])
-            ->assertJsonMissing(['price' => 'PLN 1.02'])
-            ->assertJsonMissing(['price' => 'PLN 2.02']);
+            ->assertJsonFragment(['price' => '103.00'])
+            ->assertJsonFragment(['price' => '203.00'])
+            ->assertJsonMissing(['price' => '102.00'])
+            ->assertJsonMissing(['price' => '202.00']);
     }
 
     /**
@@ -204,10 +204,10 @@ class PriceMapPricesTest extends TestCase
             ->json('GET', '/schemas/id:' . $this->schema1->getKey() . '/prices');
 
         $response->assertOk()
-            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => '0'])
+            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => '0'])
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => '0'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => '0']);
     }
 
     /**
@@ -241,19 +241,19 @@ class PriceMapPricesTest extends TestCase
             ]);
 
         $response->assertOk()
-            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 1.05'])
-            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 1.06'])
-            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => '105.00'])
+            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => '106.00'])
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => '0.00'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => '0.00']);
 
         $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/schemas/id:' . $this->schema1->getKey() . '/prices');
 
         $response->assertOk()
-            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => 'PLN 1.05'])
-            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => 'PLN 1.06'])
-            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => 'PLN 0.00'])
-            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => 'PLN 0.00']);
+            ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => '105.00'])
+            ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => '106.00'])
+            ->assertJsonMissingExact(['id' => $this->option2a->getKey(), 'price' => '0'])
+            ->assertJsonMissingExact(['id' => $this->option2b->getKey(), 'price' => '0']);
     }
 }
