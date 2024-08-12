@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::whereNull('product_id')->chunk(10, function (Collection $schemas) {
+        Schema::whereNull('product_id')->chunkById(10, function (Collection $schemas) {
             /** @var Collection<int,Schema> $schemas */
             $schemas->each(fn (Schema $schema) => $schema->products->each(function (Product $product) use ($schema) {
                 $copiedSchema = $schema->replicate();
