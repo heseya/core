@@ -24,7 +24,7 @@ final class PriceMapProductPriceData extends DataWithGlobalMetadata
             $price->map?->name ?? '',
             $price->is_net,
             $price->currency->value,
-            (string) $price->value,
+            (string) $price->value->getAmount(),
         );
     }
 }

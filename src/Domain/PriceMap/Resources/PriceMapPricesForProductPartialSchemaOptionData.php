@@ -22,7 +22,7 @@ final class PriceMapPricesForProductPartialSchemaOptionData extends DataWithGlob
 
     public static function fromModel(PriceMapSchemaOptionPrice $price): static
     {
-        $instance = new self($price->option_id, (string) $price->value);
+        $instance = new self($price->option_id, (string) $price->value->getAmount());
 
         assert($price->option instanceof Option);
 

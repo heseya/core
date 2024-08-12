@@ -25,7 +25,7 @@ final class PriceMapPricesForProductPartialProductData extends DataWithGlobalMet
 
         return new self(
             $product->id,
-            (string) ($product->mapPrices->first()?->value ?? '0'),
+            (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
             $product->name,
         );
     }
@@ -34,7 +34,7 @@ final class PriceMapPricesForProductPartialProductData extends DataWithGlobalMet
     {
         return new self(
             $price->product_id,
-            (string) $price->value,
+            (string) $price->value->getAmount(),
             $price->product?->name,
         );
     }
