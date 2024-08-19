@@ -635,7 +635,7 @@ class OrganizationTest extends TestCase
         $admin2->save();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';
@@ -699,7 +699,7 @@ class OrganizationTest extends TestCase
     public function testRegisterExistingVat(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '123456789';
@@ -735,7 +735,7 @@ class OrganizationTest extends TestCase
     public function testRegisterMinimumShippingAddresses(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
 
@@ -757,7 +757,7 @@ class OrganizationTest extends TestCase
     public function testRegisterWithConsent(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';
@@ -804,7 +804,7 @@ class OrganizationTest extends TestCase
     public function testRegisterWithoutRequiredConsent(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';

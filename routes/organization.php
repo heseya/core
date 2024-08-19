@@ -30,7 +30,7 @@ Route::prefix('organizations')->group(function (): void {
             ->middleware('can:organizations.edit');
     });
     Route::post('register', [OrganizationController::class, 'register'])
-        ->middleware('can:auth.organization_register');
+        ->middleware('can:organizations.register');
 });
 
 Route::prefix('my/organization')->group(function (): void {
