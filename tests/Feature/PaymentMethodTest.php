@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Tests\TestCase;
 
@@ -195,6 +197,44 @@ class PaymentMethodTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public payment methods.
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByShippingMethodAndSalesChannel($user): void
+    {
+        $this->{$user}->givePermissionTo('payment_methods.show');
+
+        /** @var ShippingMethod $shippingMethod */
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+        ]);
+
+        /** @var PaymentMethod $paymentMethod */
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'type' => PaymentMethodType::PREPAID,
+        ]);
+
+        $paymentMethod->shippingMethods()->attach($shippingMethod->getKey());
+
+        /** @var SalesChannel $salesChannel */
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC->value,
+        ]);
+
+        $salesChannel->paymentMethods()->attach([$paymentMethod->getKey(), $this->payment_method_related->getKey()]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/payment-methods', [
+                'sales_channel_id' => $salesChannel->getKey(),
+                'shipping_method_id' => $shippingMethod->getKey()
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $paymentMethod->getKey()])
+            ->assertJsonMissing(['id' => $this->payment_method_related->getKey()]);
     }
 
     /**
