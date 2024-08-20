@@ -23,6 +23,8 @@ final class PaymentMethodIndexDto extends Data
         #[Exists('orders', 'code')]
         public readonly Optional|string $order_code,
         public readonly array|Optional $ids,
+        #[Uuid, Exists('sales_channels', 'id')]
+        public readonly Optional|string $sales_channel_id,
     ) {}
 
     /**
