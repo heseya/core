@@ -16,6 +16,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
+use Database\Seeders\PriceMapSeeder;
 use Domain\Currency\Currency;
 use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
@@ -325,6 +326,8 @@ class DiscountConditionsCheckTest extends TestCase
     {
         parent::setUp();
 
+        app(PriceMapSeeder::class)->run();
+
         $this->discount = Discount::factory()->create([
             'active' => true,
         ]);
@@ -520,9 +523,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                50.0,
-                $this->currency->value
-            ),
+                    50.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -552,9 +555,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                100.0,
-                $this->currency->value
-            ),
+                    100.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -584,9 +587,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                100.0,
-                $this->currency->value
-            ),
+                    100.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -616,9 +619,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                50.0,
-                $this->currency->value
-            ),
+                    50.0,
+                    $this->currency->value
+                ),
             )
         );
     }

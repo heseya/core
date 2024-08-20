@@ -33,7 +33,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Status;
 use App\Models\User;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -73,7 +73,7 @@ final readonly class OrderService implements OrderServiceContract
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService,
-        private ProductRepositoryContract $productRepository,
+        private ProductRepository $productRepository,
         private SalesChannelService $salesChannelService,
     ) {}
 

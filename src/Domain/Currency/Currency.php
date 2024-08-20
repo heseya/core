@@ -7,6 +7,7 @@ namespace Domain\Currency;
 use App\Enums\Traits\EnumTrait;
 use Brick\Money\Currency as CurrencyInstance;
 use Brick\Money\Exception\UnknownCurrencyException;
+use Illuminate\Support\Arr;
 
 enum Currency: string
 {
@@ -44,5 +45,13 @@ enum Currency: string
             self::GBP => self::DEFAULT_PRICE_MAP_GBP,
             self::PLN => self::DEFAULT_PRICE_MAP_PLN,
         };
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    public static function defaultPriceMapIds(): array
+    {
+        return Arr::map(self::cases(), fn (Currency $currency) => $currency->getDefaultPriceMapId());
     }
 }

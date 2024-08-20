@@ -4,12 +4,11 @@ namespace Unit;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Repositories\DiscountRepository;
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\DiscountService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -17,6 +16,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Heseya\Dto\DtoException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -201,8 +201,8 @@ class ActiveSalesTest extends TestCase
 
         $discountRepository = App::make(DiscountRepository::class);
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
 
         $product1 = Product::factory()->create([
             'name' => 'Product had discount',

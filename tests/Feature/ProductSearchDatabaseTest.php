@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Media;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -23,7 +23,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
-use function Symfony\Component\String\s;
 
 class ProductSearchDatabaseTest extends TestCase
 {
@@ -637,8 +636,8 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
         $currency = Currency::DEFAULT;
 
         $product = Product::factory()->create([

@@ -9,6 +9,7 @@ use App\Models\Product;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\PriceMap\Resources\PriceMapProductPriceData;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -78,5 +79,15 @@ final class PriceMapProductPrice extends Model
     public function map(): BelongsTo
     {
         return $this->belongsTo(PriceMap::class, 'price_map_id');
+    }
+
+    /**
+     * @param Builder<self> $query
+     *
+     * @return Builder<self>
+     */
+    public function scopeOfPriceMap(Builder $query, PriceMap|string $priceMapId): Builder
+    {
+        return $query->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId);
     }
 }

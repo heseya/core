@@ -9,7 +9,7 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Price;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
@@ -45,8 +45,7 @@ class ProductSeeder extends Seeder
     {
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        $productRepository = App::make(ProductRepository::class);
 
         $language = Language::query()->where('default', false)->firstOrFail()->getKey();
 

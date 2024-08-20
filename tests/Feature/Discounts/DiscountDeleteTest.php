@@ -3,20 +3,19 @@
 namespace Tests\Feature\Discounts;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
-use App\Repositories\DiscountRepository;
-use Domain\Price\Enums\ProductPriceType;
 use App\Events\CouponDeleted;
 use App\Events\SaleDeleted;
 use App\Listeners\WebHookEventListener;
 use App\Models\Discount;
 use App\Models\Product;
 use App\Models\WebHook;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
@@ -30,7 +29,7 @@ use Tests\TestCase;
 
 class DiscountDeleteTest extends TestCase
 {
-    private ProductRepositoryContract $productRepository;
+    private ProductRepository $productRepository;
     private Currency $currency;
     private DiscountRepository $discountRepository;
 
@@ -38,7 +37,7 @@ class DiscountDeleteTest extends TestCase
     {
         parent::setUp();
 
-        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->productRepository = App::make(ProductRepository::class);
         $this->discountRepository = App::make(DiscountRepository::class);
         $this->currency = Currency::DEFAULT;
     }

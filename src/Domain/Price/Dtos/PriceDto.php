@@ -19,6 +19,8 @@ final class PriceDto extends Data
         public Money $value,
         #[WithCast(EnumCast::class, Currency::class)]
         public Currency $currency,
+        public bool $is_net = false,
+        public string|null $price_map_id = null,
     ) {}
 
     public static function fromModel(Price $price): self
@@ -26,11 +28,15 @@ final class PriceDto extends Data
         return self::from([
             'value' => $price->value,
             'currency' => $price->currency,
+            'price_map_id' => $price->price_map_id,
+            'is_net' => $price->is_net,
         ]);
     }
 
     public static function fromMoney(Money $money): self
     {
-        return new self($money, Currency::from($money->getCurrency()->getCurrencyCode()));
+        $currency = Currency::from($money->getCurrency()->getCurrencyCode());
+
+        return new self($money, $currency);
     }
 }

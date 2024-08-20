@@ -8,8 +8,11 @@ use Brick\Money\AbstractMoney;
 use Brick\Money\Money;
 use Database\Factories\PriceFactory;
 use Domain\Price\Dtos\PriceDto;
+use Domain\PriceMap\PriceMap;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\LaravelData\WithData;
 
@@ -35,6 +38,7 @@ class Price extends Model
         'model_type',
         'price_type',
         'is_net',
+        'price_map_id',
     ];
 
     protected $casts = [
@@ -70,8 +74,27 @@ class Price extends Model
         return $this;
     }
 
+    /**
+     * @return MorphTo<Option|Product|Schema|Model,self>
+     */
     public function model(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * @return BelongsTo<PriceMap,self>
+     */
+    public function priceMap(): BelongsTo
+    {
+        return $this->belongsTo(PriceMap::class);
+    }
+
+    /**
+     * @return Builder<self>
+     */
+    public function scopeOfPriceMap(Builder $query, PriceMap|string $priceMapId): Builder
+    {
+        return $query->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId);
     }
 }

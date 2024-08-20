@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -40,8 +40,7 @@ class ProductFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function (Product $product): void {
-            /** @var ProductRepositoryContract $productRepository */
-            $productRepository = App::make(ProductRepositoryContract::class);
+            $productRepository = App::make(ProductRepository::class);
 
             $price = PriceDto::from(
                 Money::of(

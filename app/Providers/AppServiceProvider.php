@@ -2,9 +2,7 @@
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
-use App\Repositories\ProductRepository;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AvailabilityService;
@@ -106,7 +104,6 @@ class AppServiceProvider extends ServiceProvider
         SilverboxServiceContract::class => SilverboxService::class,
 
         // Repositories
-        ProductRepositoryContract::class => ProductRepository::class,
         DiscountRepository::class => DiscountRepository::class,
 
         // Providers

@@ -70,7 +70,7 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         return new self(
             $product->id,
             (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
-            $product->name,
+            $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
             PriceMapPricesForProductPartialSchemaOptionData::collection($schema_options),
         );
     }

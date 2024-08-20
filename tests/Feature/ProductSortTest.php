@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -19,7 +19,7 @@ class ProductSortTest extends TestCase
 {
     private Currency $currency;
 
-    private ProductRepositoryContract $productRepository;
+    private ProductRepository $productRepository;
 
     /**
      * @throws UnknownCurrencyException
@@ -33,7 +33,7 @@ class ProductSortTest extends TestCase
 
         $this->currency = Currency::DEFAULT;
 
-        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->productRepository = App::make(ProductRepository::class);
     }
 
     /**

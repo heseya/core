@@ -27,7 +27,6 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\Status;
 use App\Models\WebHook;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\ProductService;
@@ -122,8 +121,8 @@ class OrderCreateTest extends TestCase
             'public' => true,
         ]);
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
         $this->currency = Currency::DEFAULT;
 
         $productRepository->setProductPrices($this->product->getKey(), [

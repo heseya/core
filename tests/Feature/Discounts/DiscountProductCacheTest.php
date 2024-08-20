@@ -4,31 +4,30 @@ namespace Tests\Feature\Discounts;
 
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
-use Domain\Price\Enums\ProductPriceType;
 use App\Models\Product;
 use App\Models\Role;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\ProductPriceType;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class DiscountProductCacheTest extends TestCase
 {
-    private ProductRepositoryContract $productRepository;
+    private ProductRepository $productRepository;
     private Currency $currency;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->productRepository = App::make(ProductRepository::class);
         $this->currency = Currency::DEFAULT;
     }
 

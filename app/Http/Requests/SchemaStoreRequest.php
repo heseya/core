@@ -31,7 +31,7 @@ final class SchemaStoreRequest extends FormRequest
 
                 'required' => ['nullable', 'boolean'],
 
-                'default' => ['nullable', 'required_if:required,true', 'in_array:options.*.translations.*'],
+                'default' => ['nullable', 'required_if:required,true', 'numeric', 'min:0', 'max:' . count($this->options)],
 
                 'options' => ['required', 'array', Rule::when($this->required, [new SchemaZeroOptionExistsForEachCurrency()])],
 

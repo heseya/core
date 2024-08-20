@@ -8,12 +8,12 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ServerException;
 use App\Models\Price;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
+use Domain\PriceMap\PriceMap;
 use Domain\Product\Dtos\ProductSearchDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
 use Support\Dtos\ModelIdentityDto;
 
-class ProductRepository implements ProductRepositoryContract
+class ProductRepository
 {
     use GetPublishedLanguageFilter;
 
@@ -155,11 +155,12 @@ class ProductRepository implements ProductRepositoryContract
     /**
      * @param PriceDto[][] $priceMatrix
      */
-    public function setProductPrices(string $productId, array $priceMatrix): void
+    public function setProductPrices(string $productId, array $priceMatrix, PriceMap|string|null $priceMap = null): void
     {
         $this->priceRepository->setModelPrices(
             new ModelIdentityDto($productId, (new Product())->getMorphClass()),
             $priceMatrix,
+            $priceMap,
         );
     }
 
@@ -174,12 +175,12 @@ class ProductRepository implements ProductRepositoryContract
     public function getProductPrices(
         string $productId,
         array $priceTypes,
-        ?Currency $currency = null,
+        Currency|PriceMap|null $priceMap = null,
     ): Collection|EloquentCollection {
         $prices = $this->priceRepository->getModelPrices(
             new ModelIdentityDto($productId, (new Product())->getMorphClass()),
             $priceTypes,
-            $currency,
+            $priceMap,
         );
 
         $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);

@@ -55,8 +55,8 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\SalesShortResource;
 use App\Models\User;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
@@ -102,7 +102,7 @@ readonly class DiscountService implements DiscountServiceContract
         private MetadataServiceContract $metadataService,
         private SeoMetadataService $seoMetadataService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
-        private ProductRepositoryContract $productRepository,
+        private ProductRepository $productRepository,
         private DiscountRepository $discountRepository,
         private SalesChannelService $salesChannelService,
         private PriceRepository $priceRepository,

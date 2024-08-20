@@ -27,11 +27,13 @@ class PriceMinCap extends Criterion
 
         $value = $value->dividedBy(BigDecimal::of($salesChannel->vat_rate)->multipliedBy(0.01)->plus(1), roundingMode: RoundingMode::HALF_DOWN);
 
-        return $query->whereHas('pricesMin',
+        return $query->whereHas(
+            'pricesMin',
             fn (Builder $query) => $query
                 ->where('value', '>=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
-                ->where('price_type', ProductPriceType::PRICE_MIN->value),
+                ->where('price_type', ProductPriceType::PRICE_MIN->value)
+                ->where('price_map_id', $salesChannel->price_map_id),
         );
     }
 }

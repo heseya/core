@@ -2,10 +2,15 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Option;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\PriceMap\Resources\PriceMapSchemaPricesOptionPriceDetailedData;
 use Illuminate\Http\Request;
 
+/**
+ * @property Option $resource
+ */
 class OptionResource extends Resource
 {
     use GetAllTranslations;
@@ -16,8 +21,8 @@ class OptionResource extends Resource
         $data = [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'prices' => PriceResource::collection($this->resource->prices),
-            'disabled' => $this->resource->disabled,
+            'price' => $request->header('X-Sales-Channel') ? PriceMapSchemaPricesOptionPriceDetailedData::from($this->resource->getMappedPriceForPriceMap($request->header('X-Sales-Channel'))) : null,
+            'prices' => PriceResource::collection($this->resource->mapPrices),
             'available' => $this->resource->available,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,

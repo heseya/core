@@ -7,9 +7,10 @@ use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
 use App\Models\Option;
+use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductAttribute;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
@@ -21,6 +22,9 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
+use Domain\PriceMap\PriceMapProductPrice;
+use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\Product\Models\ProductBannerMedia;
@@ -49,9 +53,10 @@ final readonly class ProductService
         private MetadataServiceContract $metadataService,
         private AttributeService $attributeService,
         private DiscountServiceContract $discountService,
-        private ProductRepositoryContract $productRepository,
+        private ProductRepository $productRepository,
         private TranslationServiceContract $translationService,
         private ProductSetService $productSetService,
+        private PriceMapService $priceMapService,
     ) {}
 
     /**
@@ -131,17 +136,60 @@ final readonly class ProductService
     }
 
     /**
-     * @return array<int, PriceDto>
+     * @return array<int,PriceDto>
      */
-    public function getMinMaxPrices(Product $product, Currency $currency = Currency::DEFAULT): array
+    public function getMinMaxPricesInPriceMap(Product $product, PriceMap $priceMap): array
     {
+        $max = Money::zero($priceMap->currency->value);
+
+        /** @var Schema $schema */
+        foreach ($product->schemas as $schema) {
+            $schema_max = Money::zero($priceMap->currency->value);
+            $most_valueable_option = null;
+
+            foreach ($schema->options as $option) {
+                $option_price = $option->getPriceForPriceMap($priceMap);
+                $schema_max = Money::max($option_price, $schema_max);
+                if ($option_price->isEqualTo($schema_max)) {
+                    $most_valueable_option = $option;
+                }
+            }
+
+            if ($most_valueable_option !== null) {
+                $max = $max->plus($schema->getPrice($most_valueable_option->id, $product->schemas->toArray(), $priceMap));
+            }
+        }
+
+        $price = $product->priceBaseForPriceMap($priceMap);
+
+        if ($price !== null) {
+            return [
+                PriceDto::from($price->value),
+                PriceDto::from($price->value->plus($max)),
+            ];
+        }
+
+        return [
+            PriceDto::from(Money::zero($priceMap->currency->value)),
+            PriceDto::from($max),
+        ];
+    }
+
+    /**
+     * @deprecated
+     */
+    public function getMinMaxPrices(Product $product, Currency|PriceMap $priceMap = Currency::DEFAULT): array
+    {
+        $priceMap = $priceMap instanceof Currency ? PriceMap::findOrFail($priceMap->getDefaultPriceMapId()) : $priceMap;
+
         [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
             clone $product->schemas,
-            $currency,
+            $priceMap,
         );
 
-        $price = $product->pricesBase->where('currency', $currency->value)->firstOrFail();
+        /** @var Price|PriceMapProductPrice $price */
+        $price = $product->pricesBase->where('currency', $priceMap->currency->value)->first() ?? $product->priceBaseForPriceMap($priceMap);
 
         return [
             PriceDto::from($price->value->plus($schemaMin)),
@@ -149,6 +197,21 @@ final readonly class ProductService
         ];
     }
 
+    public function updateMinMaxPricesForPriceMap(Product $product, PriceMap $priceMap): void
+    {
+        [$pricesMin, $pricesMax] = $this->getMinMaxPricesInPriceMap($product, $priceMap);
+
+        $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value] = [$pricesMin];
+        $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value] = [$pricesMax];
+
+        $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax, $priceMap);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    /**
+     * @deprecated
+     */
     public function updateMinMaxPrices(Product $product): void
     {
         $pricesMinMax = [
@@ -225,9 +288,7 @@ final readonly class ProductService
         }
 
         if ($dto->prices_base instanceof DataCollection) {
-            $this->productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $dto->prices_base->items(),
-            ]);
+            $this->priceMapService->updateProductPricesForDefaultMaps($product, $dto->prices_base);
         }
 
         $this->setBannerMedia($product, $dto);
@@ -259,11 +320,13 @@ final readonly class ProductService
      *
      * @throws MathException
      * @throws MoneyMismatchException
+     *
+     * @deprecated
      */
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
-        Currency $currency,
+        PriceMap $priceMap,
         array $values = [],
     ): array {
         if ($remainingSchemas->isNotEmpty()) {
@@ -276,7 +339,7 @@ final readonly class ProductService
                 $values,
                 $schema,
                 $newValues,
-                $currency,
+                $priceMap,
             );
 
             $required = $schema->required;
@@ -294,10 +357,10 @@ final readonly class ProductService
                     $current->getPrice(
                         $values[$current->getKey()],
                         $values,
-                        $currency,
+                        $priceMap,
                     ),
                 ),
-                Money::zero($currency->value),
+                Money::zero($priceMap->currency->value),
             );
 
             $minmax = [
@@ -313,6 +376,8 @@ final readonly class ProductService
      * @return Money[]
      *
      * @throws MoneyMismatchException
+     *
+     * @deprecated
      */
     private function getBestSchemasPrices(
         Collection $allSchemas,
@@ -320,20 +385,20 @@ final readonly class ProductService
         array $currentValues,
         Schema $schema,
         array $values,
-        Currency $currency,
+        PriceMap $priceMap,
     ): array {
         return $this->bestMinMax(
             Collection::make($values)->map(
                 fn ($value) => $this->getSchemasPrices(
                     $allSchemas,
                     clone $remainingSchemas,
-                    $currency,
+                    $priceMap,
                     $currentValues + [
                         $schema->getKey() => $value,
                     ],
                 ),
             ),
-            $currency,
+            $priceMap->currency,
         );
     }
 
@@ -341,6 +406,8 @@ final readonly class ProductService
      * @return Money[]
      *
      * @throws MoneyMismatchException
+     *
+     * @deprecated
      */
     private function bestMinMax(Collection $minmaxCol, Currency $currency): array
     {

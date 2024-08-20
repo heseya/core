@@ -19,7 +19,7 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WebHook;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\DiscountServiceContract;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -59,7 +59,7 @@ class DiscountTest extends TestCase
     private Product $conditionProduct;
     private ProductSet $conditionProductSet;
     private array $expectedStructure;
-    private ProductRepositoryContract $productRepository;
+    private ProductRepository $productRepository;
     private Currency $currency;
     private Organization $organization;
 
@@ -123,7 +123,7 @@ class DiscountTest extends TestCase
     {
         parent::setUp();
 
-        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->productRepository = App::make(ProductRepository::class);
         $this->currency = Currency::DEFAULT;
 
         // coupons

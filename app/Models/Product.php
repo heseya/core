@@ -33,6 +33,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Enums\AttributeType;
@@ -56,13 +57,6 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Scout\Searchable;
 
 /**
- * @property string $name
- * @property string $description_html
- * @property string $description_short
- * @property mixed $pivot
- * @property ProductAttribute|null $product_attribute_pivot
- * @property Collection<int, Price> $pricesBase
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements SeoContract, SortableContract, Translatable
@@ -329,6 +323,9 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $sales->unique('id');
     }
 
+    /**
+     * @deprecated
+     */
     public function pricesBase(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
@@ -360,11 +357,48 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     }
 
     /**
+     * @return MorphMany<Price>|Collection<Price>
+     */
+    private function pricesForPriceMap(PriceMap|string $priceMapId): Collection|MorphMany
+    {
+        return $this->relationLoaded('prices')
+            ? $this->prices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)
+            : $this->prices()->ofPriceMap($priceMapId);
+    }
+
+    public function priceMinForPriceMap(PriceMap|string $priceMapId): ?Price
+    {
+        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MIN->value)->first();
+    }
+
+    public function priceMaxForPriceMap(PriceMap|string $priceMapId): ?Price
+    {
+        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MAX->value)->first();
+    }
+
+    public function priceMinInitialForPriceMap(PriceMap|string $priceMapId): ?Price
+    {
+        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value)->first();
+    }
+
+    public function priceMaxInitialForPriceMap(PriceMap|string $priceMapId): ?Price
+    {
+        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value)->first();
+    }
+
+    /**
      * @return HasMany<PriceMapProductPrice>
      */
     public function mapPrices(): HasMany
     {
         return $this->hasMany(PriceMapProductPrice::class);
+    }
+
+    public function priceBaseForPriceMap(PriceMap|string $priceMapId): ?PriceMapProductPrice
+    {
+        return $this->relationLoaded('mapPrices')
+            ? $this->mapPrices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)->first()
+            : $this->mapPrices()->ofPriceMap($priceMapId)->first();
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder

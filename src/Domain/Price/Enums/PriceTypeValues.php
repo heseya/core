@@ -6,11 +6,16 @@ namespace Domain\Price\Enums;
 
 abstract readonly class PriceTypeValues
 {
+    /** @deprecated */
     public const PRICE_BASE = 'price_base';
+
     public const PRICE_MIN = 'price_min';
     public const PRICE_MAX = 'price_max';
     public const PRICE_MIN_INITIAL = 'price_min_initial';
     public const PRICE_MAX_INITIAL = 'price_max_initial';
+
+    /** @deprecated */
     public const PRICE_FOR_SCHEMA = 'schema';
+    /** @deprecated */
     public const PRICE_FOR_OPTION = 'option';
 }

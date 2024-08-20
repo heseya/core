@@ -18,8 +18,8 @@ use App\Models\Price;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\WebHook;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\ProductService;
@@ -63,7 +63,7 @@ class ProductTest extends TestCase
     private array $productPrices;
     private ProductService $productService;
     private DiscountServiceContract $discountService;
-    private ProductRepositoryContract $productRepository;
+    private ProductRepository $productRepository;
     private SchemaCrudService $schemaCrudService;
     private DiscountRepository $discountRepository;
 
@@ -91,7 +91,7 @@ class ProductTest extends TestCase
 
         $this->productService = App::make(ProductService::class);
         $this->discountService = App::make(DiscountServiceContract::class);
-        $this->productRepository = App::make(ProductRepositoryContract::class);
+        $this->productRepository = App::make(ProductRepository::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
 
@@ -1623,7 +1623,7 @@ class ProductTest extends TestCase
 
         Event::assertDispatched(ProductPriceUpdated::class);
 
-        $productPrices = app(ProductRepositoryContract::class)->getProductPrices($product->getKey(), [
+        $productPrices = app(ProductRepository::class)->getProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN,
             ProductPriceType::PRICE_MAX,
         ]);

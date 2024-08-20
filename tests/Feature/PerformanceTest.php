@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\SchemaType;
 use App\Models\Country;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -17,8 +16,8 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\Status;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -429,8 +428,8 @@ class PerformanceTest extends TestCase
                 'public' => true,
             ]);
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
 
         $products->each(function (Product $product) use ($productRepository) {
             $prices = array_map(fn (Currency $currency) => PriceDto::from(
@@ -1002,8 +1001,8 @@ class PerformanceTest extends TestCase
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
         $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items) {
             $this->prepareProductSchemas($product);
 

@@ -15,8 +15,8 @@ class PriceMapSeeder extends Seeder
         foreach (Currency::cases() as $case) {
             if (!PriceMap::find($case->getDefaultPriceMapId())) {
                 $defaultMap = new PriceMap([
-                    'name' => 'Default',
-                    'description' => 'Default',
+                    'name' => 'Default ' . $case->value,
+                    'description' => 'Default ' . $case->value,
                     'currency' => $case->value,
                     'is_net' => true,
                 ]);

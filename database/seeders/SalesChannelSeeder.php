@@ -4,11 +4,11 @@ namespace Database\Seeders;
 
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\PriceMap\PriceMap;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Seeder;
-use Support\Enum\Status;
 
 class SalesChannelSeeder extends Seeder
 {
@@ -17,12 +17,14 @@ class SalesChannelSeeder extends Seeder
      */
     public function run(): void
     {
+        $priceMap = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
         $channel = SalesChannel::query()->make([
             'slug' => 'another',
             'status' => SalesChannelStatus::PUBLIC->value,
             'language_id' => Language::default()?->getKey(),
             'vat_rate' => '0',
             'activity' => SalesChannelActivityType::ACTIVE,
+            'price_map_id' => $priceMap->id,
         ]);
         $published = [];
         foreach (Language::query()->get() as $language) {
