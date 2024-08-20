@@ -21,6 +21,7 @@ class OrderCreateRequest extends OrderItemsRequest
     {
         /** @var User|App|null $user */
         $user = Auth::user();
+
         return array_merge(
             parent::rules(),
             $this->metadataRules(),
