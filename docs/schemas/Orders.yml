@@ -316,8 +316,6 @@ OrderShippingMethod:
         - address
         - point
         - point-external
-    payment_on_delivery:
-      type: boolean
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

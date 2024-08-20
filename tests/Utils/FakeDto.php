@@ -51,7 +51,6 @@ final readonly class FakeDto
                     'public' => $faker->boolean,
                     'block_list' => $faker->boolean,
                     'price_ranges' => [$priceRange],
-                    'payment_on_delivery' => false,
                 ],
             ]
         );

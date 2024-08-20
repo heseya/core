@@ -12,6 +12,7 @@ use App\Traits\CustomHasTranslations;
 use Domain\Language\Language;
 use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
+use Domain\PriceMap\PriceMap;
 use Domain\SalesChannel\Criteria\SalesChannelCountrySearch;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
@@ -121,5 +122,13 @@ final class SalesChannel extends Model implements Translatable
                     $query->where('id', '=', $user->getKey());
                 });
             })->exists();
+    }
+
+    /**
+     * @return BelongsTo<PriceMap, self>
+     */
+    public function priceMap(): BelongsTo
+    {
+        return $this->belongsTo(PriceMap::class);
     }
 }

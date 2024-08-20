@@ -25,7 +25,6 @@ final class OrderShippingMethodResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'shipping_type' => $this->resource->shipping_type,
-            'payment_on_delivery' => $this->resource->payment_on_delivery,
             'integration_key' => $this->resource->integration_key,
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
