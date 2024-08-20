@@ -130,6 +130,7 @@ class OrderTest extends TestCase
             'status',
             'paid',
             'created_at',
+            'payment_method_type',
         ];
 
         $this->expected_full_structure = [
