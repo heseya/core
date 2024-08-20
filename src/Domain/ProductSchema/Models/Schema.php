@@ -286,8 +286,6 @@ final class Schema extends Model implements SortableContract, Translatable
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
 
-            var_dump('wtf');
-
             return $option->getPriceForPriceMap($priceMap);
         } catch (Throwable $th) {
             return Money::zero($priceMap->currency->value);

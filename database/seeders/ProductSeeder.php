@@ -21,6 +21,7 @@ use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\Seo\Models\SeoMetadata;
@@ -45,12 +46,15 @@ class ProductSeeder extends Seeder
     {
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
+        /** @var ProductRepository $productRepository */
         $productRepository = App::make(ProductRepository::class);
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
 
         $language = Language::query()->where('default', false)->firstOrFail()->getKey();
 
         $products = Product::factory()->count(100)
-            ->state(fn ($sequence) => [
+            ->state(fn($sequence) => [
                 'shipping_digital' => mt_rand(0, 1),
             ])
             ->has(Price::factory()->forAllCurrencies(), 'pricesBase')
@@ -67,7 +71,7 @@ class ProductSeeder extends Seeder
             'parent_id' => $brands->getKey(),
         ])->count(4)->create();
 
-        $brands->each(fn ($set) => $this->seo($set, $language));
+        $brands->each(fn($set) => $this->seo($set, $language));
 
         $categories = ProductSet::factory([
             'name' => 'Categories',
@@ -78,9 +82,9 @@ class ProductSeeder extends Seeder
             'parent_id' => $categories->getKey(),
         ])->count(4)->create();
 
-        $categories->each(fn ($set) => $this->seo($set, $language));
+        $categories->each(fn($set) => $this->seo($set, $language));
 
-        $products->each(function ($product, $index) use ($productService, $productRepository, $sets, $brands, $categories, $language): void {
+        $products->each(function ($product, $index) use ($productService, $productRepository, $priceMapService, $sets, $brands, $categories, $language): void {
             if (mt_rand(0, 1)) {
                 $this->schemas($product, $language);
             }
@@ -102,13 +106,15 @@ class ProductSeeder extends Seeder
             $this->translations($product, $language);
             $product->save();
 
-            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
             $productRepository->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => $prices,
             ]);
+
+            $priceMapService->updateProductPricesForDefaultMaps($product, PriceDto::collection($prices));
 
             $productService->updateMinMaxPrices($product);
         });
@@ -182,7 +188,7 @@ class ProductSeeder extends Seeder
         $availabilityService = App::make(AvailabilityServiceContract::class);
         $products = Product::all();
 
-        $products->each(fn (Product $product) => $availabilityService->calculateProductAvailability($product));
+        $products->each(fn(Product $product) => $availabilityService->calculateProductAvailability($product));
     }
 
     private function translations(Product $product, string $language): void

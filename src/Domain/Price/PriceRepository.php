@@ -85,7 +85,7 @@ final class PriceRepository
         } elseif ($priceMap instanceof Currency) {
             $query->where('price_map_id', $priceMap->getDefaultPriceMapId());
         } else {
-            $query->where('price_map_id', 'in', Currency::defaultPriceMapIds());
+            $query->whereIn('price_map_id', Currency::defaultPriceMapIds());
         }
 
         return $query->get();
