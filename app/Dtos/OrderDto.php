@@ -35,6 +35,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         public readonly string $sales_channel_id,
         public readonly string $language,
         public readonly string $payment_method_id,
+        public readonly Missing|string|null $organization_id,
     ) {}
 
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
@@ -74,6 +75,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             sales_channel_id: $request->input('sales_channel_id'),
             language: app(LanguageService::class)->firstByIdOrDefault(App::getLocale())->iso,
             payment_method_id: $request->input('payment_method_id'),
+            organization_id: $request->input('organization_id', new Missing()),
         );
     }
 
@@ -155,5 +157,10 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     public function getPaymentMethodId(): string
     {
         return $this->payment_method_id;
+    }
+
+    public function getOrganizationId(): Missing|string|null
+    {
+        return $this->organization_id;
     }
 }
