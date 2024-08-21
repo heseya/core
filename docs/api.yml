@@ -340,6 +340,8 @@ paths:
     $ref: './paths/Redirects.yml#/Redirects'
   '/redirects/id:{id}':
     $ref: './paths/Redirects.yml#/RedirectsParams'
+  /email:
+    $ref: './paths/Emails.yml#/Emails'
 components:
   schemas:
     Error:

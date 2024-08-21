@@ -1,0 +1,17 @@
+Email:
+  content:
+    application/json:
+      schema:
+        required:
+          - title
+          - receiver
+          - body
+        type: object
+        properties:
+          title:
+            type: string
+          receiver:
+            type: string
+          body:
+            type: string
+            description: "Email HTML body"
