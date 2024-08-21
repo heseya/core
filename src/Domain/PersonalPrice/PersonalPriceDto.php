@@ -15,7 +15,7 @@ final class PersonalPriceDto extends DataWithGlobalMetadata
         public readonly PriceResource $price,
     ) {}
 
-    public static function fromProductPriceDto(ProductPriceDto $dto)
+    public static function fromProductPriceDto(ProductPriceDto $dto): static
     {
         return self::from([
             'id' => $dto->id,

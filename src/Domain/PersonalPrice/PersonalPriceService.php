@@ -33,7 +33,8 @@ final readonly class PersonalPriceService
             $query->where('products.public', true);
         }
 
-        $priceMap = $salesChannel->priceMap ?? PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
+        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail(Currency::DEFAULT->getDefaultPriceMapId());
+        assert($priceMap instanceof PriceMap);
 
         $products = $query->get();
 
