@@ -216,6 +216,8 @@ class DiscountProductCacheTest extends TestCase
             ->actingAs($this->user)
             ->json('POST', '/sales', $discount + $conditions);
 
+        var_dump($response->getContent());
+
         $response->assertCreated();
 
         // Assert price didn't decrease

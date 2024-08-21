@@ -12,6 +12,7 @@ use Domain\PriceMap\PriceMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\LaravelData\WithData;
@@ -75,7 +76,7 @@ class Price extends Model
     }
 
     /**
-     * @return MorphTo<Option|Product|Schema|Model,self>
+     * @return MorphTo<Option|Product|Schema|LaravelModel,self>
      */
     public function model(): MorphTo
     {

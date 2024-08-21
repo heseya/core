@@ -9,6 +9,9 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Product;
 use App\Services\Contracts\DiscountServiceContract;
+use Domain\Currency\Currency;
+use Domain\PriceMap\PriceMap;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Support\Facades\Gate;
 
 final readonly class PersonalPriceService
@@ -22,7 +25,7 @@ final readonly class PersonalPriceService
      *
      * @throws ClientException
      */
-    public function calcProductsListDiscounts(ProductPricesDto $dto): array
+    public function calcProductsListDiscounts(ProductPricesDto $dto, SalesChannel $salesChannel): array
     {
         $query = Product::query()->whereIn('id', $dto->ids);
 
@@ -30,12 +33,14 @@ final readonly class PersonalPriceService
             $query->where('products.public', true);
         }
 
+        $priceMap = $salesChannel->priceMap ?? PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
+
         $products = $query->get();
 
         if ($products->count() < count($dto->ids)) {
             throw new ClientException(Exceptions::PRODUCT_NOT_FOUND);
         }
 
-        return $this->discountService->calcProductsListDiscounts($products);
+        return $this->discountService->calcProductsListDiscounts($products, $priceMap);
     }
 }

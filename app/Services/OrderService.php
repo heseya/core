@@ -46,8 +46,9 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Order\Resources\OrderResource;
 use Domain\PaymentMethods\Models\PaymentMethod;
-use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Exception;
@@ -105,8 +106,12 @@ final readonly class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-        $currency = $dto->currency;
-        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
+        $salesChannel = SalesChannel::findOr($dto->sales_channel_id, fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
+        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->currency->getDefaultPriceMapId());
+        assert($priceMap instanceof PriceMap);
+        $currency = $priceMap->currency;
+
+        $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
 
         DB::beginTransaction();
 
@@ -214,12 +219,7 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    $prices = $this->productRepository->getProductPrices($product->getKey(), [
-                        ProductPriceType::PRICE_BASE,
-                    ], $currency);
-
-                    /** @var Money $price */
-                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
+                    $price = $product->priceBaseForPriceMap($priceMap)->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),

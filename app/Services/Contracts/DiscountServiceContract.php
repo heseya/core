@@ -23,6 +23,7 @@ use App\Models\Product;
 use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PriceMap\PriceMap;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -72,7 +73,7 @@ interface DiscountServiceContract
     /**
      * @return ProductPriceDto[]
      */
-    public function calcProductsListDiscounts(Collection $products): array;
+    public function calcProductsListDiscounts(Collection $products, PriceMap $priceMap): array;
 
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;
 

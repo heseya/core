@@ -75,8 +75,10 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
+use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Domain\Setting\Services\Contracts\SettingsServiceContract;
@@ -91,7 +93,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\ItemNotFoundException;
 use Illuminate\Support\Str;
 
 readonly class DiscountService implements DiscountServiceContract
@@ -357,7 +358,18 @@ readonly class DiscountService implements DiscountServiceContract
             ? ShippingMethod::query()->findOrFail($cart->getDigitalShippingMethodId())
             : null;
 
-        $currency = $cart->currency;
+        $salesChannel = SalesChannel::find($cart->sales_channel_id);
+        $priceMap = $salesChannel?->priceMap;
+
+        if ($priceMap) {
+            $currency = $priceMap->currency;
+        } else {
+            $currency = $cart->currency;
+            $priceMap = PriceMap::findOrFail($currency->getDefaultPriceMapId());
+        }
+
+        assert($priceMap instanceof PriceMap);
+
         $cartItems = [];
         $cartValue = Money::zero($currency->value);
 
@@ -369,12 +381,7 @@ readonly class DiscountService implements DiscountServiceContract
                 continue;
             }
 
-            $prices = $this->productRepository->getProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE,
-            ], $currency);
-
-            /** @var Money $price */
-            $price = $prices->get(ProductPriceType::PRICE_BASE->value)?->firstOrFail()?->value ?? throw new ItemNotFoundException();
+            $price = $product->priceBaseForPriceMap($priceMap);
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
@@ -488,11 +495,11 @@ readonly class DiscountService implements DiscountServiceContract
      *
      * @return ProductPriceDto[]
      */
-    public function calcProductsListDiscounts(Collection $products): array
+    public function calcProductsListDiscounts(Collection $products, PriceMap $priceMap): array
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
 
-        return $products->map(function (Product $product) use ($salesWithBlockList) {
+        return $products->map(function (Product $product) use ($salesWithBlockList, $priceMap) {
             /**
              * @var PriceDto[] $minPriceDiscounted
              * @var PriceDto[] $maxPriceDiscounted
@@ -501,12 +508,13 @@ readonly class DiscountService implements DiscountServiceContract
                 $product,
                 $salesWithBlockList,
                 true,
+                $priceMap,
             );
 
             return new ProductPriceDto(
                 $product->getKey(),
-                PriceResource::collection($minPriceDiscounted),
-                PriceResource::collection($maxPriceDiscounted),
+                PriceResource::make(array_shift($minPriceDiscounted)),
+                PriceResource::make(array_shift($maxPriceDiscounted)),
             );
         })->toArray();
     }
@@ -732,10 +740,10 @@ readonly class DiscountService implements DiscountServiceContract
         ProductPriceUpdated::dispatchIf(
             $this->pricesChanged($oldPricesMin, $newPricesMin) || $this->pricesChanged($oldPricesMax, $newPricesMax),
             $product->getKey(),
-            $oldPricesMin ? $oldPricesMin->toArray() : null,
-            $oldPricesMax ? $oldPricesMax->toArray() : null,
-            $newPricesMin->toArray(),
-            $newPricesMax->toArray(),
+            $oldPricesMin,
+            $oldPricesMax,
+            $newPricesMin,
+            $newPricesMax,
         );
     }
 
@@ -1066,6 +1074,7 @@ readonly class DiscountService implements DiscountServiceContract
         Product $product,
         Collection $salesWithBlockList,
         bool $calcForCurrentUser,
+        PriceMap $priceMap = null,
     ): array {
         $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
@@ -1075,10 +1084,11 @@ readonly class DiscountService implements DiscountServiceContract
                 ProductPriceType::PRICE_MIN_INITIAL,
                 ProductPriceType::PRICE_MAX_INITIAL,
             ],
+            $priceMap,
         );
 
-        $minPrices = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value);
-        $maxPrices = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value);
+        $minPrices = $prices->get(ProductPriceType::PRICE_MIN_INITIAL->value, []);
+        $maxPrices = $prices->get(ProductPriceType::PRICE_MAX_INITIAL->value, []);
 
         $minimalMonetaryValue = 1;
 
@@ -2093,7 +2103,7 @@ readonly class DiscountService implements DiscountServiceContract
         return $cartResource;
     }
 
-    private function pricesChanged(Collection|null $oldPrices, Collection $newPrices): bool
+    private function pricesChanged(Collection|null $oldPrices, Collection|null $newPrices): bool
     {
         if (!$oldPrices) {
             return true;
@@ -2101,7 +2111,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var PriceDto $oldPrice */
         foreach ($oldPrices as $oldPrice) {
-            $newPrice = $newPrices->first(fn (PriceDto $dto) => $dto->currency === $oldPrice->currency);
+            $newPrice = $newPrices?->first(fn (PriceDto $dto) => $dto->currency === $oldPrice->currency);
             if (!$newPrice || $oldPrice->value->getAmount()->compareTo($newPrice->value->getAmount()) !== 0) {
                 return true;
             }

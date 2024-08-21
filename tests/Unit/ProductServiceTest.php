@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Enums\SchemaType;
+use App\Models\Option;
 use App\Models\Product;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
@@ -237,13 +238,15 @@ class ProductServiceTest extends TestCase
             'required' => true,
             'product_id' => $this->product->getKey(),
         ], false, false));
+
+        /** @var Option $option */
         $option = $schema->options()->create([
             'name' => 'Default option',
         ]);
-        $option->prices()->create([
+        $option->mapPrices()->create([
             'value' => $schema1Price * 100,
             'currency' => self::$currency->value,
-            'price_type' => OptionPriceType::PRICE_BASE,
+            'price_map_id' => self::$currency->getDefaultPriceMapId(),
         ]);
 
         $schema2Price = 7;
@@ -256,10 +259,10 @@ class ProductServiceTest extends TestCase
         $option2 = $schema2->options()->create([
             'name' => 'Default option',
         ]);
-        $option2->prices()->create([
+        $option2->mapPrices()->create([
             'value' => $schema2Price * 100,
             'currency' => self::$currency->value,
-            'price_type' => OptionPriceType::PRICE_BASE,
+            'price_map_id' => self::$currency->getDefaultPriceMapId(),
         ]);
 
         $schema3Price = 10;
@@ -272,10 +275,10 @@ class ProductServiceTest extends TestCase
         $option3 = $schema3->options()->create([
             'name' => 'Default option',
         ]);
-        $option3->prices()->create([
+        $option3->mapPrices()->create([
             'value' => $schema3Price * 100,
             'currency' => self::$currency->value,
-            'price_type' => OptionPriceType::PRICE_BASE,
+            'price_map_id' => self::$currency->getDefaultPriceMapId(),
         ]);
 
         $this->product->load('schemas');

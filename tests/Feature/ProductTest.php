@@ -95,7 +95,7 @@ class ProductTest extends TestCase
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
 
-        $this->productPrices = array_map(fn (Currency $currency) => [
+        $this->productPrices = array_map(fn(Currency $currency) => [
             'value' => '100.00',
             'currency' => $currency->value,
         ], Currency::cases());
@@ -773,8 +773,8 @@ class ProductTest extends TestCase
         $product->attributes()->attach($attribute1->getKey());
         $product->attributes()->attach($attribute2->getKey());
 
-        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
-        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
+        $product->attributes->first(fn(Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
+        $product->attributes->first(fn(Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -882,8 +882,8 @@ class ProductTest extends TestCase
         $product->attributes()->attach($attribute1->getKey());
         $product->attributes()->attach($attribute2->getKey());
 
-        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
-        $product->attributes->first(fn (Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
+        $product->attributes->first(fn(Attribute $productAttribute) => $productAttribute->getKey() === $attribute1->getKey())->product_attribute_pivot->options()->attach($option1->getKey());
+        $product->attributes->first(fn(Attribute $productAttribute) => $productAttribute->getKey() === $attribute2->getKey())->product_attribute_pivot->options()->attach($option2->getKey());
 
         $this
             ->actingAs($this->{$user})
@@ -1637,8 +1637,8 @@ class ProductTest extends TestCase
                 $product->getKey(),
                 null,
                 null,
-                $productPricesMin->toArray(),
-                $productPricesMax->toArray()
+                $productPricesMin,
+                $productPricesMax,
             ),
         ];
     }
@@ -1960,7 +1960,7 @@ class ProductTest extends TestCase
             "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
-        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class = WebHookEventListener::class);
+        Bus::assertDispatched(CallQueuedListener::class, fn($job) => $job->class = WebHookEventListener::class);
 
         /** @var Product $product */
         $product = Product::query()->find($response->json('data.id'));
@@ -3273,7 +3273,7 @@ class ProductTest extends TestCase
         $this->productService->updateMinMaxPrices($this->product);
 
         $productNewPrice = 250;
-        $prices = array_map(fn (Currency $currency) => [
+        $prices = array_map(fn(Currency $currency) => [
             'value' => "{$productNewPrice}.00",
             'currency' => $currency->value,
         ], Currency::cases());
@@ -3349,7 +3349,7 @@ class ProductTest extends TestCase
         $this->discountService->applyDiscountsOnProduct($this->product);
 
         $productNewPrice = 250;
-        $prices = array_map(fn (Currency $currency) => [
+        $prices = array_map(fn(Currency $currency) => [
             'value' => "{$productNewPrice}.00",
             'currency' => $currency->value,
         ], Currency::cases());
@@ -3533,7 +3533,7 @@ class ProductTest extends TestCase
 
         Event::fake(ProductPriceUpdated::class);
 
-        $prices = array_map(fn (Currency $currency) => [
+        $prices = array_map(fn(Currency $currency) => [
             'value' => "5000.00",
             'currency' => $currency->value,
         ], Currency::cases());

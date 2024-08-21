@@ -3,18 +3,26 @@
 namespace App\Events;
 
 use App\Http\Resources\PriceResource;
+use Domain\Price\Dtos\PriceDto;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class ProductPriceUpdated extends WebHookEvent
 {
     private string $updatedAt;
 
+    /**
+     * @param Collection<int,PriceDto>|null $oldPricesMin
+     * @param Collection<int,PriceDto>|null $oldPricesMax
+     * @param Collection<int,PriceDto> $newPricesMin
+     * @param Collection<int,PriceDto> $newPricesMax
+     */
     public function __construct(
         private readonly string $id,
-        private readonly ?array $oldPricesMin,
-        private readonly ?array $oldPricesMax,
-        private readonly array $newPricesMin,
-        private readonly array $newPricesMax,
+        private readonly ?Collection $oldPricesMin,
+        private readonly ?Collection $oldPricesMax,
+        private readonly Collection $newPricesMin,
+        private readonly Collection $newPricesMax,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();

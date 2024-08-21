@@ -16,7 +16,6 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
-use Database\Seeders\PriceMapSeeder;
 use Domain\Currency\Currency;
 use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\PriceDto;
@@ -325,8 +324,6 @@ class DiscountConditionsCheckTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        app(PriceMapSeeder::class)->run();
 
         $this->discount = Discount::factory()->create([
             'active' => true,

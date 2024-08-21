@@ -21,5 +21,10 @@ return new class extends Migration
         }
     }
 
-    public function down(): void {}
+    public function down(): void
+    {
+        Schema::table('prices', function (Blueprint $table): void {
+            $table->dropColumn('price_map_id');
+        });
+    }
 };

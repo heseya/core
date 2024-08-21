@@ -15,10 +15,10 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\PriceMap\PriceMap;
 use Domain\Product\Dtos\ProductSearchDto;
+use Domain\SalesChannel\SalesChannelService;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
@@ -31,7 +31,7 @@ class ProductRepository
 {
     use GetPublishedLanguageFilter;
 
-    public function __construct(private readonly PriceRepository $priceRepository) {}
+    public function __construct(private readonly PriceRepository $priceRepository, private readonly SalesChannelService $salesChannelService) {}
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
@@ -42,6 +42,18 @@ class ProductRepository
                 ? array_intersect($scoutResults, $dto->ids)
                 : $scoutResults;
         }
+
+        $salesChannel = $this->salesChannelService->getCurrentSalesChannel();
+
+        if ($salesChannel) {
+            $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->getCurrency()->getDefaultPriceMapId());
+        } else {
+            $priceMap = PriceMap::query()->findOrFail($dto->getCurrency()->getDefaultPriceMapId());
+        }
+
+        assert($priceMap instanceof PriceMap);
+
+        $currency = $priceMap->currency;
 
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
@@ -58,6 +70,7 @@ class ProductRepository
                 'metadata',
                 'metadataPrivate',
             ]);
+        $query->with(['mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]); // @phpstan-ignore-line
 
         if (is_bool($dto->full) && $dto->full) {
             $query->with([
@@ -103,6 +116,7 @@ class ProductRepository
                 'seo.media.metadataPrivate',
             ]);
             $query->with(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
+            $query->with(['schemas.options.mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]); // @phpstan-ignore-line
         }
 
         if (Gate::denies('products.show_hidden')) {
@@ -167,7 +181,7 @@ class ProductRepository
     /**
      * @param ProductPriceType[] $priceTypes
      *
-     * @return Collection|EloquentCollection<string,Collection<int,PriceDto>|EloquentCollection<int,PriceDto>>
+     * @return Collection<string,Collection<int,PriceDto>>
      *
      * @throws DtoException
      * @throws ServerException
@@ -176,14 +190,14 @@ class ProductRepository
         string $productId,
         array $priceTypes,
         Currency|PriceMap|null $priceMap = null,
-    ): Collection|EloquentCollection {
+    ): Collection {
         $prices = $this->priceRepository->getModelPrices(
             new ModelIdentityDto($productId, (new Product())->getMorphClass()),
             $priceTypes,
             $priceMap,
         );
 
-        $groupedPrices = $prices->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
+        $groupedPrices = $prices->collect()->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
 
         foreach ($priceTypes as $type) {
             if (!$groupedPrices->has($type->value)) {

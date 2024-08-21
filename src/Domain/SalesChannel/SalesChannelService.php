@@ -11,18 +11,35 @@ use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Support\Facades\Cache;
 
 final readonly class SalesChannelService
 {
+    public function __construct(private readonly SalesChannelRepository $repository) {}
+
+    public function getCurrentSalesChannel(): SalesChannel
+    {
+        return Cache::driver('array')->rememberForever(
+            'current_sales_channel',
+            fn () => request()->header('X-Sales-Channel')
+                ? $this->repository->getOne(request()->header('X-Sales-Channel'))
+                : $this->repository->getDefault(),
+        );
+    }
+
     /**
      * @throws MathException
      */
-    public function getVatRate(string $sales_channel_id): BigDecimal
+    public function getVatRate(SalesChannel|string $sales_channel_id): BigDecimal
     {
-        /** @var SalesChannel $sales_channel */
-        $sales_channel = SalesChannel::query()
-            ->where('id', '=', $sales_channel_id)
-            ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
+        if (is_string($sales_channel_id)) {
+            /** @var SalesChannel $sales_channel */
+            $sales_channel = SalesChannel::query()
+                ->where('id', '=', $sales_channel_id)
+                ->firstOr(fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
+        } else {
+            $sales_channel = $sales_channel_id;
+        }
 
         return BigDecimal::of($sales_channel->vat_rate)->multipliedBy(0.01);
     }
