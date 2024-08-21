@@ -28,4 +28,20 @@ class OrderPolicy
         }
         throw new NotFoundHttpException();
     }
+
+    public function indexOrganizationOrder(App|User $user): Response
+    {
+        if ($user->getAuthIdentifier()) {
+            return Response::allow();
+        }
+        throw new NotFoundHttpException();
+    }
+
+    public function showOrganizationOrder(App|User $user, Order $order): Response
+    {
+        if ($order->organization_id && $user instanceof User && $user->organizations()->first()?->getKey() === $order->organization_id) {
+            return Response::allow();
+        }
+        throw new NotFoundHttpException();
+    }
 }

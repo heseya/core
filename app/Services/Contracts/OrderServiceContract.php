@@ -25,11 +25,15 @@ interface OrderServiceContract
 
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator;
 
+    public function indexOrganizationOrder(OrderIndexDto $dto): LengthAwarePaginator;
+
     public function cartProcess(CartDto $cartDto): CartResource;
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct;
 
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
+
+    public function indexMyOrganizationOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
 
     public function sendUrls(Order $order): void;
 }
