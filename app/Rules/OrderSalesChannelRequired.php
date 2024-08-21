@@ -5,6 +5,7 @@ namespace App\Rules;
 use App\Enums\ExceptionsEnums\Exceptions;
 use Closure;
 use Domain\Organization\Models\Organization;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Contracts\Validation\DataAwareRule;
@@ -25,10 +26,16 @@ class OrderSalesChannelRequired implements DataAwareRule, ValidationRule
                 $fail(Exceptions::CLIENT_SALES_CHANNEL_IN_ORGANIZATION->value);
             }
         } else {
-            /** @var SalesChannel|null $saleChannel */
+            /** @var SalesChannel $saleChannel */
             $saleChannel = SalesChannel::query()->where('id', '=', $value)->first();
-            if ($saleChannel === null || ($saleChannel->status === SalesChannelStatus::PRIVATE && Gate::denies('sales_channels.show_hidden'))) {
+            if ($saleChannel->status === SalesChannelStatus::PRIVATE && Gate::denies('sales_channels.show_hidden')) {
                 $fail(Exceptions::CLIENT_SALES_CHANNEL_PRIVATE->value);
+
+                return;
+            }
+
+            if ($saleChannel->activity === SalesChannelActivityType::INACTIVE) {
+                $fail(Exceptions::CLIENT_SALES_CHANNEL_INACTIVE->value);
             }
         }
     }

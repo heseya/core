@@ -3246,4 +3246,94 @@ class OrderCreateTest extends TestCase
                 'message' => Exceptions::CLIENT_SALES_CHANNEL_IN_ORGANIZATION->value,
             ]);
     }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderPrivateSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PRIVATE,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_PRIVATE->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderInactiveSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::INACTIVE,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_INACTIVE->value,
+            ]);
+    }
 }
