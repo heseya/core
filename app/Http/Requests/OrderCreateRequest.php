@@ -31,7 +31,7 @@ class OrderCreateRequest extends OrderItemsRequest
                 'email' => ['required', 'email', 'max:255'],
                 'comment' => ['nullable', 'string', 'max:1000'],
 
-                'sales_channel_id' => ['required', 'uuid', new OrderSalesChannelRequired()],
+                'sales_channel_id' => ['required', 'uuid', 'exists:sales_channels,id', new OrderSalesChannelRequired()],
 
                 'digital_shipping_method_id' => ['nullable', 'uuid'],
                 'shipping_method_id' => ['nullable', 'uuid'],

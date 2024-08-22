@@ -163,6 +163,7 @@ enum Exceptions: string
     case CLIENT_USER_IN_DIFFERENT_ORGANIZATION = 'You belong to a different organization';
     case CLIENT_ORGANIZATION_INACTIVE = 'Can\'t place order for inactive organization';
     case CLIENT_SALES_CHANNEL_PRIVATE = 'Can\'t place order with private sales channel';
+    case CLIENT_SALES_CHANNEL_INACTIVE = 'Can\'t place order with inactive sales channel';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
