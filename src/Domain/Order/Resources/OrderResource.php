@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Traits\MetadataResource;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
+use Domain\Organization\Resources\OrganizationResource;
 use Domain\PaymentMethods\Resources\PaymentMethodResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -112,6 +113,7 @@ final class OrderResource extends Resource
             'buyer' => $this->resource->buyer instanceof User
                 ? UserResource::make($this->resource->buyer)->baseOnly()
                 : AppResource::make($this->resource->buyer),
+            'organization' => OrganizationResource::make($this->resource->organization),
         ];
     }
 }
