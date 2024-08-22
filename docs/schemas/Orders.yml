@@ -74,6 +74,8 @@ Order:
       type: string
     payment_method:
       $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+    organization:
+      $ref: './../schemas/Organizations.yml#/Organization'
 
 OrderProduct:
   type: object

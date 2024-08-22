@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Status;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Event;
@@ -24,6 +25,7 @@ class OrderProductTest extends TestCase
     private OrderProduct $digitalProduct;
     private OrderProduct $product;
     private Currency $currency;
+    private Organization $organization;
 
     public function setUp(): void
     {
@@ -40,14 +42,18 @@ class OrderProductTest extends TestCase
             'shipping_digital' => true,
         ]);
 
+        $this->organization = Organization::factory()->create();
+
         $this->order = Order::factory()->create([
             'shipping_method_id' => $shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'email' => $this->faker->freeEmail,
             'paid' => true,
+            'organization_id' => $this->organization->getKey(),
         ]);
 
         $this->user->orders()->save($this->order);
+        $this->user->organizations()->attach($this->organization->getKey());
 
         $this->currency = Currency::DEFAULT;
 
@@ -74,10 +80,21 @@ class OrderProductTest extends TestCase
         ]);
     }
 
-    public function testMyProductsUnauthorized(): void
+    public static function myOrderProvider(): array
+    {
+        return [
+            'for user' => ['my/orders/products'],
+            'for organization' => ['my/organization/orders/products'],
+        ];
+    }
+
+    /**
+     * @dataProvider myOrderProvider
+     */
+    public function testMyProductsUnauthorized(string $url): void
     {
         $this
-            ->json('GET', 'my/orders/products')
+            ->json('GET', $url)
             ->assertForbidden();
     }
 
@@ -88,20 +105,26 @@ class OrderProductTest extends TestCase
             ->assertRedirect();
     }
 
-    public function testIndexMyProducts(): void
+    /**
+     * @dataProvider myOrderProvider
+     */
+    public function testIndexMyProducts(string $url): void
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', 'my/orders/products')
+            ->json('GET', $url)
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }
 
-    public function testIndexMyProductsOnlyDigital(): void
+    /**
+     * @dataProvider myOrderProvider
+     */
+    public function testIndexMyProductsOnlyDigital(string $url): void
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', 'my/orders/products', ['shipping_digital' => true])
+            ->json('GET', $url, ['shipping_digital' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
@@ -114,11 +137,14 @@ class OrderProductTest extends TestCase
             ]);
     }
 
-    public function testIndexMyProductsOnlyPhysical(): void
+    /**
+     * @dataProvider myOrderProvider
+     */
+    public function testIndexMyProductsOnlyPhysical(string $url): void
     {
         $this
             ->actingAs($this->user)
-            ->json('GET', 'my/orders/products', ['shipping_digital' => false])
+            ->json('GET', $url, ['shipping_digital' => false])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonMissing([
@@ -131,7 +157,10 @@ class OrderProductTest extends TestCase
             ]);
     }
 
-    public function testIndexMyProductsOnlyPaidOrders(): void
+    /**
+     * @dataProvider myOrderProvider
+     */
+    public function testIndexMyProductsOnlyPaidOrders(string $url): void
     {
         $shippingMethod = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
@@ -149,6 +178,7 @@ class OrderProductTest extends TestCase
             'status_id' => $status->getKey(),
             'email' => $this->faker->freeEmail,
             'paid' => true,
+            'organization_id' => $this->organization->getKey(),
         ]);
 
         $orderNoPaid = Order::factory()->create([
@@ -156,6 +186,7 @@ class OrderProductTest extends TestCase
             'status_id' => $status->getKey(),
             'email' => $this->faker->freeEmail,
             'paid' => false,
+            'organization_id' => $this->organization->getKey(),
         ]);
 
         $this->user->orders()->delete();
@@ -181,7 +212,7 @@ class OrderProductTest extends TestCase
 
         $this
             ->actingAs($this->user)
-            ->json('GET', 'my/orders/products')
+            ->json('GET', $url)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([

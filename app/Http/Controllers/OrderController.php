@@ -241,4 +241,27 @@ class OrderController extends Controller
 
         return Response::json(null, JsonResponse::HTTP_OK);
     }
+
+    public function indexOrganizationOrder(OrderIndexRequest $request): JsonResource
+    {
+        Gate::inspect('indexOrganizationOrder', [Order::class]);
+
+        return OrderResource::collection(
+            $this->orderService->indexOrganizationOrder(OrderIndexDto::instantiateFromRequest($request)),
+        );
+    }
+
+    public function showOrganizationOrder(Order $order): JsonResource
+    {
+        Gate::inspect('showOrganizationOrder', [Order::class, $order]);
+
+        return OrderResource::make($order);
+    }
+
+    public function myOrganizationOrderProducts(OrderProductSearchRequest $request): JsonResource
+    {
+        return OrderProductResourcePublic::collection(
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request)),
+        );
+    }
 }
