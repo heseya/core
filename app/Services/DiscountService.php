@@ -700,11 +700,15 @@ readonly class DiscountService
         $sales = $this->getAllAplicableSalesForProduct($product, $salesWithBlockList);
 
         foreach (SalesChannel::active()->hasPriceMap()->with('priceMap')->get() as $salesChannel) {
-            $oldPrices = $this->productRepository->getCachedProductPrices($product, [
-                ProductPriceType::PRICE_MIN,
-            ], $salesChannel);
+            try {
+                $oldPrices = $this->productRepository->getCachedProductPrices($product, [
+                    ProductPriceType::PRICE_MIN,
+                ], $salesChannel);
 
-            $oldPrice = $oldPrices->get(ProductPriceType::PRICE_MIN->value, collect())->first();
+                $oldPrice = $oldPrices->get(ProductPriceType::PRICE_MIN->value, collect())->first();
+            } catch (ServerException $ex) {
+                $oldPrice = null;
+            }
 
             $newPrice = $this->calcAllDiscountsOnProduct($product, $sales, $salesChannel);
 

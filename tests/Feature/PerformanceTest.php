@@ -424,7 +424,7 @@ class PerformanceTest extends TestCase
 
         $products = Product::factory()
             ->count(1000)
-            ->sequence(fn ($sequence) => ['slug' => $sequence->index])
+            ->sequence(fn($sequence) => ['slug' => $sequence->index])
             ->create([
                 'public' => true,
             ]);
@@ -436,7 +436,7 @@ class PerformanceTest extends TestCase
         $priceMapService = App::make(PriceMapService::class);
 
         $products->each(function (Product $product) use ($productRepository, $priceMapService) {
-            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
@@ -1026,7 +1026,7 @@ class PerformanceTest extends TestCase
             $product->save();
             $product->refresh();
 
-            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 

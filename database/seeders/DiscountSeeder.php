@@ -10,7 +10,6 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Repositories\DiscountRepository;
-use App\Services\Contracts\DiscountServiceContract;
 use App\Services\DiscountService;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -49,7 +48,7 @@ class DiscountSeeder extends Seeder
         });
 
         /** @var DiscountService $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
+        $discountService = App::make(DiscountService::class);
         $discountService->applyDiscountsOnProducts(Product::all());
 
         foreach (Order::query()->inRandomOrder()->limit(30)->get() as $order) {
