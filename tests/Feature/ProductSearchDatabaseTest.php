@@ -12,6 +12,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -638,31 +639,27 @@ class ProductSearchDatabaseTest extends TestCase
 
         /** @var ProductRepository $productRepository */
         $productRepository = App::make(ProductRepository::class);
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
         $currency = Currency::DEFAULT;
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(100, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(200, $currency->value))],
-        ]);
+
+        $priceMapService->updateProductPricesForDefaultMaps($product, [PriceDto::from(Money::of(100, $currency->value))]);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(300, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1000, $currency->value))],
-        ]);
+
+        $priceMapService->updateProductPricesForDefaultMaps($product2, [PriceDto::from(Money::of(300, $currency->value))]);
 
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(10, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(10, $currency->value))],
-        ]);
+
+        $priceMapService->updateProductPricesForDefaultMaps($product3, [PriceDto::from(Money::of(10, $currency->value))]);
 
         $this
             ->actingAs($this->{$user})

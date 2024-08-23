@@ -17,6 +17,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ use Tests\TestCase;
 class PricesTest extends TestCase
 {
     private ProductRepository $productRepository;
+    private PriceMapService $priceMapService;
     private Currency $currency;
 
     public function setUp(): void
@@ -33,6 +35,7 @@ class PricesTest extends TestCase
         parent::setUp();
 
         $this->productRepository = App::make(ProductRepository::class);
+        $this->priceMapService = App::make(PriceMapService::class);
         $this->currency = Currency::DEFAULT;
     }
 
@@ -58,20 +61,18 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMax1, $this->currency->value))]);
+        //$this->productRepository->setCachedProductPrices($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
         $priceMin2 = '1000.00';
         $priceMax2 = '1500.00';
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product2, [PriceDto::from(Money::of($priceMax2, $this->currency->value))]);
+        //$this->productRepository->setCachedProductPrices($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $this
             ->actingAs($this->{$user})
@@ -170,10 +171,8 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $discountRate = 0.5;
         $sale = Discount::factory()->create([
@@ -197,10 +196,16 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('data.0.prices_min.0.net', number_format(
-                $priceMin1 * (1 - $discountRate), 2, '.', '',
+                $priceMin1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ))
             ->assertJsonPath('data.0.prices_max.0.net', number_format(
-                $priceMax1 * (1 - $discountRate), 2, '.', '',
+                $priceMax1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ));
 
         $this->assertQueryCountLessThan(20);
@@ -223,10 +228,8 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $discountRate = 0.5;
         $sale = Discount::factory()->create([
@@ -263,10 +266,16 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('data.0.prices_min.0.net', number_format(
-                $priceMin1 * (1 - $discountRate), 2, '.', '',
+                $priceMin1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ))
             ->assertJsonPath('data.0.prices_max.0.net', number_format(
-                $priceMax1 * (1 - $discountRate), 2, '.', '',
+                $priceMax1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ));
 
         $this->assertQueryCountLessThan(35);
@@ -289,10 +298,8 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $discountRate = 0.5;
         $sale = Discount::factory()->create([
@@ -350,10 +357,8 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = 2500;
         $priceMax1 = 3000;
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $discountRate = 0.5;
         $sale = Discount::factory()->create([
@@ -393,10 +398,16 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_OK)
             ->assertJsonPath('data.0.prices_min.0.net', number_format(
-                $priceMin1 * (1 - $discountRate), 2, '.', '',
+                $priceMin1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ))
             ->assertJsonPath('data.0.prices_max.0.net', number_format(
-                $priceMax1 * (1 - $discountRate), 2, '.', '',
+                $priceMax1 * (1 - $discountRate),
+                2,
+                '.',
+                '',
             ));
 
         $this->assertQueryCountLessThan(36);
@@ -417,10 +428,8 @@ class PricesTest extends TestCase
         ]);
         $priceMin1 = '2500.00';
         $priceMax1 = '3000.00';
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))],
-        ]);
+
+        $this->priceMapService->updateProductPricesForDefaultMaps($product1, [PriceDto::from(Money::of($priceMin1, $this->currency->value))]);
 
         $discountRate = 0.5;
         $sale = Discount::factory()->create([

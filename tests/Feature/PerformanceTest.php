@@ -31,6 +31,7 @@ use Domain\Metadata\Models\Metadata;
 use Domain\Page\Page;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
@@ -431,16 +432,15 @@ class PerformanceTest extends TestCase
         /** @var ProductRepository $productRepository */
         $productRepository = App::make(ProductRepository::class);
 
-        $products->each(function (Product $product) use ($productRepository) {
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
+
+        $products->each(function (Product $product) use ($productRepository, $priceMapService) {
             $prices = array_map(fn (Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $prices,
-                ProductPriceType::PRICE_MIN->value => $prices,
-                ProductPriceType::PRICE_MAX->value => $prices,
-            ]);
+            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
         });
 
         $set->products()->sync($products);
@@ -1003,7 +1003,9 @@ class PerformanceTest extends TestCase
         $productService = App::make(ProductService::class);
         /** @var ProductRepository $productRepository */
         $productRepository = App::make(ProductRepository::class);
-        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items) {
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
+        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $priceMapService, $sales, $tags, $pages, $items) {
             $this->prepareProductSchemas($product);
 
             for ($i = 0; $i < 5; ++$i) {
@@ -1028,13 +1030,9 @@ class PerformanceTest extends TestCase
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $prices,
-                ProductPriceType::PRICE_MIN->value => $prices,
-                ProductPriceType::PRICE_MAX->value => $prices,
-            ]);
+            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
 
-            $productService->updateMinMaxPrices($product);
+            $productService->updateMinPrices($product);
         });
     }
 

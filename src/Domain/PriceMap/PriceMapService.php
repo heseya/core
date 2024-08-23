@@ -215,9 +215,9 @@ final readonly class PriceMapService
     }
 
     /**
-     * @param DataCollection<int,PriceDto> $priceDtos
+     * @param DataCollection<int,PriceDto>|array<int,PriceMap> $priceDtos
      */
-    public function updateProductPricesForDefaultMaps(Product $product, DataCollection $priceDtos): void
+    public function updateProductPricesForDefaultMaps(Product $product, DataCollection|array $priceDtos): void
     {
         if ($priceDtos instanceof DataCollection && $priceDtos->dataClass !== PriceDto::class) {
             throw new InvalidArgumentException();
