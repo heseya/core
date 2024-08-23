@@ -219,7 +219,7 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    $price = $product->mappedPriceForPriceMap($priceMap)?->value ?? Money::zero($currency->value);
+                    $price = $product->mappedPriceForPriceMap($priceMap)->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),

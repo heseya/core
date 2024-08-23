@@ -13,7 +13,6 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Dtos\ProductCachedPricesDto;
 use Domain\Price\Dtos\ProductCachedPricesDtoCollection;
-use Domain\Price\Enums\PriceTypeValues;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\PriceMap\PriceMap;
@@ -72,7 +71,7 @@ class ProductRepository
                 'metadata',
                 'metadataPrivate',
             ]);
-        $query->with(['mapPrices' => fn(Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
+        $query->with(['mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
 
         if (is_bool($dto->full) && $dto->full) {
             $query->with([
@@ -117,8 +116,8 @@ class ProductRepository
                 'seo.media.metadata',
                 'seo.media.metadataPrivate',
             ]);
-            $query->with(['sales' => fn(BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
-            $query->with(['schemas.options.mapPrices' => fn(Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
+            $query->with(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
+            $query->with(['schemas.options.mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
         }
 
         if (Gate::denies('products.show_hidden')) {
@@ -127,7 +126,7 @@ class ProductRepository
 
         if (request()->filled('attribute_slug')) {
             $query->with([
-                'productAttributes' => fn(Builder|HasMany $subquery) => $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
+                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
                 'productAttributes.attribute',
                 'productAttributes.attribute.metadata',
                 'productAttributes.attribute.metadataPrivate',
@@ -140,7 +139,7 @@ class ProductRepository
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price' => fn(Builder $subquery) => $subquery->where(
+                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -148,7 +147,7 @@ class ProductRepository
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price' => fn(Builder $subquery) => $subquery->where(
+                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -212,7 +211,7 @@ class ProductRepository
             $filter,
         );
 
-        $groupedPrices = $prices->collect()->mapToGroups(fn(Price $price) => [$price->price_type => ProductCachedPriceDto::from($price)]);
+        $groupedPrices = $prices->collect()->mapToGroups(fn (Price $price) => [$price->price_type => ProductCachedPriceDto::from($price)]);
 
         foreach ($priceTypes as $type) {
             if (!$groupedPrices->has($type->value)) {

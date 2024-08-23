@@ -21,8 +21,8 @@ class PriceCachedResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'net' => $this->resource->net?->getAmount() ?? 0,
-            'gross' => $this->resource->gross?->getAmount() ?? 0,
+            'net' => $this->resource->net->getAmount(),
+            'gross' => $this->resource->gross->getAmount(),
             'currency' => $this->resource->currency,
             'sales_channel_id' => $this->resource->sales_channel_id,
         ];

@@ -153,10 +153,6 @@ final readonly class ProductService
 
             $price = $product->mappedPriceForPriceMap($priceMap);
 
-            if ($price === null) {
-                continue;
-            }
-
             $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
 
             if ($priceMap->is_net) {
@@ -180,7 +176,7 @@ final readonly class ProductService
 
     public function getMaxPriceInPriceMap(Product $product, PriceMap $priceMap): Money
     {
-        $max = $product->mappedPriceForPriceMap($priceMap)?->value ?? Money::zero($priceMap->currency->value);
+        $max = $product->mappedPriceForPriceMap($priceMap)->value;
 
         /** @var Schema $schema */
         foreach ($product->schemas as $schema) {

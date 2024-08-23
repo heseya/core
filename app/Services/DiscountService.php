@@ -69,7 +69,6 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Organization\Models\Organization;
-use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
@@ -448,7 +447,7 @@ readonly class DiscountService
         $cartResource->shipping_price_initial = $shippingPrice;
         $cartResource->shipping_price = $shippingPrice;
 
-        foreach ($discounts->filter(fn($discount) => $discount->target_type === DiscountTargetType::SHIPPING_PRICE) as $discount) {
+        foreach ($discounts->filter(fn ($discount) => $discount->target_type === DiscountTargetType::SHIPPING_PRICE) as $discount) {
             if (
                 $this->checkShippingPriceTarget($discount, $cart)
                 && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
@@ -480,12 +479,12 @@ readonly class DiscountService
         if ($discount->target_type === DiscountTargetType::SHIPPING_PRICE) {
             if ($discount->target_is_allow_list) {
                 return $discount->shippingMethods->contains(
-                    fn($value): bool => $value->getKey() === $cart->getShippingMethodId(),
+                    fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
                 );
             }
 
             return $discount->shippingMethods->doesntContain(
-                fn($value): bool => $value->getKey() === $cart->getShippingMethodId(),
+                fn ($value): bool => $value->getKey() === $cart->getShippingMethodId(),
             );
         }
 
@@ -641,7 +640,7 @@ readonly class DiscountService
     ): CartItemResponse {
         /** @var CartItemResponse $result */
         $result = $cart->items->filter(
-            fn($value) => $value->cartitem_id === $cartItem->getCartItemId(),
+            fn ($value) => $value->cartitem_id === $cartItem->getCartItemId(),
         )->first();
 
         $result->price_discounted = $this->calcPrice(
@@ -737,7 +736,7 @@ readonly class DiscountService
      */
     public function getAllAplicableSalesForProduct(Product $product, Collection $salesWithBlockList, bool $calcForCurrentUser = false): Collection
     {
-        return $this->sortDiscounts($product->allProductSales($salesWithBlockList))->filter(fn($sale) => $this->checkConditionGroupsForProduct($sale, $calcForCurrentUser));
+        return $this->sortDiscounts($product->allProductSales($salesWithBlockList))->filter(fn ($sale) => $this->checkConditionGroupsForProduct($sale, $calcForCurrentUser));
     }
 
     public function activeSales(): Collection
@@ -747,7 +746,7 @@ readonly class DiscountService
             ->where('active', '=', true)
             ->where('target_type', '=', DiscountTargetType::PRODUCTS->value)
             ->where(
-                fn(Builder $query) => $query
+                fn (Builder $query) => $query
                     ->whereHas('conditionGroups', function ($query): void {
                         $query
                             ->whereHas('conditions', function ($query): void {
@@ -1212,9 +1211,9 @@ readonly class DiscountService
     {
         // Sortowanie zniżek w kolejności naliczania (Target type ASC, Discount type ASC, Priority DESC)
         return $discounts->sortBy([
-            fn(Discount $a, Discount $b) => $a->target_type->getPriority() <=> $b->target_type->getPriority(),
-            fn(Discount $a, Discount $b) => ($a->percentage !== null ? 1 : 0) <=> ($b->percentage !== null ? 1 : 0),
-            fn(Discount $a, Discount $b) => $b->priority <=> $a->priority,
+            fn (Discount $a, Discount $b) => $a->target_type->getPriority() <=> $b->target_type->getPriority(),
+            fn (Discount $a, Discount $b) => ($a->percentage !== null ? 1 : 0) <=> ($b->percentage !== null ? 1 : 0),
+            fn (Discount $a, Discount $b) => $b->priority <=> $a->priority,
         ]);
     }
 
@@ -1313,9 +1312,9 @@ readonly class DiscountService
                 }
 
                 $product->discounts
-                    ->where(fn(Discount $discount) => $discount->order_discount?->applied !== null)
+                    ->where(fn (Discount $discount) => $discount->order_discount?->applied !== null)
                     ->each(
-                        fn(Discount $discount) => $this->attachDiscount(
+                        fn (Discount $discount) => $this->attachDiscount(
                             $newProduct,
                             $discount,
                             $discount->order_discount->applied, // @phpstan-ignore-line
@@ -1421,7 +1420,7 @@ readonly class DiscountService
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
             $cartItem = $cart->items->filter(
-                fn($value, $key) => $value->cartitem_id === $item->getCartItemId(),
+                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
             )->first();
 
             if ($cartItem === null) {
@@ -1463,7 +1462,7 @@ readonly class DiscountService
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
             $cart->items->first(
-                fn(
+                fn (
                     $value,
                 ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity,
             )->quantity = $cartItem->quantity - 1;
@@ -1580,7 +1579,7 @@ readonly class DiscountService
      */
     private function getActiveSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
-        $targetTypesValues = Arr::map($targetTypes, fn(DiscountTargetType $type) => $type->value);
+        $targetTypesValues = Arr::map($targetTypes, fn (DiscountTargetType $type) => $type->value);
 
         // Get all active discounts
         $salesQuery = Discount::query()
@@ -1640,7 +1639,7 @@ readonly class DiscountService
             } else {
                 if ($activeSales->contains($discount->getKey())) {
                     $activeSales = $activeSales->reject(
-                        fn($value, $key) => $value === $discount->getKey(),
+                        fn ($value, $key) => $value === $discount->getKey(),
                     );
                 }
             }
@@ -1654,7 +1653,7 @@ readonly class DiscountService
             if ($discount->target_is_allow_list) {
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
-                    if ($discount->allProductsIds()->contains(fn($value): bool => $value === $item->getProductId())) {
+                    if ($discount->allProductsIds()->contains(fn ($value): bool => $value === $item->getProductId())) {
                         return true;
                     }
                 }
@@ -1662,7 +1661,7 @@ readonly class DiscountService
                 /** @var CartItemDto $item */
                 foreach ($cart->getItems() as $item) {
                     if ($discount->allProductsIds()->doesntContain(
-                        fn($value): bool => $value === $item->getProductId(),
+                        fn ($value): bool => $value === $item->getProductId(),
                     )) {
                         return true;
                     }
