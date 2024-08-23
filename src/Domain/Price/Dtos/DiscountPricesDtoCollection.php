@@ -25,8 +25,8 @@ final class DiscountPricesDtoCollection extends DataCollection
 
         if (is_array($items)) {
             $items = Arr::has($items, ['type', 'prices'])
-                ? $items
-                : Arr::mapWithKeys($items, fn ($value, $key) => [
+                ? [$items]
+                : Arr::map($items, fn($value, $key) => [
                     'type' => $key,
                     'prices' => $value,
                 ]);
