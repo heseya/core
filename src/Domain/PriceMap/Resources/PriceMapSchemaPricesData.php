@@ -10,6 +10,8 @@ use Support\Dtos\DataWithGlobalMetadata;
 
 final class PriceMapSchemaPricesData extends DataWithGlobalMetadata
 {
+    protected static string $_collectionClass = PriceMapSchemaPricesDataCollection::class;
+
     /**
      * @param DataCollection<int,PriceMapSchemaPricesOptionPriceData> $options
      */

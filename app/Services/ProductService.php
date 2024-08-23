@@ -1,29 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Exceptions\PublishingException;
-use App\Models\Option;
-use App\Models\Price;
+use App\Models\Discount;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
-use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
-use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\PriceMap\PriceMap;
-use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductUpdateDto;
@@ -34,11 +32,13 @@ use Domain\ProductAttribute\Services\AttributeService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaService;
 use Domain\ProductSet\ProductSetService;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
@@ -46,17 +46,18 @@ use Spatie\LaravelData\Optional;
 final readonly class ProductService
 {
     public function __construct(
+        private AttributeService $attributeService,
+        private AvailabilityServiceContract $availabilityService,
+        private DiscountService $discountService,
         private MediaServiceContract $mediaService,
+        private MetadataServiceContract $metadataService,
+        private PriceMapService $priceMapService,
+        private ProductRepository $productRepository,
+        private ProductSetService $productSetService,
+        private SalesChannelService $salesChannelService,
         private SchemaService $schemaService,
         private SeoMetadataService $seoMetadataService,
-        private AvailabilityServiceContract $availabilityService,
-        private MetadataServiceContract $metadataService,
-        private AttributeService $attributeService,
-        private DiscountServiceContract $discountService,
-        private ProductRepository $productRepository,
         private TranslationServiceContract $translationService,
-        private ProductSetService $productSetService,
-        private PriceMapService $priceMapService,
     ) {}
 
     /**
@@ -135,99 +136,71 @@ final readonly class ProductService
         DB::commit();
     }
 
-    /**
-     * @return array<int,PriceDto>
-     */
-    public function getMinMaxPricesInPriceMap(Product $product, PriceMap $priceMap): array
+    public function updateMinPrices(Product $product): void
     {
-        $max = Money::zero($priceMap->currency->value);
+        $this->updateInitialPricesForAllActiveSalesChannels($product);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    public function updateInitialPricesForAllActiveSalesChannels(Product $product): void
+    {
+        $prices = [];
+
+        foreach (SalesChannel::active()->hasPriceMap()->with('priceMap')->get() as $salesChannel) {
+            $priceMap = $salesChannel->priceMap;
+            assert($priceMap instanceof PriceMap);
+
+            $price = $product->mappedPriceForPriceMap($priceMap);
+
+            if ($price === null) {
+                continue;
+            }
+
+            $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
+
+            if ($priceMap->is_net) {
+                $net = $price->value;
+                $gross = $this->salesChannelService->addVat($price->value, $vat_rate);
+            } else {
+                $net = $this->salesChannelService->removeVat($price->value, $vat_rate);
+                $gross = $price->value;
+            }
+
+            $prices[] = ProductCachedPriceDto::from([
+                'net' => $net,
+                'gross' => $gross,
+                'currency' => $priceMap->currency,
+                'sales_channel_id' => $salesChannel->id,
+            ]);
+        }
+
+        $this->productRepository->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
+    }
+
+    public function getMaxPriceInPriceMap(Product $product, PriceMap $priceMap): Money
+    {
+        $max = $product->mappedPriceForPriceMap($priceMap)?->value ?? Money::zero($priceMap->currency->value);
 
         /** @var Schema $schema */
         foreach ($product->schemas as $schema) {
             $schema_max = Money::zero($priceMap->currency->value);
-            $most_valueable_option = null;
+            $most_valuable_option = null;
 
             foreach ($schema->options as $option) {
                 $option_price = $option->getPriceForPriceMap($priceMap);
                 $schema_max = Money::max($option_price, $schema_max);
                 if ($option_price->isEqualTo($schema_max)) {
-                    $most_valueable_option = $option;
+                    $most_valuable_option = $option;
                 }
             }
 
-            if ($most_valueable_option !== null) {
-                $max = $max->plus($schema->getPrice($most_valueable_option->id, $product->schemas->toArray(), $priceMap));
+            if ($most_valuable_option !== null) {
+                $max = $max->plus($schema->getPrice($most_valuable_option->id, $product->schemas->toArray(), $priceMap));
             }
         }
 
-        $price = $product->priceBaseForPriceMap($priceMap);
-
-        if ($price !== null) {
-            return [
-                PriceDto::from($price->value),
-                PriceDto::from($price->value->plus($max)),
-            ];
-        }
-
-        return [
-            PriceDto::from(Money::zero($priceMap->currency->value)),
-            PriceDto::from($max),
-        ];
-    }
-
-    /**
-     * @deprecated
-     */
-    public function getMinMaxPrices(Product $product, Currency|PriceMap $priceMap = Currency::DEFAULT): array
-    {
-        $priceMap = $priceMap instanceof Currency ? PriceMap::findOrFail($priceMap->getDefaultPriceMapId()) : $priceMap;
-
-        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
-            clone $product->schemas,
-            clone $product->schemas,
-            $priceMap,
-        );
-
-        /** @var Price|PriceMapProductPrice $price */
-        $price = $product->pricesBase->where('currency', $priceMap->currency->value)->first() ?? $product->priceBaseForPriceMap($priceMap);
-
-        return [
-            PriceDto::from($price->value->plus($schemaMin)),
-            PriceDto::from($price->value->plus($schemaMax)),
-        ];
-    }
-
-    public function updateMinMaxPricesForPriceMap(Product $product, PriceMap $priceMap): void
-    {
-        [$pricesMin, $pricesMax] = $this->getMinMaxPricesInPriceMap($product, $priceMap);
-
-        $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value] = [$pricesMin];
-        $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value] = [$pricesMax];
-
-        $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax, $priceMap);
-
-        $this->discountService->applyDiscountsOnProduct($product);
-    }
-
-    /**
-     * @deprecated
-     */
-    public function updateMinMaxPrices(Product $product): void
-    {
-        $pricesMinMax = [
-            ProductPriceType::PRICE_MIN_INITIAL->value => [],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [],
-        ];
-        foreach (Currency::cases() as $currency) {
-            [$pricesMin, $pricesMax] = $this->getMinMaxPrices($product, $currency);
-
-            $pricesMinMax[ProductPriceType::PRICE_MIN_INITIAL->value][] = $pricesMin;
-            $pricesMinMax[ProductPriceType::PRICE_MAX_INITIAL->value][] = $pricesMax;
-        }
-
-        $this->productRepository->setProductPrices($product->getKey(), $pricesMinMax);
-
-        $this->discountService->applyDiscountsOnProduct($product);
+        return $max;
     }
 
     public function updateProductIndex(Product $product): void
@@ -236,7 +209,10 @@ final readonly class ProductService
         $product->save();
     }
 
-    public function productSales(Product $product): \Illuminate\Database\Eloquent\Collection
+    /**
+     * @return Collection<int,Discount>
+     */
+    public function productSales(Product $product): Collection
     {
         return $product->sales()->with('amounts', 'metadata', 'metadataPrivate')->get();
     }
@@ -272,7 +248,7 @@ final readonly class ProductService
 
         if (!($dto->attributes instanceof Optional)) {
             $this->attributeService->sync($product, $dto->attributes);
-            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
+            $product->loadMissing(['productAttributes' => fn(Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
         }
 
         if (!($dto->descriptions instanceof Optional)) {
@@ -293,7 +269,7 @@ final readonly class ProductService
 
         $this->setBannerMedia($product, $dto);
 
-        $this->updateMinMaxPrices($product);
+        $this->updateMinPrices($product);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
         $product->quantity = $availability['quantity'];
@@ -306,128 +282,7 @@ final readonly class ProductService
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $items = Collection::make($items)->mapWithKeys(fn (array $item): array => [
-            $item['id'] => [
-                'required_quantity' => $item['required_quantity'],
-            ],
-        ]);
-
-        $product->items()->sync($items);
-    }
-
-    /**
-     * @return Money[]
-     *
-     * @throws MathException
-     * @throws MoneyMismatchException
-     *
-     * @deprecated
-     */
-    private function getSchemasPrices(
-        Collection $allSchemas,
-        Collection $remainingSchemas,
-        PriceMap $priceMap,
-        array $values = [],
-    ): array {
-        if ($remainingSchemas->isNotEmpty()) {
-            /** @var Schema $schema */
-            $schema = $remainingSchemas->pop();
-
-            $getBestSchemasPrices = fn ($newValues) => $this->getBestSchemasPrices(
-                $allSchemas,
-                $remainingSchemas,
-                $values,
-                $schema,
-                $newValues,
-                $priceMap,
-            );
-
-            $required = $schema->required;
-
-            $options = $schema->options->map(
-                fn (Option $option) => $option->getKey(),
-            )->toArray();
-
-            $minmax = $getBestSchemasPrices(
-                $required ? $options : array_merge($options, [null]),
-            );
-        } else {
-            $price = $allSchemas->reduce(
-                fn (Money $carry, Schema $current) => $carry->plus(
-                    $current->getPrice(
-                        $values[$current->getKey()],
-                        $values,
-                        $priceMap,
-                    ),
-                ),
-                Money::zero($priceMap->currency->value),
-            );
-
-            $minmax = [
-                $price,
-                $price,
-            ];
-        }
-
-        return $minmax;
-    }
-
-    /**
-     * @return Money[]
-     *
-     * @throws MoneyMismatchException
-     *
-     * @deprecated
-     */
-    private function getBestSchemasPrices(
-        Collection $allSchemas,
-        Collection $remainingSchemas,
-        array $currentValues,
-        Schema $schema,
-        array $values,
-        PriceMap $priceMap,
-    ): array {
-        return $this->bestMinMax(
-            Collection::make($values)->map(
-                fn ($value) => $this->getSchemasPrices(
-                    $allSchemas,
-                    clone $remainingSchemas,
-                    $priceMap,
-                    $currentValues + [
-                        $schema->getKey() => $value,
-                    ],
-                ),
-            ),
-            $priceMap->currency,
-        );
-    }
-
-    /**
-     * @return Money[]
-     *
-     * @throws MoneyMismatchException
-     *
-     * @deprecated
-     */
-    private function bestMinMax(Collection $minmaxCol, Currency $currency): array
-    {
-        $bestMin = $minmaxCol->reduce(function (?Money $carry, array $current) {
-            if ($carry === null) {
-                return $current[0];
-            }
-
-            return Money::min($current[0], $carry);
-        }) ?? Money::zero($currency->value);
-
-        $bestMax = $minmaxCol->reduce(function (?Money $carry, array $current) {
-            if ($carry === null) {
-                return $current[1];
-            }
-
-            return Money::max($current[1], $carry);
-        }) ?? $bestMin;
-
-        return [$bestMin, $bestMax];
+        $product->items()->sync(collect($items)->mapWithKeys(fn(array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
     }
 
     private function prepareProductSearchValues(Product $product): Product

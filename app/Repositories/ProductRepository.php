@@ -10,11 +10,14 @@ use App\Models\Price;
 use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Dtos\ProductCachedPriceDto;
+use Domain\Price\Dtos\ProductCachedPricesDto;
+use Domain\Price\Dtos\ProductCachedPricesDtoCollection;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
 use Domain\PriceMap\PriceMap;
 use Domain\Product\Dtos\ProductSearchDto;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -43,17 +46,10 @@ class ProductRepository
                 : $scoutResults;
         }
 
-        $salesChannel = $this->salesChannelService->getCurrentSalesChannel();
-
-        if ($salesChannel) {
-            $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->getCurrency()->getDefaultPriceMapId());
-        } else {
-            $priceMap = PriceMap::query()->findOrFail($dto->getCurrency()->getDefaultPriceMapId());
-        }
+        $salesChannel = $this->salesChannelService->getCurrentRequestSalesChannel();
+        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->getCurrency()->getDefaultPriceMapId());
 
         assert($priceMap instanceof PriceMap);
-
-        $currency = $priceMap->currency;
 
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
@@ -70,7 +66,7 @@ class ProductRepository
                 'metadata',
                 'metadataPrivate',
             ]);
-        $query->with(['mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]); // @phpstan-ignore-line
+        $query->with(['mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
 
         if (is_bool($dto->full) && $dto->full) {
             $query->with([
@@ -116,7 +112,7 @@ class ProductRepository
                 'seo.media.metadataPrivate',
             ]);
             $query->with(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
-            $query->with(['schemas.options.mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]); // @phpstan-ignore-line
+            $query->with(['schemas.options.mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
         }
 
         if (Gate::denies('products.show_hidden')) {
@@ -167,37 +163,36 @@ class ProductRepository
     }
 
     /**
-     * @param PriceDto[][] $priceMatrix
+     * @param ProductCachedPricesDtoCollection|ProductCachedPricesDto[]|array<value-of<ProductPriceType>,ProductCachedPriceDto[]> $priceMatrix
      */
-    public function setProductPrices(string $productId, array $priceMatrix, PriceMap|string|null $priceMap = null): void
+    public function setCachedProductPrices(Product|string $product, array|ProductCachedPricesDtoCollection $priceMatrix): void
     {
-        $this->priceRepository->setModelPrices(
-            new ModelIdentityDto($productId, (new Product())->getMorphClass()),
+        $this->priceRepository->setCachedProductPrices(
+            $product instanceof Product ? $product : new ModelIdentityDto($product, (new Product())->getMorphClass()),
             $priceMatrix,
-            $priceMap,
         );
     }
 
     /**
      * @param ProductPriceType[] $priceTypes
      *
-     * @return Collection<string,Collection<int,PriceDto>>
+     * @return Collection<string,Collection<int,ProductCachedPriceDto>>
      *
      * @throws DtoException
      * @throws ServerException
      */
-    public function getProductPrices(
-        string $productId,
+    public function getCachedProductPrices(
+        Product|string $product,
         array $priceTypes,
-        Currency|PriceMap|null $priceMap = null,
+        Currency|SalesChannel|null $filter = null,
     ): Collection {
         $prices = $this->priceRepository->getModelPrices(
-            new ModelIdentityDto($productId, (new Product())->getMorphClass()),
+            $product instanceof Product ? $product : new ModelIdentityDto($product, (new Product())->getMorphClass()),
             $priceTypes,
-            $priceMap,
+            $filter,
         );
 
-        $groupedPrices = $prices->collect()->mapToGroups(fn (Price $price) => [$price->price_type => PriceDto::from($price)]);
+        $groupedPrices = $prices->collect()->mapToGroups(fn (Price $price) => [$price->price_type => ProductCachedPriceDto::from($price)]);
 
         foreach ($priceTypes as $type) {
             if (!$groupedPrices->has($type->value)) {

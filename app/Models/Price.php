@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use Brick\Math\BigNumber;
-use Brick\Math\RoundingMode;
-use Brick\Money\AbstractMoney;
 use Brick\Money\Money;
 use Database\Factories\PriceFactory;
+use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\Price\Enums\ProductPriceType;
 use Domain\PriceMap\PriceMap;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,9 @@ use Spatie\LaravelData\WithData;
 
 /**
  * @property Money $value
- * @property string $currency
+ * @property Money $net
+ * @property Money $gross
+ * @property Currency $currency
  *
  * @method static PriceFactory factory()
  *
@@ -34,16 +37,19 @@ class Price extends Model
 
     protected $fillable = [
         'value',
+        'net',
+        'gross',
         'currency',
         'model_id',
         'model_type',
         'price_type',
         'is_net',
-        'price_map_id',
+        'sales_channel_id',
     ];
 
     protected $casts = [
         'is_net' => 'bool',
+        'currency' => Currency::class,
     ];
 
     public function value(): Attribute
@@ -65,18 +71,46 @@ class Price extends Model
         );
     }
 
-    /**
-     * @psalm-param RoundingMode::* $roundingMode
-     */
-    public function plus(AbstractMoney|BigNumber|float|int|string $that, int $roundingMode = RoundingMode::UNNECESSARY): self
+    public function net(): Attribute
     {
-        $this->value = $this->value->plus($that, $roundingMode);
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+                $attributes['net'] ?? 0,
+                $attributes['currency'],
+            ),
+            set: fn (int|Money|string $value): array => match (true) {
+                $value instanceof Money => [
+                    'net' => $value->getMinorAmount(),
+                    'currency' => $value->getCurrency()->getCurrencyCode(),
+                ],
+                default => [
+                    'net' => $value,
+                ],
+            },
+        );
+    }
 
-        return $this;
+    public function gross(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes): Money => Money::ofMinor(
+                $attributes['gross'] ?? 0,
+                $attributes['currency'],
+            ),
+            set: fn (int|Money|string $value): array => match (true) {
+                $value instanceof Money => [
+                    'gross' => $value->getMinorAmount(),
+                    'currency' => $value->getCurrency()->getCurrencyCode(),
+                ],
+                default => [
+                    'gross' => $value,
+                ],
+            },
+        );
     }
 
     /**
-     * @return MorphTo<Option|Product|Schema|LaravelModel,self>
+     * @return MorphTo<Option|Product|Schema|Discount|LaravelModel,self>
      */
     public function model(): MorphTo
     {
@@ -84,18 +118,50 @@ class Price extends Model
     }
 
     /**
-     * @return BelongsTo<PriceMap,self>
+     * @return BelongsTo<SalesChannel,self>
      */
-    public function priceMap(): BelongsTo
+    public function salesChannel(): BelongsTo
     {
-        return $this->belongsTo(PriceMap::class);
+        return $this->belongsTo(SalesChannel::class);
+    }
+
+    /**
+     * @return BelongsTo<PriceMap,SalesChannel>|null
+     */
+    public function priceMap(): ?BelongsTo
+    {
+        return $this->salesChannel?->priceMap();
     }
 
     /**
      * @return Builder<self>
      */
-    public function scopeOfPriceMap(Builder $query, PriceMap|string $priceMapId): Builder
+    public function scopeOfPriceMap(Builder $query, PriceMap|string $price_map_id): Builder
     {
-        return $query->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId);
+        return $query->whereHas('salesChannel', fn (Builder $subquery) => $subquery->where('price_map_id', $price_map_id instanceof PriceMap ? $price_map_id->id : $price_map_id));
+    }
+
+    /**
+     * @return Builder<self>
+     */
+    public function scopeOfSalesChannel(Builder $query, SalesChannel|string $sales_channel_id): Builder
+    {
+        return $query->where('sales_channel_id', $sales_channel_id instanceof SalesChannel ? $sales_channel_id->id : $sales_channel_id);
+    }
+
+    /**
+     * @return Builder<self>
+     */
+    public function scopeOfCurrency(Builder $query, Currency|string $currency): Builder
+    {
+        return $query->where('currency', $currency instanceof Currency ? $currency->value : $currency);
+    }
+
+    /**
+     * @return Builder<self>
+     */
+    public function scopeOfType(Builder $query, DiscountConditionPriceType|ProductPriceType $type): Builder
+    {
+        return $query->where('type', $type->value);
     }
 }

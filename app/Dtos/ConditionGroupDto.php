@@ -17,6 +17,9 @@ class ConditionGroupDto extends Dto
         );
     }
 
+    /**
+     * @return array<int,CartLengthConditionDto|CouponsCountConditionDto|DateBetweenConditionDto|MaxUsesConditionDto|MaxUsesPerUserConditionDto|OrderValueConditionDto|ProductInConditionDto|ProductInSetConditionDto|TimeBetweenConditionDto|UserInConditionDto|UserInRoleConditionDto|WeekDayInConditionDto|UserInOrganizationConditionDto> $conditions
+     */
     public function getConditions(): array
     {
         return $this->conditions;

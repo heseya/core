@@ -22,6 +22,6 @@ final class PersonalPriceController extends Controller
      */
     public function productPrices(Request $request, ProductPricesDto $dto): Response
     {
-        return PersonalPriceDto::collection($this->personalPriceService->calcProductsListDiscounts($dto, $this->saleSchannelService->getCurrentSalesChannel()))->toResponse($request);
+        return PersonalPriceDto::collection($this->personalPriceService->calcProductsListDiscounts($dto, $this->saleSchannelService->getCurrentRequestSalesChannel()))->toResponse($request);
     }
 }

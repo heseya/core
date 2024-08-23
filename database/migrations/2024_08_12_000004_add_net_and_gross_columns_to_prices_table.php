@@ -2,29 +2,28 @@
 
 declare(strict_types=1);
 
-use App\Models\Price;
-use Domain\Currency\Currency;
+use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    public function __construct(private SalesChannelService $service) {}
+
     public function up(): void
     {
         Schema::table('prices', function (Blueprint $table): void {
-            $table->uuid('price_map_id')->nullable();
+            $table->float('net', 19, 4)->nullable();
+            $table->float('gross', 19, 4)->nullable();
         });
-
-        foreach (Currency::cases() as $currency) {
-            Price::where('currency', $currency->value)->update(['price_map_id' => $currency->getDefaultPriceMapId()]);
-        }
     }
 
     public function down(): void
     {
         Schema::table('prices', function (Blueprint $table): void {
-            $table->dropColumn('price_map_id');
+            $table->dropColumn('net');
+            $table->dropColumn('gross');
         });
     }
 };

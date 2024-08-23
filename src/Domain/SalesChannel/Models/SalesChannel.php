@@ -46,8 +46,6 @@ final class SalesChannel extends Model implements Translatable
         'activity',
         'default',
         'price_map_id',
-
-        // TODO: remove temp field
         'vat_rate',
     ];
 
@@ -124,11 +122,22 @@ final class SalesChannel extends Model implements Translatable
 
     public function hasOrganizationWithUser(App|User $user): bool
     {
-        return $this::query()->where('id', '=', $this->getKey())
-            ->whereHas('organizations', function (Builder $query) use ($user): void {
-                $query->whereHas('users', function (Builder $query) use ($user): void {
-                    $query->where('id', '=', $user->getKey());
-                });
-            })->exists();
+        return $this->organizations()->whereHas('users', fn (Builder $query): Builder => $query->where('id', '=', $user->getKey()))->exists();
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeHasPriceMap(Builder $query): void
+    {
+        $query->whereNotNull('price_map_id');
+    }
+
+    /**
+     * @param Builder<self> $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('activity', SalesChannelActivityType::ACTIVE->value);
     }
 }

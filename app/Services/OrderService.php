@@ -35,7 +35,6 @@ use App\Models\Status;
 use App\Models\User;
 use App\Repositories\ProductRepository;
 use App\Services\Contracts\DepositServiceContract;
-use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -69,7 +68,7 @@ final readonly class OrderService implements OrderServiceContract
     use ModifyLangFallback;
 
     public function __construct(
-        private DiscountServiceContract $discountService,
+        private DiscountService $discountService,
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
@@ -107,6 +106,7 @@ final readonly class OrderService implements OrderServiceContract
     public function store(OrderDto $dto): Order
     {
         $salesChannel = SalesChannel::findOr($dto->sales_channel_id, fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
+
         $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->currency->getDefaultPriceMapId());
         assert($priceMap instanceof PriceMap);
         $currency = $priceMap->currency;
@@ -219,7 +219,7 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    $price = $product->priceBaseForPriceMap($priceMap)->value;
+                    $price = $product->mappedPriceForPriceMap($priceMap)?->value ?? Money::zero($currency->value);
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),

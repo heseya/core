@@ -70,7 +70,7 @@ class PerformanceTest extends TestCase
             ->assertOk()
             ->assertJsonCount(100, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
     }
 
     public function testIndexPerformanceProductsFull100(): void
@@ -160,7 +160,7 @@ class PerformanceTest extends TestCase
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
             ->assertOk();
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(18);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))

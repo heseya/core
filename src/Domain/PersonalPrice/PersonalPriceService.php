@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\PersonalPrice;
 
-use App\Dtos\ProductPriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Product;
-use App\Services\Contracts\DiscountServiceContract;
-use Domain\Currency\Currency;
-use Domain\PriceMap\PriceMap;
+use App\Services\DiscountService;
+use Domain\Price\Resources\ProductCachedPriceData;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Support\Facades\Gate;
 
 final readonly class PersonalPriceService
 {
     public function __construct(
-        private DiscountServiceContract $discountService,
+        private DiscountService $discountService,
     ) {}
 
     /**
-     * @return ProductPriceDto[]
+     * @return ProductCachedPriceData[]
      *
      * @throws ClientException
      */
@@ -33,15 +31,12 @@ final readonly class PersonalPriceService
             $query->where('products.public', true);
         }
 
-        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail(Currency::DEFAULT->getDefaultPriceMapId());
-        assert($priceMap instanceof PriceMap);
-
         $products = $query->get();
 
         if ($products->count() < count($dto->ids)) {
             throw new ClientException(Exceptions::PRODUCT_NOT_FOUND);
         }
 
-        return $this->discountService->calcProductsListDiscounts($products, $priceMap);
+        return $this->discountService->calcProductsListDiscounts($products, $salesChannel);
     }
 }

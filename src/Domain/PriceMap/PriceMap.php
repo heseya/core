@@ -7,6 +7,7 @@ namespace Domain\PriceMap;
 use App\Models\Model;
 use Domain\Currency\Currency;
 use Domain\PriceMap\Resources\PriceMapData;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\LaravelData\WithData;
@@ -51,5 +52,13 @@ final class PriceMap extends Model
     public function schemaOptionsPrices(): HasMany
     {
         return $this->hasMany(PriceMapSchemaOptionPrice::class, 'price_map_id');
+    }
+
+    /**
+     * @return HasMany<SalesChannel>
+     */
+    public function salesChannel(): HasMany
+    {
+        return $this->hasMany(SalesChannel::class);
     }
 }

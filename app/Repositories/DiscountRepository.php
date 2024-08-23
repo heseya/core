@@ -10,6 +10,7 @@ use App\Models\Discount;
 use App\Models\Price;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountPriceType;
 use Ramsey\Uuid\Uuid;
 
 class DiscountRepository
@@ -26,7 +27,7 @@ class DiscountRepository
                 'id' => Uuid::uuid4(),
                 'model_id' => $discountId,
                 'model_type' => (new Discount())->getMorphClass(),
-                'price_type' => 'amount',
+                'price_type' => DiscountPriceType::AMOUNT->value,
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),
                 'is_net' => false,
@@ -49,7 +50,7 @@ class DiscountRepository
     {
         $amounts = Price::query()
             ->where('model_id', $discountId)
-            ->where('price_type', 'amount');
+            ->where('price_type', DiscountPriceType::AMOUNT->value);
 
         if ($currency !== null) {
             $amounts = $amounts->where('currency', $currency->value);

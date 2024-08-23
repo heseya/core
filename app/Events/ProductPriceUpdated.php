@@ -2,27 +2,21 @@
 
 namespace App\Events;
 
-use App\Http\Resources\PriceResource;
-use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Dtos\ProductCachedPriceDto;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 
 class ProductPriceUpdated extends WebHookEvent
 {
     private string $updatedAt;
 
     /**
-     * @param Collection<int,PriceDto>|null $oldPricesMin
-     * @param Collection<int,PriceDto>|null $oldPricesMax
-     * @param Collection<int,PriceDto> $newPricesMin
-     * @param Collection<int,PriceDto> $newPricesMax
+     * @param array<int,ProductCachedPriceDto> $oldPricesMin
+     * @param array<int,ProductCachedPriceDto> $newPricesMin
      */
     public function __construct(
         private readonly string $id,
-        private readonly ?Collection $oldPricesMin,
-        private readonly ?Collection $oldPricesMax,
-        private readonly Collection $newPricesMin,
-        private readonly Collection $newPricesMax,
+        private readonly array $oldPricesMin,
+        private readonly array $newPricesMin,
     ) {
         $this->updatedAt = Carbon::now()->toIso8601String();
         parent::__construct();
@@ -32,10 +26,10 @@ class ProductPriceUpdated extends WebHookEvent
     {
         return [
             'id' => $this->id,
-            'prices_min_old' => $this->oldPricesMin ? PriceResource::collection($this->oldPricesMin) : [],
-            'prices_max_old' => $this->oldPricesMin ? PriceResource::collection($this->oldPricesMax) : [],
-            'prices_min_new' => PriceResource::collection($this->newPricesMin),
-            'prices_max_new' => PriceResource::collection($this->newPricesMax),
+            'prices_min_old' => ProductCachedPriceDto::collection($this->oldPricesMin),
+            'prices_max_old' => [],
+            'prices_min_new' => ProductCachedPriceDto::collection($this->newPricesMin),
+            'prices_max_new' => [],
             'updated_at' => $this->updatedAt,
         ];
     }

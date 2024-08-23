@@ -2,14 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
 use App\Models\Price;
 use App\Models\Product;
-use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
@@ -19,8 +17,6 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Price\Dtos\PriceDto;
-use Domain\Price\Enums\ProductPriceType;
-use Domain\Price\PriceRepository;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
@@ -30,7 +26,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
-use Tests\Utils\FakeDto;
 
 class ProductSeeder extends Seeder
 {
@@ -46,8 +41,6 @@ class ProductSeeder extends Seeder
     {
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
-        /** @var ProductRepository $productRepository */
-        $productRepository = App::make(ProductRepository::class);
         /** @var PriceMapService $priceMapService */
         $priceMapService = App::make(PriceMapService::class);
 
@@ -84,7 +77,7 @@ class ProductSeeder extends Seeder
 
         $categories->each(fn($set) => $this->seo($set, $language));
 
-        $products->each(function ($product, $index) use ($productService, $productRepository, $priceMapService, $sets, $brands, $categories, $language): void {
+        $products->each(function ($product, $index) use ($productService, $priceMapService, $sets, $brands, $categories, $language): void {
             if (mt_rand(0, 1)) {
                 $this->schemas($product, $language);
             }
@@ -110,13 +103,9 @@ class ProductSeeder extends Seeder
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $prices,
-            ]);
-
             $priceMapService->updateProductPricesForDefaultMaps($product, PriceDto::collection($prices));
 
-            $productService->updateMinMaxPrices($product);
+            $productService->updateMinPrices($product);
         });
 
         $this->setAvailability();

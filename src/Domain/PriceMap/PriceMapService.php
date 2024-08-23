@@ -258,7 +258,7 @@ final readonly class PriceMapService
             }
         }
 
-        return new PriceMapSchemaPricesDataCollection($schema);
+        return PriceMapSchemaPricesDataCollection::fromSchema($schema);
     }
 
     /**

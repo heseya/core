@@ -41,6 +41,9 @@ class OrderValueConditionDto extends ConditionDto
         );
     }
 
+    /**
+     * @return array<int,PriceDto>|Missing
+     */
     public function getMinValues(): array|Missing
     {
         return $this->min_values;
@@ -59,6 +62,9 @@ class OrderValueConditionDto extends ConditionDto
         return collect($this->getMinValues())->first(fn (PriceDto $value) => $value->currency === $currency);
     }
 
+    /**
+     * @return array<int,PriceDto>|Missing
+     */
     public function getMaxValues(): array|Missing
     {
         return $this->max_values;

@@ -10,7 +10,6 @@ use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
-use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\FavouriteServiceContract;
@@ -34,7 +33,6 @@ use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
 use App\Services\DepositService;
-use App\Services\DiscountService;
 use App\Services\DocumentService;
 use App\Services\EventService;
 use App\Services\FavouriteService;
@@ -74,7 +72,6 @@ class AppServiceProvider extends ServiceProvider
     private const CONTRACTS = [
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
-        DiscountServiceContract::class => DiscountService::class,
         ReorderServiceContract::class => ReorderService::class,
         NameServiceContract::class => NameService::class,
         MediaServiceContract::class => MediaService::class,

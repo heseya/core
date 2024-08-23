@@ -8,6 +8,7 @@ use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Enumerable;
 use Spatie\LaravelData\DataCollection;
 
 /**
@@ -15,13 +16,13 @@ use Spatie\LaravelData\DataCollection;
  */
 final class PriceMapSchemaPricesDataCollection extends DataCollection
 {
-    public function __construct(Schema $schema)
+    /**
+     * @return PriceMapSchemaPricesDataCollection<int,PriceMapSchemaPricesData>
+     */
+    public static function fromSchema(Schema $schema): static
     {
-        $priceMaps = PriceMap::all();
-
         $items = [];
-
-        foreach ($priceMaps as $priceMap) {
+        foreach (PriceMap::all() as $priceMap) {
             /** @var Collection<int,PriceMapSchemaOptionPrice> $mapPrices */
             $mapPrices = $schema->mapPrices->where('price_map_id', '=', $priceMap->id);
             $items[] = [
@@ -33,6 +34,17 @@ final class PriceMapSchemaPricesDataCollection extends DataCollection
             ];
         }
 
-        parent::__construct(PriceMapSchemaPricesData::class, $items);
+        return new self(items: $items);
+    }
+
+    /**
+     * @param DataCollection<int,PriceMapSchemaOptionPrice>|array<int,PriceMapSchemaOptionPrice>|array<int,array<string,mixed>> $items
+     */
+    public function __construct(
+        string $dataClass = PriceMapSchemaPricesData::class,
+        array|DataCollection|Enumerable|null $items = null,
+    ) {
+        $dataClass = PriceMapSchemaPricesData::class;
+        parent::__construct($dataClass, $items);
     }
 }

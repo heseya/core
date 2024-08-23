@@ -10,6 +10,7 @@ use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -91,5 +92,12 @@ class Option extends Model implements Translatable
     public function getPriceForPriceMap(PriceMap|string $priceMap): Money
     {
         return $this->getMappedPriceForPriceMap($priceMap)->value;
+    }
+
+    public function getMappedPriceForSalesChannel(SalesChannel|string $salesChannel): PriceMapSchemaOptionPrice
+    {
+        $salesChannel = $salesChannel instanceof SalesChannel ? $salesChannel : SalesChannel::findOrFail($salesChannel);
+
+        return $this->getMappedPriceForPriceMap($salesChannel->price_map_id);
     }
 }

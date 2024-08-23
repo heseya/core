@@ -72,7 +72,7 @@ final class PriceMapController extends Controller
 
     public function listSchemaPrices(Request $request, Schema $schema): HttpResponse
     {
-        return (new PriceMapSchemaPricesDataCollection($schema))->toResponse($request);
+        return PriceMapSchemaPricesDataCollection::fromSchema($schema)->toResponse($request);
     }
 
     public function updateSchemaPrices(Request $request, Schema $schema, PriceMapSchemaPricesUpdateDto $dto): HttpResponse

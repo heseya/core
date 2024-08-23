@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
 use App\Models\Price;
@@ -23,10 +25,12 @@ class PriceResource extends Resource
         $value = $this->resource->value;
 
         return [
-            'price_map_id' => $this->resource->price_map_id,
+            // 'sales_channel_id' => $this->resource->sales_channel_id ?? null,
+            // 'price_map_id' => $this->resource->price_map_id ?? null,
             'net' => $value->getAmount(),
             'gross' => $value->getAmount(),
             'currency' => $value->getCurrency()->getCurrencyCode(),
+            'is_net' => $this->resource->is_net,
         ];
     }
 }

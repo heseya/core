@@ -41,6 +41,7 @@ use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
@@ -331,59 +332,42 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
     }
 
+    /**
+     * @return MorphMany<Price>
+     */
     public function pricesMin(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN->value);
     }
 
-    public function pricesMax(): MorphMany
-    {
-        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX->value);
-    }
-
+    /**
+     * @return MorphMany<Price>
+     */
     public function pricesMinInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
     }
 
-    public function pricesMaxInitial(): MorphMany
-    {
-        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
-    }
-
+    /**
+     * @return MorphMany<Price>
+     */
     private function prices(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');
     }
 
-    /**
-     * @return MorphMany<Price>|Collection<Price>
-     */
-    private function pricesForPriceMap(PriceMap|string $priceMapId): Collection|MorphMany
+    public function getCachedInitialPriceForSalesChannel(SalesChannel|string $salesChannel): ?Price
     {
-        return $this->relationLoaded('prices')
-            ? $this->prices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)
-            : $this->prices()->ofPriceMap($priceMapId);
+        return $this->relationLoaded('pricesMinInitial')
+            ? $this->pricesMinInitial->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
+            : $this->pricesMinInitial()->ofSalesChannel($salesChannel)->first();
     }
 
-    public function priceMinForPriceMap(PriceMap|string $priceMapId): ?Price
+    public function getCachedMinPriceForSalesChannel(SalesChannel|string $salesChannel): ?Price
     {
-        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MIN->value)->first();
-    }
-
-    public function priceMaxForPriceMap(PriceMap|string $priceMapId): ?Price
-    {
-        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MAX->value)->first();
-    }
-
-    public function priceMinInitialForPriceMap(PriceMap|string $priceMapId): ?Price
-    {
-        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value)->first();
-    }
-
-    public function priceMaxInitialForPriceMap(PriceMap|string $priceMapId): ?Price
-    {
-        return $this->pricesForPriceMap($priceMapId)->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value)->first();
+        return $this->relationLoaded('pricesMin')
+            ? $this->pricesMin->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
+            : $this->pricesMin()->ofSalesChannel($salesChannel)->first();
     }
 
     /**
@@ -394,11 +378,11 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->hasMany(PriceMapProductPrice::class);
     }
 
-    public function priceBaseForPriceMap(PriceMap|string $priceMapId): ?PriceMapProductPrice
+    public function mappedPriceForPriceMap(PriceMap|string $priceMapId): PriceMapProductPrice
     {
         return $this->relationLoaded('mapPrices')
-            ? $this->mapPrices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)->first()
-            : $this->mapPrices()->ofPriceMap($priceMapId)->first();
+            ? $this->mapPrices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)->firstOrFail()
+            : $this->mapPrices()->ofPriceMap($priceMapId)->firstOrFail();
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\Page\PageResource;
+use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Product\Resources\ProductBannerMediaResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
@@ -31,13 +32,10 @@ class ProductWithoutSalesResource extends Resource
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
-            'initial_price' => $request->header('X-Sales-Channel') ? PriceResource::make($this->resource->priceBaseForPriceMap($request->header('X-Sales-Channel'))) : null,
-            'price' => $request->header('X-Sales-Channel') ? PriceResource::make($this->resource->priceMinForPriceMap($request->header('X-Sales-Channel'))) : null,
-            'prices_base' => PriceResource::collection($this->resource->mapPrices),
-            'prices_min' => PriceResource::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
-            'prices_max' => PriceResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
-            'prices_min_initial' => PriceResource::collection($this->resource->pricesMinInitial),
-            'prices_max_initial' => PriceResource::collection($this->resource->pricesMaxInitial),
+            'initial_price' => $request->header('X-Sales-Channel') ? ProductCachedPriceDto::from($this->resource->getCachedInitialPriceForSalesChannel($request->header('X-Sales-Channel'))) : null,
+            'price' => $request->header('X-Sales-Channel') ? ProductCachedPriceDto::from($this->resource->getCachedMinPriceForSalesChannel($request->header('X-Sales-Channel'))) : null,
+            'prices_min' => ProductCachedPriceDto::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
+            'prices_min_initial' => ProductCachedPriceDto::collection($this->resource->pricesMinInitial),
             'public' => $this->resource->public,
             'visible' => $this->resource->public,
             'available' => $this->resource->available,
