@@ -20,7 +20,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\WebHook;
 use App\Repositories\ProductRepository;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -2627,8 +2627,8 @@ class DiscountTest extends TestCase
 
         $discount->products()->sync([$product1->getKey(), $product2->getKey()]);
 
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
+        /** @var DiscountService $discountService */
+        $discountService = App::make(DiscountService::class);
 
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));
@@ -2843,8 +2843,8 @@ class DiscountTest extends TestCase
 
         $discount->products()->sync([$product2->getKey(), $product3->getKey()]);
 
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
+        /** @var DiscountService $discountService */
+        $discountService = App::make(DiscountService::class);
 
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));

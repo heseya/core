@@ -21,7 +21,7 @@ use App\Models\WebHook;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -62,7 +62,7 @@ class ProductTest extends TestCase
     private Product $saleProduct;
     private array $productPrices;
     private ProductService $productService;
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
     private ProductRepository $productRepository;
     private SchemaCrudService $schemaCrudService;
     private DiscountRepository $discountRepository;
@@ -90,7 +90,7 @@ class ProductTest extends TestCase
         $this->currency = Currency::DEFAULT;
 
         $this->productService = App::make(ProductService::class);
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
         $this->productRepository = App::make(ProductRepository::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);

@@ -11,7 +11,7 @@ use App\Models\Product;
 use App\Models\WebHook;
 use App\Repositories\DiscountRepository;
 use App\Repositories\ProductRepository;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -243,8 +243,8 @@ class DiscountDeleteTest extends TestCase
 
         $discount->products()->attach($product);
 
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
+        /** @var DiscountService $discountService */
+        $discountService = App::make(DiscountService::class);
 
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product]));
@@ -321,8 +321,8 @@ class DiscountDeleteTest extends TestCase
 
         $discount->productSets()->attach($parentSet);
 
-        /** @var DiscountServiceContract $discountService */
-        $discountService = App::make(DiscountServiceContract::class);
+        /** @var DiscountService $discountService */
+        $discountService = App::make(DiscountService::class);
 
         // Apply discount to products before update
         $discountService->applyDiscountsOnProducts(Collection::make([$product]));

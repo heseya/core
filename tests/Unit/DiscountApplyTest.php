@@ -13,7 +13,7 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Repositories\DiscountRepository;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use App\Services\ProductService;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
@@ -40,7 +40,7 @@ class DiscountApplyTest extends TestCase
     use RefreshDatabase;
 
     private ProductService $productService;
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
     private SchemaCrudService $schemaCrudService;
     private OptionService $optionService;
     private $product;
@@ -232,7 +232,7 @@ class DiscountApplyTest extends TestCase
             'name' => $this->product->name,
         ]);
 
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
     }
 
     /**
