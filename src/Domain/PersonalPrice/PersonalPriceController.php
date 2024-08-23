@@ -19,8 +19,8 @@ final class PersonalPriceController extends Controller
      */
     public function productPrices(ProductPricesDto $dto): ResourceDto
     {
-        return new ResourceDto(
+        return (new ResourceDto(
             $this->service->calcProductsListDiscounts($dto),
-        );
+        ))->withoutWrapping();
     }
 }
