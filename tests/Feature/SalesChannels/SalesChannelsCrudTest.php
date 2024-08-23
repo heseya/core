@@ -33,7 +33,7 @@ final class SalesChannelsCrudTest extends TestCase
             ->json('GET', '/sales-channels')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $channel->getKey()]);
+            ->assertJsonFragment(['id' => $channel->getKey(), 'price_map' => null]);
     }
 
     /**

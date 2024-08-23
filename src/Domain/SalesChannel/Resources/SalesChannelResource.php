@@ -35,6 +35,7 @@ final class SalesChannelResource extends Resource
             'language' => LanguageResource::make($this->resource->language),
             'default' => $this->resource->default,
             'published' => $this->resource->published,
+            'price_map' => $this->resource->priceMap ? PriceMapData::fromModel($this->resource->priceMap) : null,
             ...$request->boolean('with_translations') ? $this->getAllTranslations('sales_channels.show_hidden') : [],
         ];
     }
@@ -45,7 +46,6 @@ final class SalesChannelResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'price_map' => $this->resource->priceMap ? PriceMapData::fromModel($this->resource->priceMap) : null,
             'shipping_methods' => ShippingMethodResource::collection($this->resource->shippingMethods),
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'organization_count' => $this->resource->organizations_count,
