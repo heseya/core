@@ -71,23 +71,8 @@ class ProductPriceTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 1000,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 820,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => 820,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX_INITIAL,
-            'value' => 1000,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),

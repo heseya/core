@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Price\Dtos;
 
 use Domain\Price\Enums\DiscountConditionPriceType;
-use Domain\Price\Enums\ProductPriceType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\EnumCast;
@@ -20,7 +19,7 @@ final class DiscountPricesDto extends Data
      * @param DataCollection<int,PriceDto> $prices
      */
     public function __construct(
-        #[WithCast(EnumCast::class, ProductPriceType::class)]
+        #[WithCast(EnumCast::class, DiscountConditionPriceType::class)]
         public DiscountConditionPriceType $type,
         #[DataCollectionOf(PriceDto::class)]
         public DataCollection $prices,

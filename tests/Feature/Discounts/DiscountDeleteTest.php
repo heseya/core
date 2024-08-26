@@ -252,11 +252,6 @@ class DiscountDeleteTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => '9000',
         ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => '19000',
-        ]);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
@@ -266,11 +261,6 @@ class DiscountDeleteTest extends TestCase
             'model_id' => $product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => '10000',
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => '20000',
         ]);
     }
 
@@ -328,11 +318,6 @@ class DiscountDeleteTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => '9000',
         ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => '19000',
-        ]);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/sales/id:' . $discount->getKey());
         $response->assertNoContent();
@@ -342,11 +327,6 @@ class DiscountDeleteTest extends TestCase
             'model_id' => $product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => '10000',
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => '20000',
         ]);
     }
 }

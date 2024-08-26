@@ -11,6 +11,7 @@ use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,14 +24,17 @@ class SchemaTest extends TestCase
 {
     use RefreshDatabase;
 
-    private SchemaCrudService $schemaCrudService;
     private Currency $currency;
+
+    private PriceMapService $priceMapService;
+    private SchemaCrudService $schemaCrudService;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->schemaCrudService = App::make(SchemaCrudService::class);
+        $this->priceMapService = App::make(PriceMapService::class);
 
         $this->currency = Currency::DEFAULT;
     }
@@ -431,10 +435,9 @@ class SchemaTest extends TestCase
             'available' => false,
         ]);
 
-        $this->assertDatabaseHas('prices', [
+        $this->assertDatabaseHas('price_map_schema_option_prices', [
             'value' => "10000",
-            'model_id' => $option->id,
-            'model_type' => 'Option',
+            'option_id' => $option->id,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -444,10 +447,9 @@ class SchemaTest extends TestCase
             'available' => true,
         ]);
 
-        $this->assertDatabaseHas('prices', [
+        $this->assertDatabaseHas('price_map_schema_option_prices', [
             'value' => "100000",
-            'model_id' => $option1->id,
-            'model_type' => 'Option',
+            'option_id' => $option1->id,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -457,10 +459,9 @@ class SchemaTest extends TestCase
             'available' => true,
         ]);
 
-        $this->assertDatabaseHas('prices', [
+        $this->assertDatabaseHas('price_map_schema_option_prices', [
             'value' => "0",
-            'model_id' => $option2->id,
-            'model_type' => 'Option',
+            'option_id' => $option2->id,
         ]);
 
         $this->assertDatabaseHas('option_items', [
@@ -723,7 +724,7 @@ class SchemaTest extends TestCase
             'name' => 'L',
             'schema_id' => $schema->getKey(),
         ]);
-        $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 0));
 
         $response = $this->actingAs($this->{$user})
             ->patchJson('/schemas/id:' . $schema->getKey(), FakeDto::schemaData([
@@ -835,10 +836,10 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $this->assertDatabaseHas('prices', [
+        $this->assertDatabaseHas('price_map_schema_option_prices', [
             'value' => "0",
             'currency' => Currency::DEFAULT->value,
-            'model_id' => $option->getKey(),
+            'option_id' => $option->getKey(),
         ]);
 
         $this->assertDatabaseMissing('options', [
@@ -879,7 +880,8 @@ class SchemaTest extends TestCase
             'name' => 'L',
             'schema_id' => $schema->getKey(),
         ]);
-        $option->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 1000));
+
         $option->items()->sync([
             $item->getKey(),
             $item2->getKey(),
@@ -896,11 +898,10 @@ class SchemaTest extends TestCase
             'required' => true,
         ]);
 
-        $this->assertDatabaseHas('prices', [
+        $this->assertDatabaseHas('price_map_schema_option_prices', [
             'value' => 1000,
             'currency' => Currency::DEFAULT->value,
-            'model_id' => $option->getKey(),
-            'model_type' => $option->getMorphClass(),
+            'option_id' => $option->getKey(),
         ]);
     }
 

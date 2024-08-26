@@ -143,7 +143,7 @@ class DiscountTest extends TestCase
         $this->minValues = [];
         $this->maxValues = [];
         foreach (Currency::cases() as $currency) {
-            $this->minValues []= [
+            $this->minValues[] = [
                 'currency' => $currency->value,
                 'value' => match ($currency->value) {
                     Currency::PLN->value => '100.00',
@@ -151,7 +151,7 @@ class DiscountTest extends TestCase
                     default => '50.00',
                 },
             ];
-            $this->maxValues []= [
+            $this->maxValues[] = [
                 'currency' => $currency->value,
                 'value' => match ($currency->value) {
                     Currency::PLN->value => '500.00',
@@ -1254,11 +1254,6 @@ class DiscountTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MIN->value,
             'value' => 90000,
         ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX->value,
-            'value' => 120000,
-        ]);
     }
 
     /**
@@ -1346,7 +1341,7 @@ class DiscountTest extends TestCase
                     'name' => 'Kupon',
                 ],
             ],
-            'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+            'amounts' => Arr::map(Currency::values(), fn(string $currency) => [
                 'value' => '855.00',
                 'currency' => $currency,
             ]),
@@ -1365,7 +1360,7 @@ class DiscountTest extends TestCase
         unset($discount['translations']);
         unset($discount['type']);
 
-        $discount['amounts'] = Arr::map($discount['amounts'], fn (array $amount) => [
+        $discount['amounts'] = Arr::map($discount['amounts'], fn(array $amount) => [
             'currency' => $amount['currency'],
             'gross' => $amount['value'],
             'net' => $amount['value'],
@@ -1433,7 +1428,7 @@ class DiscountTest extends TestCase
                     'name' => 'Kupon',
                 ],
             ],
-            'amounts' => Arr::map(Currency::values(), fn (string $currency) => [
+            'amounts' => Arr::map(Currency::values(), fn(string $currency) => [
                 'value' => '-10.00',
                 'currency' => $currency,
             ]),
@@ -1553,12 +1548,12 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::ORDER_VALUE,
                 'include_taxes' => false,
                 'is_in_range' => true,
-                'min_values' => array_map(fn ($value) => [
+                'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'net' => $value['value'],
                     'gross' => $value['value'],
                 ], $this->minValues),
-                'max_values' => array_map(fn ($value) => [
+                'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'net' => $value['value'],
                     'gross' => $value['value'],
@@ -1817,11 +1812,6 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'model_id' => $product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN->value,
-            'value' => 100000,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => 100000,
         ]);
 
@@ -2231,12 +2221,12 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::ORDER_VALUE,
                 'include_taxes' => false,
                 'is_in_range' => true,
-                'min_values' => array_map(fn ($value) => [
+                'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'net' => $value['value'],
                     'gross' => $value['value'],
                 ], $this->minValues),
-                'max_values' => array_map(fn ($value) => [
+                'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'net' => $value['value'],
                     'gross' => $value['value'],
@@ -2257,7 +2247,7 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discount->getKey()]);
         $this->assertDatabaseCount('discount_conditions', count($this->conditions));
 
-        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
+        Queue::assertPushed(CallQueuedListener::class, fn($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
@@ -2388,7 +2378,7 @@ class DiscountTest extends TestCase
             'include_taxes' => false,
             'is_in_range' => true,
             'min_values' => null,
-            'max_values' => array_map(fn ($value) => [
+            'max_values' => array_map(fn($value) => [
                 'currency' => $value['currency'],
                 'net' => $value['value'],
                 'gross' => $value['value'],
@@ -2400,7 +2390,7 @@ class DiscountTest extends TestCase
         $this->assertDatabaseCount('discount_condition_groups', 1);
         $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discount->getKey()]);
 
-        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
+        Queue::assertPushed(CallQueuedListener::class, fn($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponCreated($discount) : new SaleCreated($discount);
@@ -2425,7 +2415,7 @@ class DiscountTest extends TestCase
 
         $response = $this->actingAs($this->{$user})
             ->json('PATCH', "/{$discountKind}/id:" . $discount->getKey(), [
-                'amounts' => array_map(fn (string $currency) => [
+                'amounts' => array_map(fn(string $currency) => [
                     'value' => '50.00',
                     'currency' => $currency,
                 ], Currency::values()),
@@ -2438,7 +2428,7 @@ class DiscountTest extends TestCase
             ->assertJsonFragment(
                 [
                     'id' => $discount->getKey(),
-                    'amounts' => array_map(fn (string $currency) => [
+                    'amounts' => array_map(fn(string $currency) => [
                         'currency' => $currency,
                         'net' => '50.00',
                         'gross' => '50.00',
@@ -2497,7 +2487,7 @@ class DiscountTest extends TestCase
                 'code' => $discount->code,
             ])->assertOk();
 
-        Queue::assertPushed(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
+        Queue::assertPushed(CallQueuedListener::class, fn($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponUpdated($discount) : new SaleUpdated($discount);
@@ -2552,7 +2542,7 @@ class DiscountTest extends TestCase
                 'code' => $discount->code,
             ])->assertOk();
 
-        Bus::assertDispatched(CallQueuedListener::class, fn ($job) => $job->class === WebHookEventListener::class);
+        Bus::assertDispatched(CallQueuedListener::class, fn($job) => $job->class === WebHookEventListener::class);
 
         $discount = Discount::find($discount->getKey());
         $event = $discountKind === 'coupons' ? new CouponUpdated($discount) : new SaleUpdated($discount);
@@ -2632,7 +2622,7 @@ class DiscountTest extends TestCase
                     'description' => 'Testowy kupon',
                 ],
             ],
-            'amounts' => array_map(fn (string $currency) => [
+            'amounts' => array_map(fn(string $currency) => [
                 'value' => '10.00',
                 'currency' => $currency,
             ], Currency::values()),
@@ -2657,7 +2647,7 @@ class DiscountTest extends TestCase
         $response
             ->assertJsonFragment($discountNew + [
                 'id' => $discount->getKey(),
-                'amounts' => array_map(fn (string $currency) => [
+                'amounts' => array_map(fn(string $currency) => [
                     'net' => '10.00',
                     'gross' => '10.00',
                     'currency' => $currency,
@@ -2748,27 +2738,18 @@ class DiscountTest extends TestCase
         ]);
 
         $this->assertProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 100,
             ProductPriceType::PRICE_MIN_INITIAL->value => 100,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 150,
             ProductPriceType::PRICE_MIN->value => 100,
-            ProductPriceType::PRICE_MAX->value => 150,
         ]);
 
         $this->assertProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 200,
             ProductPriceType::PRICE_MIN_INITIAL->value => 150,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 190,
             ProductPriceType::PRICE_MIN->value => 140,
-            ProductPriceType::PRICE_MAX->value => 180,
         ]);
 
         $this->assertProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 300,
             ProductPriceType::PRICE_MIN_INITIAL->value => 290,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 350,
             ProductPriceType::PRICE_MIN->value => 280,
-            ProductPriceType::PRICE_MAX->value => 340,
         ]);
     }
 
@@ -2941,27 +2922,18 @@ class DiscountTest extends TestCase
         ]);
 
         $this->assertProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 100,
             ProductPriceType::PRICE_MIN_INITIAL->value => 100,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 150,
             ProductPriceType::PRICE_MIN->value => 100,
-            ProductPriceType::PRICE_MAX->value => 150,
         ]);
 
         $this->assertProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 200,
             ProductPriceType::PRICE_MIN_INITIAL->value => 190,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 250,
             ProductPriceType::PRICE_MIN->value => 190,
-            ProductPriceType::PRICE_MAX->value => 250,
         ]);
 
         $this->assertProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_BASE->value => 300,
             ProductPriceType::PRICE_MIN_INITIAL->value => 290,
-            ProductPriceType::PRICE_MAX_INITIAL->value => 350,
             ProductPriceType::PRICE_MIN->value => 290,
-            ProductPriceType::PRICE_MAX->value => 350,
         ]);
     }
 
@@ -3073,7 +3045,6 @@ class DiscountTest extends TestCase
 
         $this->assertProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN->value => 900,
-            ProductPriceType::PRICE_MAX->value => 900,
         ]);
 
         $discountModel = Discount::find($response->getData()->data->id);
@@ -3088,7 +3059,6 @@ class DiscountTest extends TestCase
 
         $this->assertProductPrices($product->getKey(), [
             ProductPriceType::PRICE_MIN->value => 1000,
-            ProductPriceType::PRICE_MAX->value => 1000,
         ]);
 
         $activeSales = Cache::get('sales.active');

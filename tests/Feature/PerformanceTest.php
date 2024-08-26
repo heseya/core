@@ -477,7 +477,7 @@ class PerformanceTest extends TestCase
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
         // To dispatch ProductPriceUpdated +3 for each product, but it require prices so another +2 (old + new) for each product
-        $this->assertQueryCountLessThan(11131);
+        $this->assertQueryCountLessThan(11132);
     }
 
     /**

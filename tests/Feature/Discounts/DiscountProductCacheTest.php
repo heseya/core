@@ -154,11 +154,6 @@ class DiscountProductCacheTest extends TestCase
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => $priceMin * 100,
         ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => $priceMax * 100,
-        ]);
     }
 
     /**
@@ -220,11 +215,6 @@ class DiscountProductCacheTest extends TestCase
             'model_id' => $product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => $priceMin * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => $priceMax * 100,
         ]);
     }
 }

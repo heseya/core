@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Price;
 use Brick\Money\Money;
 use Domain\Price\Dtos\PriceDto;
 use Domain\PriceMap\PriceMapProductPrice;
@@ -11,11 +12,11 @@ use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Illuminate\Http\Request;
 
 /**
- * @property PriceDto|PriceMapSchemaOptionPrice|PriceMapProductPrice|Money $resource
+ * @property Money|Price|PriceDto|PriceMapProductPrice|PriceMapSchemaOptionPrice $resource
  */
 class PriceResource extends Resource
 {
-    public function __construct(Money|PriceDto|PriceMapProductPrice|PriceMapSchemaOptionPrice $resource)
+    public function __construct(Money|Price|PriceDto|PriceMapProductPrice|PriceMapSchemaOptionPrice $resource)
     {
         parent::__construct($resource);
     }

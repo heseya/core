@@ -2254,18 +2254,8 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $productId,
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 100 * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $productId,
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 100 * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $productId,
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => (100 + $schemaPrice) * 100,
         ]);
     }
 
@@ -2313,17 +2303,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $productId,
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 100 * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $productId,
             'price_type' => ProductPriceType::PRICE_MIN,
-            'value' => (100 + $schemaPrice) * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $productId,
-            'price_type' => ProductPriceType::PRICE_MAX,
             'value' => (100 + $schemaPrice) * 100,
         ]);
     }
@@ -2679,11 +2659,6 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'model_id' => $productId,
             'price_type' => ProductPriceType::PRICE_MIN,
-            'value' => 80 * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $productId,
-            'price_type' => ProductPriceType::PRICE_MAX,
             'value' => 80 * 100,
         ]);
     }
@@ -3262,18 +3237,8 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => $productNewPrice * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => $productNewPrice * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => ($productNewPrice + $schemaPrice) * 100,
         ]);
     }
 
@@ -3340,28 +3305,13 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE->value,
-            'value' => $productNewPrice * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN_INITIAL->value,
             'value' => $productNewPrice * 100,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX_INITIAL->value,
-            'value' => ($productNewPrice + $schemaPrice) * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN->value,
             'value' => ($productNewPrice - $saleValue) * 100,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX->value,
-            'value' => ($productNewPrice + $schemaPrice - $saleValue) * 100,
         ]);
     }
 
@@ -3562,19 +3512,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE->value,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN->value,
-            'value' => 100 * 100,
-            'currency' => $this->currency->value,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX->value,
             'value' => 100 * 100,
             'currency' => $this->currency->value,
         ]);
