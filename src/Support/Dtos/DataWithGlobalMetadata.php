@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Support\Dtos;
 
 use App\Http\Resources\LanguageResource;
+use Domain\Currency\Currency;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Seo\SeoMetadataService;
 use Illuminate\Support\Facades\App;
@@ -18,14 +20,14 @@ abstract class DataWithGlobalMetadata extends Data
     {
         /** @var SeoMetadataService $seoMetadataService */
         $seoMetadataService = App::make(SeoMetadataService::class);
+        /** @var SalesChannelService $salesChannelService */
+        $salesChannelService = App::make(SalesChannelService::class);
+
+        $currency = ($salesChannelService->getCurrentRequestSalesChannel()?->priceMap?->currency ?? Currency::DEFAULT);
 
         $this->additional([
             'meta' => [
-                'currency' => [
-                    'name' => 'Polski Złoty',
-                    'symbol' => 'PLN',
-                    'decimals' => 2,
-                ],
+                'currency' => $currency->toCurrencyDto()->toArray(),
                 'language' => LanguageResource::make(Config::get('language.model'))->toArray($request),
                 'seo' => SeoMetadataResource::make($seoMetadataService->getGlobalSeo())->toArray($request),
             ],

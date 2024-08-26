@@ -388,10 +388,10 @@ final readonly class ProductService
         if (is_string($product)) {
             $product = Product::findOrFail($product);
         }
-        if (array_key_exists(ProductPriceType::PRICE_BASE->value, $priceMatrix)) {
-            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_BASE->value]);
-        } elseif (array_key_exists(ProductPriceType::PRICE_MIN_INITIAL->value, $priceMatrix)) {
+        if (array_key_exists(ProductPriceType::PRICE_MIN_INITIAL->value, $priceMatrix)) {
             $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN_INITIAL->value]);
+        } elseif (array_key_exists(ProductPriceType::PRICE_BASE->value, $priceMatrix)) {
+            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_BASE->value]);
         } elseif (array_key_exists(ProductPriceType::PRICE_MIN->value, $priceMatrix)) {
             $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN->value]);
         }

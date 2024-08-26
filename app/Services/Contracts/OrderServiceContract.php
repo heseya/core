@@ -8,10 +8,10 @@ use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderUpdateDto;
-use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use Brick\Money\Money;
+use Domain\Order\Resources\CartResource;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 

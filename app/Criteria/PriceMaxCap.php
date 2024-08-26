@@ -9,7 +9,7 @@ use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\App;
 
-class PriceMinCap extends Criterion
+class PriceMaxCap extends Criterion
 {
     public function query(Builder $query): Builder
     {
@@ -25,7 +25,7 @@ class PriceMinCap extends Criterion
         return $query->whereHas(
             'pricesMin',
             fn (Builder $query) => $query
-                ->where('gross', '>=', $value->getMinorAmount())
+                ->where('gross', '<=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
                 ->where('price_type', ProductPriceType::PRICE_MIN->value)
                 ->where('sales_channel_id', $salesChannel->id),

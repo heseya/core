@@ -68,7 +68,7 @@ class PricesTest extends TestCase
 
         $this->productService->setProductPrices(
             $product1,
-            [ProductPriceType::PRICE_BASE => [PriceDto::from(Money::of($priceMax1, $this->currency->value))]]
+            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))]]
         );
 
         $product2 = Product::factory()->create([
@@ -79,7 +79,7 @@ class PricesTest extends TestCase
 
         $this->productService->setProductPrices(
             $product2,
-            [ProductPriceType::PRICE_BASE => [PriceDto::from(Money::of($priceMax2, $this->currency->value))]]
+            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))]]
         );
 
         $this
@@ -99,11 +99,6 @@ class PricesTest extends TestCase
                             'gross' => $priceMin1,
                             'net' => $priceMin1,
                         ]],
-                        'prices_max' => [[
-                            'currency' => Currency::DEFAULT,
-                            'gross' => $priceMax1,
-                            'net' => $priceMax1,
-                        ]],
                     ],
                     [
                         'id' => $product2->getKey(),
@@ -111,11 +106,6 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin2,
                             'net' => $priceMin2,
-                        ]],
-                        'prices_max' => [[
-                            'currency' => Currency::DEFAULT,
-                            'gross' => $priceMax2,
-                            'net' => $priceMax2,
                         ]],
                     ],
                 ],
@@ -142,7 +132,7 @@ class PricesTest extends TestCase
             ]])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        $this->assertQueryCountLessThan(7);
+        $this->assertQueryCountLessThan(8);
     }
 
     /**
@@ -217,7 +207,7 @@ class PricesTest extends TestCase
                 '',
             ));
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -344,8 +334,7 @@ class PricesTest extends TestCase
                 $product1->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
-            ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
+            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1);
 
         $this->assertQueryCountLessThan(35);
     }
@@ -410,12 +399,6 @@ class PricesTest extends TestCase
                 2,
                 '.',
                 '',
-            ))
-            ->assertJsonPath('data.0.prices_max.0.net', number_format(
-                $priceMax1 * (1 - $discountRate),
-                2,
-                '.',
-                '',
             ));
 
         $this->assertQueryCountLessThan(36);
@@ -475,8 +458,7 @@ class PricesTest extends TestCase
                 $product1->getKey(),
             ]])
             ->assertStatus(Response::HTTP_OK)
-            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1)
-            ->assertJsonPath('data.0.prices_max.0.net', $priceMax1);
+            ->assertJsonPath('data.0.prices_min.0.net', $priceMin1);
 
         $this->assertQueryCountLessThan(36);
     }

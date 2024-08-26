@@ -61,13 +61,16 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         );
     }
 
+    /**
+     * @return array<int,CartItemDto>
+     */
     public function getItems(): array
     {
         return $this->items;
     }
 
     /**
-     * @param array<CartItemDto> $items
+     * @param array<int,CartItemDto> $items
      */
     public function setItems(array $items): void
     {

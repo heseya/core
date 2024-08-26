@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\PriceMaxCap;
 use App\Criteria\PriceMinCap;
 use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
@@ -41,6 +42,7 @@ use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
@@ -146,6 +148,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
         'price_min' => PriceMinCap::class,
+        'price_max' => PriceMaxCap::class,
         'published' => Like::class,
         'products.published' => Like::class,
     ];
@@ -354,15 +357,23 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->morphMany(Price::class, 'model');
     }
 
-    public function getCachedInitialPriceForSalesChannel(SalesChannel|string $salesChannel): ?Price
+    public function getCachedInitialPriceForSalesChannel(SalesChannel|string|null $salesChannel = null): ?Price
     {
+        if ($salesChannel === null) {
+            $salesChannel = app(SalesChannelService::class)->getCurrentRequestSalesChannel();
+        }
+
         return $this->relationLoaded('pricesMinInitial')
             ? $this->pricesMinInitial->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
             : $this->pricesMinInitial()->ofSalesChannel($salesChannel)->first();
     }
 
-    public function getCachedMinPriceForSalesChannel(SalesChannel|string $salesChannel): ?Price
+    public function getCachedMinPriceForSalesChannel(SalesChannel|string|null $salesChannel = null): ?Price
     {
+        if ($salesChannel === null) {
+            $salesChannel = app(SalesChannelService::class)->getCurrentRequestSalesChannel();
+        }
+
         return $this->relationLoaded('pricesMin')
             ? $this->pricesMin->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
             : $this->pricesMin()->ofSalesChannel($salesChannel)->first();

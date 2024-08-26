@@ -42,17 +42,13 @@ use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
 use App\Jobs\CalculateDiscount;
 use App\Models\App;
-use App\Models\CartItemResponse;
-use App\Models\CartResource;
 use App\Models\ConditionGroup;
-use App\Models\CouponShortResource;
 use App\Models\Discount;
 use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Role;
-use App\Models\SalesShortResource;
 use App\Models\User;
 use App\Repositories\DiscountRepository;
 use App\Services\Contracts\MetadataServiceContract;
@@ -67,6 +63,10 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Order\Resources\CartItemResource;
+use Domain\Order\Resources\CartResource;
+use Domain\Order\Resources\CouponShortResource;
+use Domain\Order\Resources\SalesShortResource;
 use Domain\Organization\Models\Organization;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
@@ -393,10 +393,11 @@ readonly class DiscountService
                 );
             }
             $cartValue = $cartValue->plus($price->multipliedBy($cartItem->getQuantity()));
-            $cartItems[] = new CartItemResponse(
+            $cartItems[] = new CartItemResource(
                 $cartItem->getCartItemId(),
                 $price,
                 $price,
+                Currency::from($price->getCurrency()->getCurrencyCode()),
                 $cartItem->getQuantity(),
             );
         }
@@ -408,9 +409,9 @@ readonly class DiscountService
         $summary = $cartValue;
 
         $cartResource = new CartResource(
-            Collection::make($cartItems),
-            Collection::make(),
-            Collection::make(),
+            CartItemResource::collection($cartItems),
+            CouponShortResource::collection([]),
+            SalesShortResource::collection([]),
             $cartValue,
             $cartValue,
             $shippingPrice,
@@ -420,7 +421,7 @@ readonly class DiscountService
             $cartShippingTimeAndDate['shipping_date'] ?? null,
         );
 
-        if ($cartResource->items->isEmpty()) {
+        if ($cartResource->items->toCollection()->isEmpty()) {
             return $cartResource;
         }
 
@@ -637,10 +638,10 @@ readonly class DiscountService
         Discount $discount,
         CartItemDto $cartItem,
         CartResource $cart,
-    ): CartItemResponse {
-        /** @var CartItemResponse $result */
+    ): CartItemResource {
+        /** @var CartItemResource $result */
         $result = $cart->items->filter(
-            fn ($value) => $value->cartitem_id === $cartItem->getCartItemId(),
+            fn (CartItemResource $value) => $value->cartitem_id === $cartItem->getCartItemId(),
         )->first();
 
         $result->price_discounted = $this->calcPrice(
@@ -1418,10 +1419,9 @@ readonly class DiscountService
         $cartItems = [];
         $cartValue = Money::zero($cartDto->currency->value);
 
-        /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
             $cartItem = $cart->items->filter(
-                fn ($value, $key) => $value->cartitem_id === $item->getCartItemId(),
+                fn (CartItemResource $value) => $value->cartitem_id === $item->getCartItemId(),
             )->first();
 
             if ($cartItem === null) {
@@ -1435,7 +1435,7 @@ readonly class DiscountService
             $cartValue = $cartValue->plus($cartItem->price_discounted->multipliedBy($item->getQuantity()));
         }
 
-        $cart->items = Collection::make($cartItems);
+        $cart->items = CartItemResource::collection($cartItems);
         $cart->cart_total = $cartValue;
 
         return $cart;
@@ -1453,28 +1453,34 @@ readonly class DiscountService
         Discount $discount,
         CartResource $cart,
     ): CartResource {
-        /** @var CartItemResponse $cartItem */
-        $cartItem = $cart->items->sortBy([
+        $cartItem = $cart->items->toCollection()->sortBy([
             ['price_discounted', 'asc'],
             ['quantity', 'asc'],
         ])->first();
 
+        if ($cartItem === null) {
+            return $cart;
+        }
+
         $minimalProductPrice = Money::ofMinor(1, $cartItem->price_discounted->getCurrency());
 
         if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
-            $cart->items->first(
-                fn (
-                    $value,
-                ): bool => $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity,
-            )->quantity = $cartItem->quantity - 1;
+            $cart->items = $cart->items->through(function (CartItemResource $value) use ($cartItem): CartItemResource {
+                if ($value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity) {
+                    $value->quantity = $cartItem->quantity - 1;
+                }
 
-            $cartItem = new CartItemResponse(
+                return $value;
+            });
+
+            $cartItem = new CartItemResource(
                 $cartItem->cartitem_id,
                 $cartItem->price,
                 $cartItem->price_discounted,
+                $cartItem->currency,
                 1,
             );
-            $cart->items->push($cartItem);
+            $cart->items[] = $cartItem;
         }
 
         $price = $cartItem->price_discounted;
@@ -2051,22 +2057,22 @@ readonly class DiscountService
         CartResource $cartResource,
     ): CartResource {
         if ($discount->code !== null) {
-            $cartResource->coupons->push(
+            $cartResource->coupons[] =
                 new CouponShortResource(
                     $discount->getKey(),
                     $discount->name,
                     $appliedDiscount,
+                    Currency::from($appliedDiscount->getCurrency()->getCurrencyCode()),
                     $discount->code,
-                ),
-            );
+                );
         } else {
-            $cartResource->sales->push(
+            $cartResource->sales[] =
                 new SalesShortResource(
                     $discount->getKey(),
                     $discount->name,
                     $appliedDiscount,
-                ),
-            );
+                    Currency::from($appliedDiscount->getCurrency()->getCurrencyCode()),
+                );
         }
 
         return $cartResource;

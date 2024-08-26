@@ -61,7 +61,6 @@ class ProductRepository
                 'schemas.options.items',
                 'schemas.options.metadata',
                 'schemas.options.metadataPrivate',
-                'schemas.options.prices',
                 'schemas.metadata',
                 'schemas.metadataPrivate',
                 'sets',
@@ -96,6 +95,7 @@ class ProductRepository
                 'seo.media.metadataPrivate',
             ]);
             $query->with(['sales' => fn (BelongsToMany|Builder $hasMany) => $hasMany->withOrdersCount()]); // @phpstan-ignore-line
+            $query->with(['schemas.options.prices' => fn (Builder|MorphMany $morphMany) => $salesChannel ? $morphMany->where('sales_channel_id', $salesChannel->id) : $morphMany->where('currency', $priceMap->currency)]);
             $query->with(['schemas.options.mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
         }
 

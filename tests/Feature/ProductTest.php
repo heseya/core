@@ -1644,9 +1644,7 @@ class ProductTest extends TestCase
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && isset($payload['data']['prices_min_old'])
-                && isset($payload['data']['prices_max_old'])
                 && isset($payload['data']['prices_min_new'])
-                && isset($payload['data']['prices_max_new'])
                 && $payload['data_type'] === 'ProductPrices'
                 && $payload['event'] === 'ProductPriceUpdated';
         });

@@ -6,25 +6,17 @@ namespace Domain\Currency;
 
 use App\Http\Controllers\Controller;
 use Brick\Money\Exception\UnknownCurrencyException;
-use Support\ResourceDto;
+use Spatie\LaravelData\DataCollection;
 
 final class CurrencyController extends Controller
 {
     /**
+     * @return DataCollection<int,CurrencyDto>
+     *
      * @throws UnknownCurrencyException
      */
-    public function index(): ResourceDto
+    public function index(): DataCollection
     {
-        $currencies = array_map(function (Currency $currency) {
-            $currency = \Brick\Money\Currency::of($currency->value);
-
-            return new CurrencyDto(
-                $currency->getName(),
-                $currency->getCurrencyCode(),
-                $currency->getDefaultFractionDigits(),
-            );
-        }, Currency::cases());
-
-        return new ResourceDto($currencies);
+        return CurrencyDto::collection(Currency::cases());
     }
 }

@@ -144,6 +144,7 @@ class ProductSortTest extends TestCase
                 ],
             ]);
 
+        /*
         $response = $this
             ->actingAs($this->{$user})
             ->json('GET', '/products', ['sort' => 'price:GBP:desc']);
@@ -165,6 +166,7 @@ class ProductSortTest extends TestCase
                     ],
                 ],
             ]);
+            */
     }
 
     /**

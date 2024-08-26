@@ -36,6 +36,11 @@ enum Currency: string
         return CurrencyInstance::of($this->value);
     }
 
+    public function toCurrencyDto(): CurrencyDto
+    {
+        return CurrencyDto::from($this);
+    }
+
     public function getDefaultPriceMapId(): string
     {
         return match ($this) {

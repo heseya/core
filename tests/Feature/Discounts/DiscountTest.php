@@ -967,13 +967,6 @@ class DiscountTest extends TestCase
                         'gross' => "{$minPriceDiscounted}.00",
                     ],
                 ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'net' => "{$maxPriceDiscounted}.00",
-                        'gross' => "{$maxPriceDiscounted}.00",
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1066,13 +1059,6 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$minPriceDiscounted}.00",
                         'gross' => "{$minPriceDiscounted}.00",
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'net' => "{$maxPriceDiscounted}.00",
-                        'gross' => "{$maxPriceDiscounted}.00",
                     ],
                 ],
             ])
@@ -1201,9 +1187,7 @@ class DiscountTest extends TestCase
             'public' => true,
         ]);
         $this->productService->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
         ]);
 
         $parentSet = ProductSet::factory()->create(['public' => true]);
@@ -1362,8 +1346,7 @@ class DiscountTest extends TestCase
 
         $discount['amounts'] = Arr::map($discount['amounts'], fn(array $amount) => [
             'currency' => $amount['currency'],
-            'gross' => $amount['value'],
-            'net' => $amount['value'],
+            'value' => $amount['value'],
         ]);
 
         $response
@@ -1550,13 +1533,11 @@ class DiscountTest extends TestCase
                 'is_in_range' => true,
                 'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
-                    'net' => $value['value'],
-                    'gross' => $value['value'],
+                    'value' => $value['value'],
                 ], $this->minValues),
                 'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
-                    'net' => $value['value'],
-                    'gross' => $value['value'],
+                    'value' => $value['value'],
                 ], $this->maxValues),
             ])
             ->assertJsonFragment([
@@ -2223,13 +2204,11 @@ class DiscountTest extends TestCase
                 'is_in_range' => true,
                 'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
-                    'net' => $value['value'],
-                    'gross' => $value['value'],
+                    'value' => $value['value'],
                 ], $this->minValues),
                 'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
-                    'net' => $value['value'],
-                    'gross' => $value['value'],
+                    'value' => $value['value'],
                 ], $this->maxValues),
             ])
             ->assertJsonFragment([
@@ -2430,8 +2409,7 @@ class DiscountTest extends TestCase
                     'id' => $discount->getKey(),
                     'amounts' => array_map(fn(string $currency) => [
                         'currency' => $currency,
-                        'net' => '50.00',
-                        'gross' => '50.00',
+                        'value' => '50.00',
                     ], Currency::values()),
                     'metadata' => [],
                 ] + $code
@@ -2655,25 +2633,11 @@ class DiscountTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_base' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '200.00',
-                        'net' => '200.00',
-                    ],
-                ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '150.00',
                         'net' => '150.00',
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '190.00',
-                        'net' => '190.00',
                     ],
                 ],
                 'prices_min' => [
@@ -2683,23 +2647,9 @@ class DiscountTest extends TestCase
                         'net' => '140.00',
                     ],
                 ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '180.00',
-                        'net' => '180.00',
-                    ],
-                ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_base' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '300.00',
-                        'net' => '300.00',
-                    ],
-                ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
@@ -2707,25 +2657,11 @@ class DiscountTest extends TestCase
                         'net' => '290.00',
                     ],
                 ],
-                'prices_max_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '350.00',
-                        'net' => '350.00',
-                    ],
-                ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '280.00',
                         'net' => '280.00',
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '340.00',
-                        'net' => '340.00',
                     ],
                 ],
             ]);
@@ -2796,22 +2732,14 @@ class DiscountTest extends TestCase
             'public' => true,
         ]);
         $this->productService->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(200, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(190, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(250, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(190, $this->currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(250, $this->currency->value))],
         ]);
 
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
         $this->productService->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(300, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(290, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(350, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(290, $this->currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(350, $this->currency->value))],
         ]);
 
         $discount->products()->sync([$product2->getKey(), $product3->getKey()]);
@@ -2839,13 +2767,6 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_base' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '200.00',
-                        'net' => '200.00',
-                    ],
-                ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
@@ -2853,37 +2774,16 @@ class DiscountTest extends TestCase
                         'net' => '190.00',
                     ],
                 ],
-                'prices_max_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '250.00',
-                        'net' => '250.00',
-                    ],
-                ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
                         'net' => '190.00',
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '250.00',
-                        'net' => '250.00',
                     ],
                 ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_base' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '300.00',
-                        'net' => '300.00',
-                    ],
-                ],
                 'prices_min_initial' => [
                     [
                         'currency' => $this->currency->value,
@@ -2891,25 +2791,11 @@ class DiscountTest extends TestCase
                         'net' => '290.00',
                     ],
                 ],
-                'prices_max_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '350.00',
-                        'net' => '350.00',
-                    ],
-                ],
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
                         'net' => '290.00',
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '350.00',
-                        'net' => '350.00',
                     ],
                 ],
             ]);
