@@ -2,8 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\OrderSchema;
 use Illuminate\Http\Request;
 
+/**
+ * @property OrderSchema $resource
+ */
 class OrderSchemaResource extends Resource
 {
     public function base(Request $request): array
