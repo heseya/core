@@ -429,13 +429,10 @@ class PerformanceTest extends TestCase
                 'public' => true,
             ]);
 
-        /** @var ProductRepository $productRepository */
-        $productRepository = App::make(ProductRepository::class);
-
         /** @var PriceMapService $priceMapService */
         $priceMapService = App::make(PriceMapService::class);
 
-        $products->each(function (Product $product) use ($productRepository, $priceMapService) {
+        $products->each(function (Product $product) use ($priceMapService) {
             $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());

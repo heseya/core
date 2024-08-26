@@ -12,7 +12,6 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
-use Domain\Price\Enums\OptionPriceType;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Heseya\Dto\DtoException;
@@ -58,8 +57,8 @@ class ProductServiceTest extends TestCase
     {
         $this->assertEquals(
             [
-                PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
-                PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
+                Money::of(self::$price, self::$currency->value),
+                Money::of(self::$price, self::$currency->value),
             ],
             $this->productService->getMinMaxPrices($this->product),
         );
@@ -92,7 +91,7 @@ class ProductServiceTest extends TestCase
                 [
                     SchemaType::SELECT,
                     true,
-                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
+                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
                     PriceDto::fromMoney(Money::of(self::$price + $schemaPrice, self::$currency->value)),
                 ],
             ),
@@ -135,8 +134,8 @@ class ProductServiceTest extends TestCase
 
         $calculated = $this->productService->getMinMaxPrices($this->product, self::$currency);
 
-        $this->assertEquals($min->value->getAmount()->toFloat(), $calculated[0]->value->getAmount()->toFloat());
-        $this->assertEquals($max->value->getAmount()->toFloat(), $calculated[1]->value->getAmount()->toFloat());
+        $this->assertEquals($min->value->getAmount()->toFloat(), $calculated[0]->getAmount()->toFloat());
+        $this->assertEquals($max->value->getAmount()->toFloat(), $calculated[1]->getAmount()->toFloat());
     }
 
     /**
@@ -158,15 +157,15 @@ class ProductServiceTest extends TestCase
             'optional' => array_merge($base, [
                 false,
                 [
-                    PriceDto::fromMoney(Money::of(self::$price, self::$currency->value)),
-                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value)),
+                    Money::of(self::$price, self::$currency->value),
+                    Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value),
                 ],
             ]),
             'required' => array_merge($base, [
                 true,
                 [
-                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceLowest, self::$currency->value)),
-                    PriceDto::fromMoney(Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value)),
+                    Money::of(self::$price, self::$currency->value),
+                    Money::of(self::$price + $schemaPrice + $optionPriceHighest, self::$currency->value),
                 ],
             ]),
         ];
@@ -218,7 +217,7 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             $minmax,
-            $this->productService->getMinMaxPrices($this->product),
+            $this->productService->getMinMaxPrices($this->product, self::$currency),
         );
     }
 
@@ -237,7 +236,7 @@ class ProductServiceTest extends TestCase
             'name' => 'Test',
             'required' => true,
             'product_id' => $this->product->getKey(),
-        ], false, false));
+        ], false, true));
 
         /** @var Option $option */
         $option = $schema->options()->create([
@@ -285,8 +284,8 @@ class ProductServiceTest extends TestCase
 
         $this->assertEquals(
             [
-                PriceDto::fromMoney(Money::of(self::$price + $schema1Price, self::$currency->value)),
-                PriceDto::fromMoney(Money::of(self::$price + $schema1Price + $schema2Price + $schema3Price, self::$currency->value)),
+                Money::of(self::$price, self::$currency->value),
+                Money::of(self::$price + $schema1Price + $schema2Price + $schema3Price, self::$currency->value),
             ],
             $this->productService->getMinMaxPrices($this->product),
         );

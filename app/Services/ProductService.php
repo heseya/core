@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
+use App\Exceptions\ClientException;
 use App\Exceptions\PublishingException;
 use App\Models\Discount;
 use App\Models\Product;
@@ -19,6 +21,7 @@ use App\Services\Contracts\TranslationServiceContract;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceService;
@@ -178,7 +181,32 @@ final readonly class ProductService
         $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
-    public function getMaxPriceInPriceMap(Product $product, PriceMap $priceMap): Money
+    /**
+     * @return Money[]
+     */
+    public function getMinMaxPrices(Product $product, Currency|PriceMap|SalesChannel $filter = null): array
+    {
+        if (!$filter instanceof PriceMap) {
+            $filter = match (true) {
+                $filter instanceof SalesChannel => match (true) {
+                    $filter->priceMap instanceof PriceMap => $filter->priceMap,
+                    $filter->default => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_PRICE_MAP),
+                    default => null,
+                },
+                $filter instanceof Currency => PriceMap::find($filter->getDefaultPriceMapId()),
+                default => $this->salesChannelService->getCurrentRequestSalesChannel(),
+            };
+
+            return $this->getMinMaxPrices($product, $filter);
+        }
+
+        return [
+            $product->mappedPriceForPriceMap($filter)->value,
+            $this->getMaxPriceForPriceMap($product, $filter),
+        ];
+    }
+
+    public function getMaxPriceForPriceMap(Product $product, PriceMap $priceMap): Money
     {
         $max = $product->mappedPriceForPriceMap($priceMap)->value;
 

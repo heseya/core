@@ -29,6 +29,7 @@ use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -105,6 +106,14 @@ final readonly class PriceMapService
     public function delete(PriceMap $priceMap): void
     {
         $priceMap->delete();
+    }
+
+    /**
+     * @return Collection<int,PriceMap> $priceMaps
+     */
+    public function listDefault(): Collection
+    {
+        return Cache::driver('array')->rememberForever('default_price_maps', fn () => PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get());
     }
 
     public function updatePrices(PriceMap $priceMap, PriceMapPricesUpdateDto $dto): PriceMapUpdatedPricesData
@@ -226,12 +235,9 @@ final readonly class PriceMapService
             $priceDtos = PriceDto::collection($priceDtos);
         }
 
-        /** @var Collection<int,PriceMap> $priceMaps */
-        $priceMaps = PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get();
-
         $data = $priceDtos->toCollection()->map(
-            function (PriceDto $priceDto) use ($product, $priceMaps) {
-                $priceMap = $priceMaps->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
+            function (PriceDto $priceDto) use ($product) {
+                $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
 
                 return [
                     'id' => Uuid::uuid6(),
@@ -273,12 +279,9 @@ final readonly class PriceMapService
             throw new InvalidArgumentException();
         }
 
-        /** @var Collection<int,PriceMap> $priceMaps */
-        $priceMaps = PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get();
-
         $data = $priceDtos->toCollection()->map(
-            function (PriceDto $priceDto) use ($option, $priceMaps) {
-                $priceMap = $priceMaps->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
+            function (PriceDto $priceDto) use ($option) {
+                $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
 
                 return [
                     'id' => Uuid::uuid6(),
