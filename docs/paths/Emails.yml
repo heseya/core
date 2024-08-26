@@ -1,0 +1,12 @@
+Emails:
+  post:
+    tags:
+      - Emails
+    summary: 'custom email send'
+    security:
+      - BearerAuth: [ email.send ]
+    requestBody:
+      $ref: './../requests/Emails.yml#/Email'
+    responses:
+      204:
+        description: Success
