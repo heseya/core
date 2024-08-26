@@ -643,6 +643,7 @@ class OrganizationTest extends TestCase
         Event::fake([OrganizationCreated::class, UserCreated::class]);
         Mail::fake();
 
+        $salesChannel = SalesChannel::query()->where('default', '=', true)->first();
         $response = $this
             ->json('POST', '/organizations/register', [
                 'billing_email' => 'test.organization@example.com',
@@ -659,7 +660,10 @@ class OrganizationTest extends TestCase
                 'creator_name' => 'Jan Kowalski',
                 'consents' => [],
             ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+            ]);
 
         Event::assertDispatched(OrganizationCreated::class);
         Event::assertDispatched(UserCreated::class);
@@ -674,6 +678,7 @@ class OrganizationTest extends TestCase
 
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test.organization@example.com',
+            'sales_channel_id' => $salesChannel->getKey(),
         ]);
 
         $this->assertDatabaseHas('users', [
