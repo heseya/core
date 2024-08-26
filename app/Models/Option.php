@@ -12,7 +12,6 @@ use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -101,6 +100,7 @@ class Option extends Model implements Translatable
         assert($salesChannel instanceof SalesChannel);
         $priceMap = $salesChannel->priceMap;
         assert($priceMap instanceof PriceMap);
+
         return $this->getMappedPriceForPriceMap($priceMap);
     }
 }

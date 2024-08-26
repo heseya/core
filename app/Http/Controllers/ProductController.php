@@ -17,7 +17,6 @@ use App\Http\Resources\ProductWithoutSalesResource;
 use App\Http\Resources\ResourceCollection;
 use App\Models\MediaAttachment;
 use App\Models\Product;
-use App\Repositories\ProductRepository;
 use App\Services\Contracts\MediaAttachmentServiceContract;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
@@ -38,7 +37,6 @@ final class ProductController extends Controller
     public function __construct(
         private readonly ProductService $productService,
         private readonly MediaAttachmentServiceContract $attachmentService,
-        private readonly ProductRepository $productRepository,
     ) {}
 
     /**
@@ -49,7 +47,7 @@ final class ProductController extends Controller
      */
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $products = $this->productRepository->search(
+        $products = $this->productService->search(
             ProductSearchDto::from($request),
         );
 
@@ -90,12 +88,9 @@ final class ProductController extends Controller
             'pages',
             'pages.metadata',
             'pages.metadataPrivate',
-            'mapPrices',
-            'pricesBase',
-            'pricesMax',
-            'pricesMaxInitial',
-            'pricesMin',
-            'pricesMinInitial',
+            // 'mapPrices',
+            // 'pricesMin',
+            // 'pricesMinInitial',
             'productAttributes',
             'productAttributes.attribute',
             'productAttributes.attribute.metadata',

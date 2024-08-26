@@ -28,16 +28,18 @@ class DiscountRepository
                 'model_id' => $discountId,
                 'model_type' => (new Discount())->getMorphClass(),
                 'price_type' => DiscountPriceType::AMOUNT->value,
+                'price_map_id' => Currency::from($amount->value->getCurrency()->getCurrencyCode())->getDefaultPriceMapId(), // required for unique index to work correctly
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),
+                'gross' => $amount->value->getMinorAmount(),
                 'is_net' => false,
             ];
         }
 
         Price::query()->upsert(
             $rows,
-            ['model_id', 'price_type', 'currency'],
-            ['value', 'is_net'],
+            ['model_id', 'price_type', 'currency', 'price_map_id'],
+            ['value', 'gross', 'is_net'],
         );
     }
 

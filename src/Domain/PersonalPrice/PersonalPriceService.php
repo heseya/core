@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Services\DiscountService;
 use Domain\Price\Resources\ProductCachedPriceData;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 final readonly class PersonalPriceService
@@ -19,11 +20,11 @@ final readonly class PersonalPriceService
     ) {}
 
     /**
-     * @return ProductCachedPriceData[]
+     * @return Collection<int,ProductCachedPriceData>
      *
      * @throws ClientException
      */
-    public function calcProductsListDiscounts(ProductPricesDto $dto, SalesChannel $salesChannel): array
+    public function calcProductsListDiscounts(ProductPricesDto $dto, SalesChannel $salesChannel): Collection
     {
         $query = Product::query()->whereIn('id', $dto->ids);
 

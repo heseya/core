@@ -10,6 +10,5 @@ final class ProductPriceDto extends Data
     public function __construct(
         public readonly string $id,
         public readonly PriceResource $price_min,
-        public readonly ?PriceResource $price_max = null,
     ) {}
 }

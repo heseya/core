@@ -4,44 +4,26 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ServerException;
-use App\Models\Price;
 use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
-use Domain\Price\Dtos\ProductCachedPriceDto;
-use Domain\Price\Dtos\ProductCachedPricesDto;
-use Domain\Price\Dtos\ProductCachedPricesDtoCollection;
-use Domain\Price\Enums\ProductPriceType;
-use Domain\Price\PriceRepository;
 use Domain\PriceMap\PriceMap;
-use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\SalesChannel\Models\SalesChannel;
-use Domain\SalesChannel\SalesChannelService;
-use Heseya\Dto\DtoException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
-use Support\Dtos\ModelIdentityDto;
 
 class ProductRepository
 {
     use GetPublishedLanguageFilter;
 
-    public function __construct(
-        private readonly PriceRepository $priceRepository,
-        private readonly SalesChannelService $salesChannelService,
-        private readonly PriceMapService $priceMapService,
-    ) {}
-
-    public function search(ProductSearchDto $dto): LengthAwarePaginator
+    public function search(ProductSearchDto $dto, SalesChannel $salesChannel = null): LengthAwarePaginator
     {
         if (Config::get('search.use_scout') && is_string($dto->search) && !empty($dto->search)) {
             $scoutResults = Product::search($dto->search)->keys()->toArray();
@@ -51,11 +33,6 @@ class ProductRepository
                 : $scoutResults;
         }
 
-        $salesChannel = $this->salesChannelService->getCurrentRequestSalesChannel();
-        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->getCurrency()->getDefaultPriceMapId());
-
-        assert($priceMap instanceof PriceMap);
-
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
@@ -63,14 +40,16 @@ class ProductRepository
                 'media.metadata',
                 'media.metadataPrivate',
                 'publishedTags',
-                'pricesBase',
-                'pricesMin',
-                'pricesMax',
-                'pricesMinInitial',
-                'pricesMaxInitial',
                 'metadata',
                 'metadataPrivate',
             ]);
+
+        $priceMap = $salesChannel?->priceMap ?? PriceMap::findOrFail($dto->getCurrency()->getDefaultPriceMapId());
+
+        assert($priceMap instanceof PriceMap);
+
+        $query->with(['pricesMin' => fn (Builder|MorphMany $morphMany) => $salesChannel ? $morphMany->where('sales_channel_id', $salesChannel->id) : $morphMany->where('currency', $priceMap->currency)]);
+        $query->with(['pricesMinInitial' => fn (Builder|MorphMany $morphMany) => $salesChannel ? $morphMany->where('sales_channel_id', $salesChannel->id) : $morphMany->where('currency', $priceMap->currency)]);
         $query->with(['mapPrices' => fn (Builder|HasMany $hasMany) => $hasMany->where('price_map_id', $priceMap->id)]);
 
         if (is_bool($dto->full) && $dto->full) {
@@ -139,18 +118,12 @@ class ProductRepository
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
-                        'currency',
-                        $dto->price_sort_currency ?? Currency::DEFAULT->value,
-                    ),
+                    'pricesMin as price' => fn (Builder $subquery) => $salesChannel ? $subquery->where('sales_channel_id', $salesChannel->id) : $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
                 ], 'value');
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where(
-                        'currency',
-                        $dto->price_sort_currency ?? Currency::DEFAULT->value,
-                    ),
+                    'pricesMin as price' => fn (Builder $subquery) => $salesChannel ? $subquery->where('sales_channel_id', $salesChannel->id) : $subquery->where('currency', $dto->price_sort_currency ?? Currency::DEFAULT->value),
                 ], 'value');
             }
         }
@@ -165,60 +138,5 @@ class ProductRepository
         }
 
         return $query->paginate(Config::get('pagination.per_page'));
-    }
-
-    /**
-     * @deprecated
-     */
-    public function setProductPrices(Product|string $product, array $priceMatrix): void
-    {
-        if (array_key_exists(ProductPriceType::PRICE_BASE->value, $priceMatrix)) {
-            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_BASE->value]);
-        } elseif (array_key_exists(ProductPriceType::PRICE_MIN_INITIAL->value, $priceMatrix)) {
-            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN_INITIAL->value]);
-        } elseif (array_key_exists(ProductPriceType::PRICE_MIN->value, $priceMatrix)) {
-            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN->value]);
-        }
-    }
-
-    /**
-     * @param ProductCachedPricesDtoCollection|ProductCachedPricesDto[]|array<value-of<ProductPriceType>,ProductCachedPriceDto[]> $priceMatrix
-     */
-    public function setCachedProductPrices(Product|string $product, array|ProductCachedPricesDtoCollection $priceMatrix): void
-    {
-        $this->priceRepository->setCachedProductPrices(
-            $product instanceof Product ? $product : new ModelIdentityDto($product, (new Product())->getMorphClass()),
-            $priceMatrix,
-        );
-    }
-
-    /**
-     * @param ProductPriceType[] $priceTypes
-     *
-     * @return Collection<string,Collection<int,ProductCachedPriceDto>>
-     *
-     * @throws DtoException
-     * @throws ServerException
-     */
-    public function getCachedProductPrices(
-        Product|string $product,
-        array $priceTypes,
-        Currency|SalesChannel|null $filter = null,
-    ): Collection {
-        $prices = $this->priceRepository->getModelPrices(
-            $product instanceof Product ? $product : new ModelIdentityDto($product, (new Product())->getMorphClass()),
-            $priceTypes,
-            $filter,
-        );
-
-        $groupedPrices = $prices->collect()->mapToGroups(fn (Price $price) => [$price->price_type => ProductCachedPriceDto::from($price)]);
-
-        foreach ($priceTypes as $type) {
-            if (!$groupedPrices->has($type->value)) {
-                throw new ServerException(Exceptions::SERVER_NO_PRICE_MATCHING_CRITERIA);
-            }
-        }
-
-        return $groupedPrices;
     }
 }

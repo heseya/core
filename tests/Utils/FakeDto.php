@@ -109,12 +109,12 @@ final readonly class FakeDto
     }
 
     /**
-     * @param PriceDto[]|array<int,array<string,int|string>> $data
+     * @param PriceDto[]|DataCollection<int,PriceDto>|array<int,array<string,int|string>> $data
      *
      * @return DataCollection<PriceDto>
      */
     public static function generatePricesInAllCurrencies(
-        array $data = [],
+        array|DataCollection $data = [],
         BigDecimal|int|float|null $amount = null
     ): DataCollection {
         $prices = [];

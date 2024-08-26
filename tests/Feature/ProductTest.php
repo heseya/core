@@ -19,7 +19,6 @@ use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\WebHook;
 use App\Repositories\DiscountRepository;
-use App\Repositories\ProductRepository;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\DiscountService;
 use App\Services\ProductService;
@@ -33,6 +32,7 @@ use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\PriceService;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -61,11 +61,12 @@ class ProductTest extends TestCase
     private Currency $currency;
     private Product $saleProduct;
     private array $productPrices;
-    private ProductService $productService;
-    private DiscountService $discountService;
-    private ProductRepository $productRepository;
-    private SchemaCrudService $schemaCrudService;
+
     private DiscountRepository $discountRepository;
+    private DiscountService $discountService;
+    private PriceService $priceService;
+    private ProductService $productService;
+    private SchemaCrudService $schemaCrudService;
 
     public static function noIndexProvider(): array
     {
@@ -91,9 +92,9 @@ class ProductTest extends TestCase
 
         $this->productService = App::make(ProductService::class);
         $this->discountService = App::make(DiscountService::class);
-        $this->productRepository = App::make(ProductRepository::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
+        $this->priceService = App::make(PriceService::class);
 
         $this->productPrices = array_map(fn(Currency $currency) => [
             'value' => '100.00',
@@ -236,10 +237,8 @@ class ProductTest extends TestCase
         $this->saleProduct = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($this->saleProduct->getKey(), [
+        $this->productService->setProductPrices($this->saleProduct->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(3000, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(2500, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(3500, $this->currency->value))],
         ]);
     }
 
@@ -1131,38 +1130,17 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->saleProduct->getKey(),
                 'name' => $this->saleProduct->name,
-                'prices_base' => [
+                'price_initial' => [
                     [
                         'gross' => '3000.00',
                         'net' => '3000.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
-                'prices_min_initial' => [
+                'price' => [
                     [
                         'gross' => '2500.00',
                         'net' => '2500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max_initial' => [
-                    [
-                        'gross' => '3500.00',
-                        'net' => '3500.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_min' => [
-                    [
-                        'gross' => '2250.00',
-                        'net' => '2250.00',
-                        'currency' => Currency::DEFAULT->value,
-                    ],
-                ],
-                'prices_max' => [
-                    [
-                        'gross' => '3150.00',
-                        'net' => '3150.00',
                         'currency' => Currency::DEFAULT->value,
                     ],
                 ],
@@ -1623,22 +1601,15 @@ class ProductTest extends TestCase
 
         Event::assertDispatched(ProductPriceUpdated::class);
 
-        $productPrices = app(ProductRepository::class)->getProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN,
-            ProductPriceType::PRICE_MAX,
-        ]);
-
+        $productPrices = $this->priceService->getCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_MIN], $this->currency);
         $productPricesMin = $productPrices->get(ProductPriceType::PRICE_MIN->value);
-        $productPricesMax = $productPrices->get(ProductPriceType::PRICE_MAX->value);
 
         return [
             $product,
             new ProductPriceUpdated(
-                $product->getKey(),
-                null,
-                null,
-                $productPricesMin,
-                $productPricesMax,
+                $product,
+                [],
+                $productPricesMin->toArray(),
             ),
         ];
     }
@@ -3270,7 +3241,7 @@ class ProductTest extends TestCase
             ])
         );
 
-        $this->productService->updateMinMaxPrices($this->product);
+        $this->productService->updateMinPrices($this->product);
 
         $productNewPrice = 250;
         $prices = array_map(fn(Currency $currency) => [
@@ -3327,7 +3298,7 @@ class ProductTest extends TestCase
             ])
         );
 
-        $this->productService->updateMinMaxPrices($this->product);
+        $this->productService->updateMinPrices($this->product);
 
         $saleValue = 25;
         $sale = Discount::factory()->create([
@@ -3584,7 +3555,7 @@ class ProductTest extends TestCase
             ])
         );
 
-        $this->productService->updateMinMaxPrices($this->product);
+        $this->productService->updateMinPrices($this->product);
 
         $response = $this->actingAs($this->{$user})->deleteJson('/schemas/id:' . $schema->getKey());
         $response->assertNoContent();

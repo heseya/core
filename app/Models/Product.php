@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
-use App\Criteria\PriceMaxCap;
 use App\Criteria\PriceMinCap;
 use App\Criteria\ProductAttributeSearch;
 use App\Criteria\ProductNotAttributeSearch;
@@ -147,7 +146,6 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'has_schemas' => WhereHasSchemas::class,
         'shipping_digital' => Equals::class,
         'price_min' => PriceMinCap::class,
-        'price_max' => PriceMaxCap::class,
         'published' => Like::class,
         'products.published' => Like::class,
     ];

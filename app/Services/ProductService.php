@@ -21,9 +21,11 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\Price\PriceService;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
+use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Models\Attribute;
@@ -36,8 +38,9 @@ use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\SeoMetadataService;
 use Heseya\Dto\DtoException;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
@@ -46,18 +49,19 @@ use Spatie\LaravelData\Optional;
 final readonly class ProductService
 {
     public function __construct(
-        private AttributeService $attributeService,
-        private AvailabilityServiceContract $availabilityService,
-        private DiscountService $discountService,
-        private MediaServiceContract $mediaService,
-        private MetadataServiceContract $metadataService,
-        private PriceMapService $priceMapService,
-        private ProductRepository $productRepository,
-        private ProductSetService $productSetService,
-        private SalesChannelService $salesChannelService,
-        private SchemaService $schemaService,
-        private SeoMetadataService $seoMetadataService,
-        private TranslationServiceContract $translationService,
+        private readonly AttributeService $attributeService,
+        private readonly AvailabilityServiceContract $availabilityService,
+        private readonly DiscountService $discountService,
+        private readonly MediaServiceContract $mediaService,
+        private readonly MetadataServiceContract $metadataService,
+        private readonly PriceMapService $priceMapService,
+        private readonly PriceService $priceService,
+        private readonly ProductRepository $productRepository,
+        private readonly ProductSetService $productSetService,
+        private readonly SalesChannelService $salesChannelService,
+        private readonly SchemaService $schemaService,
+        private readonly SeoMetadataService $seoMetadataService,
+        private readonly TranslationServiceContract $translationService,
     ) {}
 
     /**
@@ -171,7 +175,7 @@ final readonly class ProductService
             ]);
         }
 
-        $this->productRepository->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
+        $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
     public function getMaxPriceInPriceMap(Product $product, PriceMap $priceMap): Money
@@ -206,9 +210,9 @@ final readonly class ProductService
     }
 
     /**
-     * @return Collection<int,Discount>
+     * @return EloquentCollection<int,Discount>
      */
-    public function productSales(Product $product): Collection
+    public function productSales(Product $product): EloquentCollection
     {
         return $product->sales()->with('amounts', 'metadata', 'metadataPrivate')->get();
     }
@@ -244,7 +248,7 @@ final readonly class ProductService
 
         if (!($dto->attributes instanceof Optional)) {
             $this->attributeService->sync($product, $dto->attributes);
-            $product->loadMissing(['productAttributes' => fn(Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
+            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
         }
 
         if (!($dto->descriptions instanceof Optional)) {
@@ -278,7 +282,7 @@ final readonly class ProductService
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $product->items()->sync(collect($items)->mapWithKeys(fn(array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
+        $product->items()->sync(collect($items)->mapWithKeys(fn (array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
     }
 
     private function prepareProductSearchValues(Product $product): Product
@@ -337,5 +341,32 @@ final readonly class ProductService
                 $product->banner()->delete();
             }
         }
+    }
+
+    public function search(ProductSearchDto $dto): LengthAwarePaginator
+    {
+        $salesChannel = request()->header('X-Sales-Channel') != null
+            ? $this->salesChannelService->getCurrentRequestSalesChannel()
+            : null;
+
+        return $this->productRepository->search($dto, $salesChannel);
+    }
+
+    /**
+     * @deprecated
+     */
+    public function setProductPrices(Product|string $product, array $priceMatrix): void
+    {
+        if (is_string($product)) {
+            $product = Product::findOrFail($product);
+        }
+        if (array_key_exists(ProductPriceType::PRICE_BASE->value, $priceMatrix)) {
+            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_BASE->value]);
+        } elseif (array_key_exists(ProductPriceType::PRICE_MIN_INITIAL->value, $priceMatrix)) {
+            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN_INITIAL->value]);
+        } elseif (array_key_exists(ProductPriceType::PRICE_MIN->value, $priceMatrix)) {
+            $this->priceMapService->updateProductPricesForDefaultMaps($product, $priceMatrix[ProductPriceType::PRICE_MIN->value]);
+        }
+        $this->updateMinPrices($product);
     }
 }

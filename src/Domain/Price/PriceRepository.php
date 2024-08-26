@@ -34,6 +34,7 @@ final class PriceRepository
         $priceMatrix = new ProductCachedPricesDtoCollection(items: $priceMatrix);
 
         $rows = [];
+        $salesChannelsToPreserve = [];
 
         /** @var ProductCachedPricesDto $pricesCollection */
         foreach ($priceMatrix as $pricesCollection) {
@@ -47,19 +48,33 @@ final class PriceRepository
                     'price_type' => $pricesCollection->type,
                     'currency' => $salesChannel->priceMap?->currency ?? $price->currency,
                     'sales_channel_id' => $salesChannel->id,
+                    'price_map_id' => null,
                     'is_net' => $salesChannel->priceMap?->is_net ?? false,
-                    'value' => 0,
+                    'value' => (string) $price->gross->getMinorAmount(),
                     'net' => (string) $price->net->getMinorAmount(),
                     'gross' => (string) $price->gross->getMinorAmount(),
+                ];
+
+                $salesChannelsToPreserve[$salesChannel->getKey()] = [
+                    'sales_channel_id' => $salesChannel->getKey(),
+                    'currency' => $salesChannel->priceMap?->currency ?? $price->currency,
                 ];
             }
         }
 
         Price::query()->upsert(
             $rows,
-            ['model_id', 'price_type', 'sales_channel_id'],
-            ['value', 'net', 'gross', 'is_net', 'currency'],
+            ['model_id', 'price_type', 'currency', 'sales_channel_id'],
+            ['value', 'net', 'gross', 'is_net'],
         );
+
+        foreach ($salesChannelsToPreserve as $salesChannelToPreserve) {
+            Price::query()
+                ->where('model_id', $product->getKey())
+                ->where('sales_channel_id', $salesChannelToPreserve['sales_channel_id'])
+                ->whereNot('currency', $salesChannelToPreserve['currency'])
+                ->delete();
+        }
     }
 
     /**
@@ -80,18 +95,18 @@ final class PriceRepository
                     'model_type' => $discountCondition->getMorphClass(),
                     'price_type' => $pricesCollection->type,
                     'currency' => $price->currency,
-                    'sales_channel_id' => null,
+                    'price_map_id' => $price->currency->getDefaultPriceMapId(), // required for unique index to work correctly
                     'is_net' => $price->is_net,
                     'value' => (string) $price->value->getMinorAmount(),
-                    'net' => 0,
-                    'gross' => 0,
+                    'net' => $price->is_net ? (string) $price->value->getMinorAmount() : 0,
+                    'gross' => $price->is_net ? 0 : (string) $price->value->getMinorAmount(),
                 ];
             }
         }
 
         Price::query()->upsert(
             $rows,
-            ['model_id', 'price_type', 'currency'],
+            ['model_id', 'price_type', 'currency', 'price_map_id'],
             ['value', 'net', 'gross', 'is_net'],
         );
     }

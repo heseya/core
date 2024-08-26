@@ -6,7 +6,6 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Models\Product;
 use App\Models\Role;
-use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -22,14 +21,14 @@ use Tests\TestCase;
 
 class DiscountProductCacheTest extends TestCase
 {
-    private ProductRepository $productRepository;
+    private ProductService $productService;
     private Currency $currency;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->productRepository = App::make(ProductRepository::class);
+        $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
     }
 
@@ -139,10 +138,8 @@ class DiscountProductCacheTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax, $this->currency->value))],
         ]);
 
         $response = $this
@@ -208,10 +205,8 @@ class DiscountProductCacheTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of($priceMin, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of($priceMax, $this->currency->value))],
         ]);
 
         $response = $this

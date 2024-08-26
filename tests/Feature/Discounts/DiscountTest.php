@@ -19,8 +19,8 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\WebHook;
-use App\Repositories\ProductRepository;
 use App\Services\DiscountService;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -59,7 +59,7 @@ class DiscountTest extends TestCase
     private Product $conditionProduct;
     private ProductSet $conditionProductSet;
     private array $expectedStructure;
-    private ProductRepository $productRepository;
+    private ProductService $productService;
     private Currency $currency;
     private Organization $organization;
 
@@ -123,7 +123,7 @@ class DiscountTest extends TestCase
     {
         parent::setUp();
 
-        $this->productRepository = App::make(ProductRepository::class);
+        $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
 
         // coupons
@@ -932,12 +932,8 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(900, $this->currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
         ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
@@ -1037,12 +1033,8 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
-            ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
-            ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(900, $this->currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
         ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
@@ -1131,7 +1123,7 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
@@ -1208,7 +1200,7 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(900, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1200, $this->currency->value))],
@@ -1784,7 +1776,7 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
@@ -2595,7 +2587,7 @@ class DiscountTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product1->getKey(), [
+        $this->productService->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(150, $this->currency->value))],
@@ -2606,7 +2598,7 @@ class DiscountTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product2->getKey(), [
+        $this->productService->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(200, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(150, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(190, $this->currency->value))],
@@ -2617,7 +2609,7 @@ class DiscountTest extends TestCase
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product3->getKey(), [
+        $this->productService->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(300, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(290, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(350, $this->currency->value))],
@@ -2811,7 +2803,7 @@ class DiscountTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product1->getKey(), [
+        $this->productService->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(100, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(150, $this->currency->value))],
@@ -2822,7 +2814,7 @@ class DiscountTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product2->getKey(), [
+        $this->productService->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(200, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(190, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(250, $this->currency->value))],
@@ -2833,7 +2825,7 @@ class DiscountTest extends TestCase
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product3->getKey(), [
+        $this->productService->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(300, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(290, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(350, $this->currency->value))],
@@ -3037,7 +3029,7 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product->getKey(), [
+        $this->productService->setProductPrices($product->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MIN_INITIAL->value => [PriceDto::from(Money::of(1000, $this->currency->value))],
             ProductPriceType::PRICE_MAX_INITIAL->value => [PriceDto::from(Money::of(1000, $this->currency->value))],

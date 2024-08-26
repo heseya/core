@@ -3,10 +3,9 @@
 namespace Tests\Feature\Products;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Domain\Price\Enums\ProductPriceType;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -26,7 +25,7 @@ class ProductPriceTest extends TestCase
             'description_short' => 'short',
         ]);
 
-        app(ProductRepository::class)->setProductPrices($this->product->getKey(), [
+        app(ProductService::class)->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 1000),
         ]);
     }

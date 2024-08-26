@@ -55,7 +55,6 @@ use App\Models\Role;
 use App\Models\SalesShortResource;
 use App\Models\User;
 use App\Repositories\DiscountRepository;
-use App\Repositories\ProductRepository;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use App\Traits\GetPublishedLanguageFilter;
@@ -73,6 +72,7 @@ use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
+use Domain\Price\PriceService;
 use Domain\Price\Resources\ProductCachedPriceData;
 use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
@@ -99,14 +99,14 @@ readonly class DiscountService
     use GetPublishedLanguageFilter;
 
     public function __construct(
-        private MetadataServiceContract $metadataService,
-        private SeoMetadataService $seoMetadataService,
-        private ShippingTimeDateServiceContract $shippingTimeDateService,
-        private ProductRepository $productRepository,
         private DiscountRepository $discountRepository,
-        private SalesChannelService $salesChannelService,
+        private MetadataServiceContract $metadataService,
         private PriceRepository $priceRepository,
+        private PriceService $priceService,
+        private SalesChannelService $salesChannelService,
+        private SeoMetadataService $seoMetadataService,
         private SettingsServiceContract $settingsService,
+        private ShippingTimeDateServiceContract $shippingTimeDateService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -494,9 +494,9 @@ readonly class DiscountService
     /**
      * @param Collection<int,Product> $products
      *
-     * @return ProductCachedPriceData[]
+     * @return Collection<int,ProductCachedPriceData>
      */
-    public function calcProductsListDiscounts(Collection $products, SalesChannel $salesChannel): array
+    public function calcProductsListDiscounts(Collection $products, SalesChannel $salesChannel): Collection
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
 
@@ -513,7 +513,7 @@ readonly class DiscountService
                 $product->getKey(),
                 $minPrice,
             );
-        })->toArray();
+        })->collect();
     }
 
     /**
@@ -700,7 +700,7 @@ readonly class DiscountService
 
         foreach (SalesChannel::active()->hasPriceMap()->with('priceMap')->get() as $salesChannel) {
             try {
-                $oldPrices = $this->productRepository->getCachedProductPrices($product, [
+                $oldPrices = $this->priceService->getCachedProductPrices($product, [
                     ProductPriceType::PRICE_MIN,
                 ], $salesChannel);
 
@@ -716,7 +716,7 @@ readonly class DiscountService
             }
         }
 
-        $this->productRepository->setCachedProductPrices($product, [
+        $this->priceService->setCachedProductPrices($product, [
             ProductPriceType::PRICE_MIN->value => $allNewPrices,
         ]);
 
@@ -1072,10 +1072,11 @@ readonly class DiscountService
         assert($priceMap instanceof PriceMap);
         $minimalProductPrice = Money::ofMinor(1, $priceMap->currency->value);
 
-        $initialPrices = $this->productRepository->getCachedProductPrices(
+        $initialPrices = $this->priceService->getCachedProductPrices(
             $product,
             [ProductPriceType::PRICE_MIN_INITIAL],
             $salesChannel,
+            false,
         );
         $initialPrice = $initialPrices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect())->first();
 
@@ -1094,8 +1095,8 @@ readonly class DiscountService
         }
 
         return ProductCachedPriceDto::from([
-            'net' => $priceMap->is_net ? $minPrice->getMinorAmount() : $this->salesChannelService->removeVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)),
-            'gross' => $priceMap->is_net ? $this->salesChannelService->addVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)) : $minPrice->getMinorAmount(),
+            'net' => $this->salesChannelService->removeVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)),
+            'gross' => $minPrice,
             'currency' => $priceMap->currency,
             'sales_channel_id' => $salesChannel->id,
         ]);

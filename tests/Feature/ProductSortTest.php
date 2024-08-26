@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -19,7 +19,7 @@ class ProductSortTest extends TestCase
 {
     private Currency $currency;
 
-    private ProductRepository $productRepository;
+    private ProductService $productService;
 
     /**
      * @throws UnknownCurrencyException
@@ -33,7 +33,7 @@ class ProductSortTest extends TestCase
 
         $this->currency = Currency::DEFAULT;
 
-        $this->productRepository = App::make(ProductRepository::class);
+        $this->productService = App::make(ProductService::class);
     }
 
     /**
@@ -51,34 +51,28 @@ class ProductSortTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
+        $this->productService->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, $this->currency->value))],
         ]);
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, Currency::GBP->toCurrencyInstance()))],
+        $this->productService->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, Currency::GBP->toCurrencyInstance()))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, $this->currency->value))],
+        $this->productService->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, $this->currency->value))],
         ]);
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(12, Currency::GBP->toCurrencyInstance()))],
+        $this->productService->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(2, Currency::GBP->toCurrencyInstance()))],
         ]);
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(11, $this->currency->value))],
+        $this->productService->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(1, $this->currency->value))],
         ]);
-        $this->productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, Currency::GBP->toCurrencyInstance()))],
+        $this->productService->setProductPrices($product3->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(3, Currency::GBP->toCurrencyInstance()))],
         ]);
 
@@ -188,17 +182,14 @@ class ProductSortTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product1->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(13, $this->currency->value))],
+        $this->productService->setProductPrices($product1->getKey(), [
             ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(13, $this->currency->value))],
         ]);
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $this->productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
+        $this->productService->setProductPrices($product2->getKey(), [
             ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of('7.09', $this->currency->value))],
         ]);
 
         $this

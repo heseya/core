@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
@@ -40,7 +41,7 @@ class ProductFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function (Product $product): void {
-            $productRepository = App::make(ProductRepository::class);
+            $productService = App::make(ProductService::class);
 
             $price = PriceDto::from(
                 Money::of(
@@ -49,7 +50,7 @@ class ProductFactory extends Factory
                 )
             );
 
-            $productRepository->setProductPrices($product->getKey(), [
+            $productService->setProductPrices($product->getKey(), [
                 ProductPriceType::PRICE_BASE->value => [$price],
                 ProductPriceType::PRICE_MIN_INITIAL->value => [$price],
                 ProductPriceType::PRICE_MAX_INITIAL->value => [$price],

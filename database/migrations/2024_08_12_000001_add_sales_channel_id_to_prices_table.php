@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('prices', function (Blueprint $table): void {
             $table->uuid('sales_channel_id')->nullable();
+            $table->uuid('price_map_id')->nullable();
         });
 
         Schema::table('prices', function (Blueprint $table): void {
@@ -21,6 +22,7 @@ return new class extends Migration
 
         Schema::table('prices', function (Blueprint $table): void {
             $table->unique(['model_id', 'price_type', 'currency', 'sales_channel_id']);
+            $table->unique(['model_id', 'price_type', 'currency', 'price_map_id']);
         });
     }
 
@@ -28,12 +30,15 @@ return new class extends Migration
     {
         Schema::table('prices', function (Blueprint $table): void {
             $table->dropUnique(['model_id', 'price_type', 'currency', 'sales_channel_id']);
+            $table->dropUnique(['model_id', 'price_type', 'currency', 'price_map_id']);
         });
 
         Price::whereNotNull('sales_channel_id')->delete();
+        Price::whereNotNull('price_map_id')->delete();
 
         Schema::table('prices', function (Blueprint $table): void {
             $table->dropColumn('sales_channel_id');
+            $table->dropColumn('price_map_id');
         });
 
         Schema::table('prices', function (Blueprint $table): void {

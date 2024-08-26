@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace Domain\PersonalPrice;
 
-use App\Dtos\ProductPriceDto;
-use App\Http\Resources\PriceResource;
+use Domain\Price\Resources\ProductCachedPriceData;
 use Support\Dtos\DataWithGlobalMetadata;
 
 final class PersonalPriceDto extends DataWithGlobalMetadata
 {
     public function __construct(
         public readonly string $id,
-        public readonly PriceResource $price,
+        public readonly PersonalPricePartialDto $price,
     ) {}
 
-    public static function fromProductPriceDto(ProductPriceDto $dto): static
+    public static function fromProductCachedPriceData(ProductCachedPriceData $data): self
     {
         return self::from([
-            'id' => $dto->id,
-            'price' => $dto->price_min,
+            'id' => $data->product_id,
+            'price' => $data,
         ]);
     }
 }
