@@ -13,6 +13,7 @@ final class WithoutWrappingTransformer implements Transformer
     public function transform(DataProperty $property, mixed $value): DataCollection
     {
         assert($value instanceof DataCollection);
+
         return $value->withoutWrapping();
     }
 }

@@ -40,16 +40,4 @@ final class PriceDto extends Data
 
         return new self($money, $currency);
     }
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'value' => $this->value->getMinorAmount(),
-            'currency' => $this->currency->value,
-            'is_net' => $this->is_net,
-        ];
-    }
 }

@@ -56,7 +56,7 @@ final class CartResource extends DataWithGlobalMetadata
         public Currency $currency,
         public ?float $shipping_time = null,
         #[WithCast(DateTimeInterfaceCast::class)]
-        public Carbon|null|string $shipping_date = null,
+        public Carbon|string|null $shipping_date = null,
     ) {}
 
     protected function calculateResponseStatus(Request $request): int

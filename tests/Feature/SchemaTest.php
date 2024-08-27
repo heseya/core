@@ -995,19 +995,19 @@ class SchemaTest extends TestCase
         $red = $colors->options()->create([
             'name' => 'red',
         ]);
-        $this->priceMapService->updateOptionPricesForDefaultMaps($red, FakeDto::generatePricesInAllCurrencies([], 1000));
+        $this->priceMapService->updateOptionPricesForDefaultMaps($red, FakeDto::generatePricesInAllCurrencies([], 10));
 
         /** @var Option $green */
         $green = $colors->options()->create([
             'name' => 'green',
         ]);
-        $this->priceMapService->updateOptionPricesForDefaultMaps($green, FakeDto::generatePricesInAllCurrencies([], 2000));
+        $this->priceMapService->updateOptionPricesForDefaultMaps($green, FakeDto::generatePricesInAllCurrencies([], 20));
 
         /** @var Option $blue */
         $blue = $colors->options()->create([
             'name' => 'blue',
         ]);
-        $this->priceMapService->updateOptionPricesForDefaultMaps($blue, FakeDto::generatePricesInAllCurrencies([], 3000));
+        $this->priceMapService->updateOptionPricesForDefaultMaps($blue, FakeDto::generatePricesInAllCurrencies([], 30));
 
         $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),

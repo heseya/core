@@ -39,6 +39,8 @@ use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Domain\Seo\Models\SeoMetadata;
 use Heseya\Dto\DtoException;
 use Illuminate\Events\CallQueuedListener;
@@ -67,6 +69,7 @@ class ProductTest extends TestCase
     private PriceService $priceService;
     private ProductService $productService;
     private SchemaCrudService $schemaCrudService;
+    private SalesChannel $salesChannel;
 
     public static function noIndexProvider(): array
     {
@@ -95,6 +98,7 @@ class ProductTest extends TestCase
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
         $this->priceService = App::make(PriceService::class);
+        $this->salesChannel = App::make(SalesChannelRepository::class)->getDefault();
 
         $this->productPrices = array_map(fn(Currency $currency) => [
             'value' => '100.00',
@@ -263,6 +267,7 @@ class ProductTest extends TestCase
                     'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 
@@ -302,6 +307,7 @@ class ProductTest extends TestCase
                     'net' => '100.00',
                     'gross' => '100.00',
                     'currency' => 'PLN',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 
@@ -1135,6 +1141,7 @@ class ProductTest extends TestCase
                         'gross' => '3000.00',
                         'net' => '3000.00',
                         'currency' => Currency::DEFAULT->value,
+                        'sales_chanel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'price' => [
@@ -1142,6 +1149,7 @@ class ProductTest extends TestCase
                         'gross' => '2500.00',
                         'net' => '2500.00',
                         'currency' => Currency::DEFAULT->value,
+                        'sales_chanel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])

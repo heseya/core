@@ -94,19 +94,19 @@ class PricesTest extends TestCase
                 'data' => [
                     [
                         'id' => $product1->getKey(),
-                        'prices_min' => [[
+                        'price' => [
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin1,
                             'net' => $priceMin1,
-                        ]],
+                        ],
                     ],
                     [
                         'id' => $product2->getKey(),
-                        'prices_min' => [[
+                        'price' => [
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin2,
                             'net' => $priceMin2,
-                        ]],
+                        ],
                     ],
                 ],
             ]);
