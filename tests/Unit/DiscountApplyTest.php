@@ -7,7 +7,6 @@ use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\DiscountTargetType;
 use App\Models\CartItemResponse;
-use App\Models\CartResource;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -21,6 +20,10 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Order\Resources\CartItemResource;
+use Domain\Order\Resources\CartResource;
+use Domain\Order\Resources\CouponShortResource;
+use Domain\Order\Resources\SalesShortResource;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\OptionService;
@@ -161,22 +164,24 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResponse(
+        $this->cartItemResponse = new CartItemResource(
             1,
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
+            $this->currency,
             1,
         );
 
         $this->cart = new CartResource(
-            Collection::make([$this->cartItemResponse]),
-            Collection::make([]),
-            Collection::make([]),
+            CartItemResource::collection([$this->cartItemResponse]),
+            CouponShortResource::collection([]),
+            SalesShortResource::collection([]),
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
+            $this->currency,
         );
 
         $this->orderProductDto = OrderProductDto::fromArray([

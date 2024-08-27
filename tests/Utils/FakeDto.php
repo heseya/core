@@ -167,7 +167,7 @@ final readonly class FakeDto
             $data['options'] = [
                 [
                     'name' => 'Test',
-                    'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))]),
+                    'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))])->toArray(),
                 ]
             ];
         }

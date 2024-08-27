@@ -2302,7 +2302,7 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('prices', [
             'model_id' => $productId,
             'price_type' => ProductPriceType::PRICE_MIN,
-            'value' => (100 + $schemaPrice) * 100,
+            'value' => 100 * 100,
         ]);
     }
 

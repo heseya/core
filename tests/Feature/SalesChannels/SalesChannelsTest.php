@@ -9,6 +9,7 @@ use App\Services\ProductService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\PaymentMethods\Models\PaymentMethod;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Support\Facades\Mail;
@@ -27,6 +28,7 @@ final class SalesChannelsTest extends TestCase
         /** @var SalesChannel $channel */
         $channel = SalesChannel::factory()->create([
             'vat_rate' => '23',
+            'status' => SalesChannelStatus::PUBLIC,
         ]);
 
         /** @var ShippingMethod $shipping_method */
@@ -56,6 +58,7 @@ final class SalesChannelsTest extends TestCase
             ])
         );
 
+        //$this->{$user}->givePermissionTo('sales_channels.show_hidden');
         $this->{$user}->givePermissionTo('cart.verify');
         $this
             ->actingAs($this->{$user})

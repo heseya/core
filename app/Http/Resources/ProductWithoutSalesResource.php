@@ -81,19 +81,19 @@ class ProductWithoutSalesResource extends Resource
     {
         $sets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->sets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
+                fn(ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->sets;
 
         $relatedSets = Gate::denies('product_sets.show_hidden')
             ? $this->resource->relatedSets->filter(
-                fn (ProductSet $set) => $set->public === true && $set->public_parent === true,
+                fn(ProductSet $set) => $set->public === true && $set->public_parent === true,
             )
             : $this->resource->relatedSets;
 
         $attachments = Gate::denies('products.show_attachments_private')
             ? $this->resource->attachments->filter(
-                fn (MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
+                fn(MediaAttachment $attachment) => $attachment->visibility === VisibilityType::PUBLIC,
             )
             : $this->resource->attachments;
 

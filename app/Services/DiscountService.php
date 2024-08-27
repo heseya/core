@@ -417,6 +417,7 @@ readonly class DiscountService
             $shippingPrice,
             $shippingPrice,
             $summary,
+            $currency,
             $cartShippingTimeAndDate['shipping_time'] ?? null,
             $cartShippingTimeAndDate['shipping_date'] ?? null,
         );

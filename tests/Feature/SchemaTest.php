@@ -575,6 +575,8 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/schemas', $data);
 
+        var_dump($response->getContent());
+
         $response
             ->assertValid()
             ->assertCreated()
@@ -995,19 +997,19 @@ class SchemaTest extends TestCase
         $red = $colors->options()->create([
             'name' => 'red',
         ]);
-        $red->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($red, FakeDto::generatePricesInAllCurrencies([], 1000));
 
         /** @var Option $green */
         $green = $colors->options()->create([
             'name' => 'green',
         ]);
-        $green->prices()->createMany(Price::factory(['value' => 2000])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($green, FakeDto::generatePricesInAllCurrencies([], 2000));
 
         /** @var Option $blue */
         $blue = $colors->options()->create([
             'name' => 'blue',
         ]);
-        $blue->prices()->createMany(Price::factory(['value' => 3000])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($blue, FakeDto::generatePricesInAllCurrencies([], 3000));
 
         $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
@@ -1033,7 +1035,7 @@ class SchemaTest extends TestCase
         $red = $colors->options()->create([
             'name' => 'red',
         ]);
-        $red->prices()->createMany(Price::factory(['value' => 1000])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($red, FakeDto::generatePricesInAllCurrencies([], 1000));
 
         $this->assertEquals(10, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
@@ -1055,7 +1057,7 @@ class SchemaTest extends TestCase
             'name' => 'L',
             'schema_id' => $schema->getKey(),
         ]);
-        $option->prices()->createMany(Price::factory(['value' => 0])->prepareForCreateMany());
+        $this->priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 0));
 
         $option->items()->sync([
             $item->getKey(),
