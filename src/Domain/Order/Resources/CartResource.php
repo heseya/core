@@ -18,6 +18,7 @@ use Spatie\LaravelData\DataCollection;
 use Support\Dtos\DataWithGlobalMetadata;
 use Support\LaravelData\Casts\MoneyCast;
 use Support\LaravelData\Transformers\MoneyToAmountTransformer;
+use Support\LaravelData\Transformers\WithoutWrappingTransformer;
 
 final class CartResource extends DataWithGlobalMetadata
 {
@@ -27,10 +28,13 @@ final class CartResource extends DataWithGlobalMetadata
      * @param DataCollection<int,SalesShortResource> $sales
      */
     public function __construct(
+        #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(CartItemResource::class)]
         public DataCollection $items,
+        #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(CouponShortResource::class)]
         public DataCollection $coupons,
+        #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(SalesShortResource::class)]
         public DataCollection $sales,
         #[WithTransformer(MoneyToAmountTransformer::class)]
@@ -52,7 +56,7 @@ final class CartResource extends DataWithGlobalMetadata
         public Currency $currency,
         public ?float $shipping_time = null,
         #[WithCast(DateTimeInterfaceCast::class)]
-        public ?Carbon $shipping_date = null,
+        public Carbon|null|string $shipping_date = null,
     ) {}
 
     protected function calculateResponseStatus(Request $request): int

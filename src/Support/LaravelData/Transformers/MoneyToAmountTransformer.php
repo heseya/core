@@ -13,7 +13,7 @@ final class MoneyToAmountTransformer implements Transformer
 {
     public function transform(DataProperty $property, mixed $value): BigDecimal
     {
-        // @var Money $value
+        assert($value instanceof Money);
         return $value->getAmount();
     }
 }
