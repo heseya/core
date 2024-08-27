@@ -6,7 +6,6 @@ use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\DiscountTargetType;
-use App\Models\CartItemResponse;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -54,7 +53,7 @@ class DiscountApplyTest extends TestCase
     private $shippingMethod;
     private CartResource $cart;
     private CartItemDto $cartItemDto;
-    private CartItemResponse $cartItemResponse;
+    private CartItemResource $cartItemResource;
     private CartResource $cartResource;
     private OrderProductDto $orderProductDto;
     private OrderProductDto $orderProductDtoWithSchemas;
@@ -164,7 +163,7 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResource(
+        $this->cartItemResource = new CartItemResource(
             1,
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
@@ -173,7 +172,7 @@ class DiscountApplyTest extends TestCase
         );
 
         $this->cart = new CartResource(
-            CartItemResource::collection([$this->cartItemResponse]),
+            CartItemResource::collection([$this->cartItemResource]),
             CouponShortResource::collection([]),
             SalesShortResource::collection([]),
             Money::of(120.0, $this->currency->value),

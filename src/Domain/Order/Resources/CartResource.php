@@ -7,9 +7,12 @@ namespace Domain\Order\Resources;
 use Brick\Money\Money;
 use Carbon\Carbon;
 use Domain\Currency\Currency;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\DataCollection;
 use Support\Dtos\DataWithGlobalMetadata;
@@ -48,6 +51,12 @@ final class CartResource extends DataWithGlobalMetadata
         #[WithCast(EnumCast::class, Currency::class)]
         public Currency $currency,
         public ?float $shipping_time = null,
+        #[WithCast(DateTimeInterfaceCast::class)]
         public ?Carbon $shipping_date = null,
     ) {}
+
+    protected function calculateResponseStatus(Request $request): int
+    {
+        return Response::HTTP_OK;
+    }
 }

@@ -1285,9 +1285,8 @@ class CartTest extends TestCase
             'currency' => $this->currency,
         ]);
 
-        $response
-            ->assertValid()
-            ->assertValid()->assertOk()
+        $response->assertValid()
+            ->assertOk()
             ->assertJsonFragment(['summary' => '108.12']); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
     }
 

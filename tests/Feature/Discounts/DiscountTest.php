@@ -968,6 +968,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'net' => "{$minPriceDiscounted}.00",
                         'gross' => "{$minPriceDiscounted}.00",
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -2365,8 +2366,7 @@ class DiscountTest extends TestCase
             'min_values' => null,
             'max_values' => array_map(fn($value) => [
                 'currency' => $value['currency'],
-                'net' => $value['value'],
-                'gross' => $value['value'],
+                'value' => $value['value'],
                 'is_net' => false,
             ], $this->maxValues),
         ]);
@@ -2558,6 +2558,7 @@ class DiscountTest extends TestCase
     public function testUpdateSaleWithProduct($user): void
     {
         $this->{$user}->givePermissionTo('sales.edit');
+
         $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null, 'percentage' => null])->create();
 
         $product1 = Product::factory()->create([
@@ -2618,6 +2619,7 @@ class DiscountTest extends TestCase
             ->assertOk();
 
         unset($discountNew['translations'], $discountNew['amounts']);
+
         $response
             ->assertJsonFragment($discountNew + [
                 'id' => $discount->getKey(),
@@ -2768,6 +2770,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
                         'net' => '190.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
@@ -2775,6 +2778,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'gross' => '190.00',
                         'net' => '190.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ])
@@ -2785,6 +2789,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
                         'net' => '290.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
                 'prices_min' => [
@@ -2792,6 +2797,7 @@ class DiscountTest extends TestCase
                         'currency' => $this->currency->value,
                         'gross' => '290.00',
                         'net' => '290.00',
+                        'sales_channel_id' => $this->salesChannel->id,
                     ],
                 ],
             ]);

@@ -575,8 +575,6 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->json('POST', '/schemas', $data);
 
-        var_dump($response->getContent());
-
         $response
             ->assertValid()
             ->assertCreated()

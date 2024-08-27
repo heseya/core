@@ -265,11 +265,8 @@ readonly class DiscountService
             // This fits with current tests
             $value = $value->multipliedBy($percentage, RoundingMode::HALF_DOWN);
         } else {
-            $value = Cache::driver('array')->rememberForever('discount_' . $discount->id . '_' . $currency->value, function () use ($discount, $currency) {
-                [$amount] = $this->discountRepository->getDiscountAmounts($discount->getKey(), $currency);
-
-                return $amount->value;
-            });
+            [$amount] = $this->discountRepository->getDiscountAmounts($discount->getKey(), $currency);
+            $value = $amount->value;
         }
 
         return $value;
