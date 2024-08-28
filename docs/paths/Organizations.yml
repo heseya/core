@@ -109,7 +109,7 @@ OrganizationRegister:
     tags:
       - Organizations
     security:
-      - BearerAuth: [ auth.organization_register ]
+      - BearerAuth: [ organizations.register ]
     requestBody:
       $ref: './../requests/Organizations.yml#/OrganizationRegister'
     responses:

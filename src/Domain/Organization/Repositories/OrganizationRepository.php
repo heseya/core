@@ -87,7 +87,7 @@ final readonly class OrganizationRepository
 
         return Organization::query()->create(array_merge($dto->toArray(), [
             'billing_address_id' => $address->getKey(),
-            'sale_channel_id' => $sale_channel->getKey(),
+            'sales_channel_id' => $sale_channel->getKey(),
         ]));
     }
 

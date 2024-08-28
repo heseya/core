@@ -159,6 +159,12 @@ enum Exceptions: string
     case CLIENT_SALES_CHANNEL_DEFAULT_DELETE = 'You cannot delete default sales channel.';
     case CLIENT_SALES_CHANNEL_PRICE_MAP = 'Unable to use Sales Channel without assigned Price Map.';
     case CLIENT_ORDER_POSTPAID_PAYMENT = 'Cannot add new payments to postpaid order';
+    case CLIENT_SALES_CHANNEL_IN_ORGANIZATION = 'The sales channel must be assigned to the organization';
+    case CLIENT_USER_IN_ORGANIZATION = 'An organization member cannot place an order without providing an organization ID';
+    case CLIENT_USER_IN_DIFFERENT_ORGANIZATION = 'You belong to a different organization';
+    case CLIENT_ORGANIZATION_INACTIVE = 'Can\'t place order for inactive organization';
+    case CLIENT_SALES_CHANNEL_PRIVATE = 'Can\'t place order with private sales channel';
+    case CLIENT_SALES_CHANNEL_INACTIVE = 'Can\'t place order with inactive sales channel';
 
     // Aliases
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;

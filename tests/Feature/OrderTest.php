@@ -27,6 +27,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Metadata\Enums\MetadataType;
+use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Models\Attribute;
@@ -130,6 +131,7 @@ class OrderTest extends TestCase
             'status',
             'paid',
             'created_at',
+            'payment_method_type',
         ];
 
         $this->expected_full_structure = [
@@ -351,6 +353,63 @@ class OrderTest extends TestCase
         $this->assertQueryCountLessThan(22);
     }
 
+    public function testIndexOrganization(): void
+    {
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization->getKey());
+
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        $another_organization = Organization::factory()->create();
+
+        /** @var User $another_user */
+        $another_user = User::factory()->create();
+        $another_user->organizations()->attach($another_organization->getKey());
+
+        $order_another_user = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $another_organization->getKey(),
+        ]);
+
+        $order_no_organization = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', 'my/organization/orders')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    0 => $this->expected_full_structure,
+                ],
+            ])
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $order->getKey(),
+                    ],
+                ],
+            ])
+            ->assertJsonMissing([
+                'id' => $order_another_user->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $order_no_organization->getKey(),
+            ]);
+
+        $this->assertQueryCountLessThan(22);
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -463,6 +522,13 @@ class OrderTest extends TestCase
 
         $this
             ->json('GET', 'my/orders')
+            ->assertForbidden();
+    }
+
+    public function testIndexOrganizationUnauthenticated(): void
+    {
+        $this
+            ->json('GET', 'my/organization/orders')
             ->assertForbidden();
     }
 
@@ -1128,6 +1194,31 @@ class OrderTest extends TestCase
         $this->assertQueryCountLessThan(30);
     }
 
+    public function testViewOrganization(): void
+    {
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization->getKey());
+
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('GET', 'my/organization/orders/' . $order->code)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $order->getKey(),
+                'code' => $order->code,
+            ])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+
+        $this->assertQueryCountLessThan(30);
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -1146,11 +1237,33 @@ class OrderTest extends TestCase
         $this->{$user}->orders()->save($order);
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/orders/my/its_wrong_code')
+            ->json('GET', '/my/orders/its_wrong_code')
             ->assertNotFound();
 
         $this->actingAs($this->{$user})
-            ->json('GET', '/orders/my/' . $order->code . '_' . $order->code)
+            ->json('GET', '/my/orders/' . $order->code . '_' . $order->code)
+            ->assertNotFound();
+    }
+
+    public function testViewOrganizationWrongCode(): void
+    {
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization->getKey());
+
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/my/organization/orders/its_wrong_code')
+            ->assertNotFound();
+
+        $this->actingAs($this->user)
+            ->json('GET', '/my/organization/orders' . $order->code . '_' . $order->code)
             ->assertNotFound();
     }
 
@@ -1165,6 +1278,18 @@ class OrderTest extends TestCase
 
         $this->actingAs($this->{$user})
             ->json('GET', 'my/orders/' . $order->code)
+            ->assertStatus(404);
+    }
+
+    public function testViewOrganizationOrderNoOrganization(): void
+    {
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization->getKey());
+
+        $order = Order::factory()->create();
+
+        $this->actingAs($this->user)
+            ->json('GET', 'my/organization/orders/' . $order->code)
             ->assertStatus(404);
     }
 
@@ -1187,6 +1312,30 @@ class OrderTest extends TestCase
             ->assertStatus(404);
     }
 
+    public function testViewOrganizationOrderAnotherUser(): void
+    {
+        $organization = Organization::factory()->create();
+        $this->user->organizations()->attach($organization->getKey());
+
+        $status = Status::factory()->create();
+
+        $another_organization = Organization::factory()->create();
+
+        /** @var User $another_user */
+        $another_user = User::factory()->create();
+        $another_user->organizations()->attach($another_organization->getKey());
+
+        $order_another_user = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'organization_id' => $another_organization->getKey(),
+        ]);
+
+        $this->actingAs($this->user)
+            ->json('GET', 'my/organization/orders/' . $order_another_user->code)
+            ->assertStatus(404);
+    }
+
     public function testViewUserUnauthenticated(): void
     {
         $order = Order::factory()->create();
@@ -1195,6 +1344,15 @@ class OrderTest extends TestCase
 
         $this
             ->json('GET', 'my/orders/' . $order->code)
+            ->assertForbidden();
+    }
+
+    public function testViewOrganizationUnauthenticated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this
+            ->json('GET', 'my/organization/orders/' . $order->code)
             ->assertForbidden();
     }
 

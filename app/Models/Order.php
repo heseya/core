@@ -21,6 +21,7 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -75,6 +76,7 @@ final class Order extends Model implements SortableContract
         'summary',
         'language',
         'payment_method_type',
+        'organization_id',
     ];
 
     protected array $criteria = [
@@ -94,6 +96,7 @@ final class Order extends Model implements SortableContract
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,
         'payment_method_id' => OrderPayments::class,
+        'organization_id',
     ];
 
     protected array $sortable = [
@@ -228,6 +231,11 @@ final class Order extends Model implements SortableContract
     public function salesChannel(): HasOne
     {
         return $this->hasOne(SalesChannel::class, 'id', 'sales_channel_id');
+    }
+
+    public function organization(): HasOne
+    {
+        return $this->hasOne(Organization::class, 'id', 'organization_id');
     }
 
     public function getLocaleAttribute(): string

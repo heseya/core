@@ -635,7 +635,7 @@ class OrganizationTest extends TestCase
         $admin2->save();
 
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';
@@ -643,6 +643,7 @@ class OrganizationTest extends TestCase
         Event::fake([OrganizationCreated::class, UserCreated::class]);
         Mail::fake();
 
+        $salesChannel = SalesChannel::query()->where('default', '=', true)->first();
         $response = $this
             ->json('POST', '/organizations/register', [
                 'billing_email' => 'test.organization@example.com',
@@ -659,7 +660,10 @@ class OrganizationTest extends TestCase
                 'creator_name' => 'Jan Kowalski',
                 'consents' => [],
             ])
-            ->assertCreated();
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+            ]);
 
         Event::assertDispatched(OrganizationCreated::class);
         Event::assertDispatched(UserCreated::class);
@@ -674,6 +678,7 @@ class OrganizationTest extends TestCase
 
         $this->assertDatabaseHas('organizations', [
             'billing_email' => 'test.organization@example.com',
+            'sales_channel_id' => $salesChannel->getKey(),
         ]);
 
         $this->assertDatabaseHas('users', [
@@ -699,7 +704,7 @@ class OrganizationTest extends TestCase
     public function testRegisterExistingVat(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '123456789';
@@ -735,7 +740,7 @@ class OrganizationTest extends TestCase
     public function testRegisterMinimumShippingAddresses(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
 
@@ -757,7 +762,7 @@ class OrganizationTest extends TestCase
     public function testRegisterWithConsent(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';
@@ -804,7 +809,7 @@ class OrganizationTest extends TestCase
     public function testRegisterWithoutRequiredConsent(): void
     {
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-        $role->givePermissionTo('auth.organization_register');
+        $role->givePermissionTo('organizations.register');
 
         $address = Address::factory()->definition();
         $address['vat'] = '321456987';

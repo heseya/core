@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\MoneyCast;
 use App\Criteria\WhereHasBuyer;
+use App\Criteria\WhereHasOrganization;
 use App\Criteria\WhereOrderProductPaid;
 use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
@@ -58,6 +59,7 @@ class OrderProduct extends Model
         'app' => WhereHasBuyer::class,
         'product_id',
         'paid' => WhereOrderProductPaid::class,
+        'organization' => WhereHasOrganization::class,
     ];
 
     protected array $sortable = [

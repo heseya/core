@@ -74,6 +74,8 @@ Order:
       type: string
     payment_method:
       $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+    organization:
+      $ref: './../schemas/Organizations.yml#/Organization'
 
 OrderProduct:
   type: object
@@ -316,8 +318,6 @@ OrderShippingMethod:
         - address
         - point
         - point-external
-    payment_on_delivery:
-      type: boolean
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:

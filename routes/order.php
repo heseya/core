@@ -66,4 +66,12 @@ Route::prefix('my')->group(function (): void {
         ->middleware('can:authenticated');
     Route::get('orders/{order:code}', [OrderController::class, 'showUserOrder'])
         ->middleware('can:orders.show_own');
+    Route::prefix('organization')->group(function (): void {
+        Route::get('/orders', [OrderController::class, 'indexOrganizationOrder'])
+            ->middleware('can:authenticated');
+        Route::get('/orders/products', [OrderController::class, 'myOrganizationOrderProducts'])
+            ->middleware('can:authenticated');
+        Route::get('orders/{order:code}', [OrderController::class, 'showOrganizationOrder'])
+            ->middleware('can:authenticated');
+    });
 });

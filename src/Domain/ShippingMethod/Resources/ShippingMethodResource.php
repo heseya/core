@@ -41,7 +41,6 @@ final class ShippingMethodResource extends Resource
             'public' => $this->resource->public,
             'is_block_list_countries' => $this->resource->is_block_list_countries,
             'is_block_list_products' => $this->resource->is_block_list_products,
-            'payment_on_delivery' => $this->resource->payment_on_delivery,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'countries' => CountryResource::collection($this->resource->countries),
             'price_ranges' => PriceRangeResource::collection($this->resource->priceRanges->sortBy('start')),

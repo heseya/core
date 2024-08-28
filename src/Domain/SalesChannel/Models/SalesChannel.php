@@ -140,4 +140,12 @@ final class SalesChannel extends Model implements Translatable
     {
         $query->where('activity', SalesChannelActivityType::ACTIVE->value);
     }
+
+    /**
+     * @return BelongsTo<PriceMap, self>
+     */
+    public function priceMap(): BelongsTo
+    {
+        return $this->belongsTo(PriceMap::class);
+    }
 }

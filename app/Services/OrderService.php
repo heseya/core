@@ -44,6 +44,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Order\Resources\CartResource;
 use Domain\Order\Resources\OrderResource;
+use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
@@ -484,6 +485,32 @@ final readonly class OrderService implements OrderServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
+    public function indexOrganizationOrder(OrderIndexDto $dto): LengthAwarePaginator
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        /** @var Organization $organization */
+        $organization = $user->organizations()->firstOrFail();
+
+        return Order::searchByCriteria(['organization_id' => $organization->getKey()] + $dto->getSearchCriteria())
+            ->sort($dto->getSort())
+            ->with([
+                'products',
+                'discounts',
+                'payments',
+                'payments.paymentMethod',
+                'status',
+                'shippingMethod',
+                'shippingMethod.paymentMethods',
+                'digitalShippingMethod',
+                'digitalShippingMethod.paymentMethods',
+                'shippingAddress',
+                'metadata',
+                'documents',
+            ])
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
     /**
      * @throws OrderException
      */
@@ -531,6 +558,21 @@ final readonly class OrderService implements OrderServiceContract
     {
         return OrderProduct::searchByCriteria(
             ['user' => Auth::id(), 'paid' => true] + $dto->toArray(),
+        )
+            ->sort('created_at:desc')
+            ->with(['urls', 'product'])
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function indexMyOrganizationOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        /** @var Organization $organization */
+        $organization = $user->organizations()->firstOrFail();
+
+        return OrderProduct::searchByCriteria(
+            ['organization' => $organization->getKey(), 'paid' => true] + $dto->toArray(),
         )
             ->sort('created_at:desc')
             ->with(['urls', 'product'])

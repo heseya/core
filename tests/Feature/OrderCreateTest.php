@@ -38,6 +38,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
@@ -45,6 +46,8 @@ use Domain\Price\Enums\ProductPriceType;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\Setting\Models\Setting;
 use Domain\ShippingMethod\Models\ShippingMethod;
@@ -2770,5 +2773,537 @@ class OrderCreateTest extends TestCase
             'status' => PaymentStatus::PENDING,
             'amount' => $orderTotal->plus($shippingPrice)->getMinorAmount(),
         ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     * @throws MoneyMismatchException
+     */
+    public function testCreateOrderUserInOrganization(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $response = $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $salesChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $organization->getKey(),
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $organization->getKey(),
+            ]);
+        $order = $response->getData()->data;
+
+        $shippingPrice = $this->shippingMethod->getPrice(
+            $this->productPrice->multipliedBy($productQuantity),
+        );
+
+        $summary = $this->productPrice
+            ->multipliedBy($productQuantity)
+            ->plus($shippingPrice);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'email' => $this->email,
+            'shipping_price' => $shippingPrice->getMinorAmount(),
+            'summary' => $summary->getMinorAmount(),
+            'sales_channel_id' => $salesChannel->getKey(),
+            'buyer_type' => $this->user->getMorphClass(),
+            'organization_id' => $organization->getKey(),
+        ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationNoOrganizationId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $salesChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => null,
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERORGANIZATIONREQUIRED->value,
+                'message' => Exceptions::CLIENT_USER_IN_ORGANIZATION->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationWrongOrganizationId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        /** @var Organization $wrongOrganization */
+        $wrongOrganization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $salesChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $wrongOrganization->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERORGANIZATIONREQUIRED->value,
+                'message' => Exceptions::CLIENT_USER_IN_DIFFERENT_ORGANIZATION->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationInactiveOrganization(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => false,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $salesChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $organization->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERORGANIZATIONREQUIRED->value,
+                'message' => Exceptions::CLIENT_ORGANIZATION_INACTIVE->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationWrongSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $organization->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_IN_ORGANIZATION->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationPrivateSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PRIVATE,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $salesChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $organization->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $salesChannel->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $organization->getKey(),
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderUserInOrganizationWrongPrivateSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $salesChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PRIVATE,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PRIVATE,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        $address = Address::factory()->create();
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'is_complete' => true,
+            'sales_channel_id' => $salesChannel->getKey(),
+            'billing_address_id' => $address->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user->getKey());
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+            'organization_id' => $organization->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_IN_ORGANIZATION->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderPrivateSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PRIVATE,
+            'activity' => SalesChannelActivityType::ACTIVE,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_PRIVATE->value,
+            ]);
+    }
+
+    /**
+     * @throws MathException
+     * @throws UnknownCurrencyException
+     */
+    public function testCreateOrderInactiveSalesChannelId(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $wrongChannel = SalesChannel::factory()->create([
+            'status' => SalesChannelStatus::PUBLIC,
+            'activity' => SalesChannelActivityType::INACTIVE,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productPrice = Money::of(10, $this->currency->value);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $this->actingAs($this->user)->postJson('/orders', [
+            'sales_channel_id' => $wrongChannel->getKey(),
+            'currency' => $this->currency,
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::ORDERSALESCHANNELREQUIRED->value,
+                'message' => Exceptions::CLIENT_SALES_CHANNEL_INACTIVE->value,
+            ]);
     }
 }
