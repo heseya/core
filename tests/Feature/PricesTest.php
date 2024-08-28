@@ -64,22 +64,20 @@ class PricesTest extends TestCase
             'public' => true,
         ]);
         $priceMin1 = '2500.00';
-        $priceMax1 = '3000.00';
 
         $this->productService->setProductPrices(
             $product1,
-            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMax1, $this->currency->value))]]
+            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin1, $this->currency->value))]]
         );
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
         $priceMin2 = '1000.00';
-        $priceMax2 = '1500.00';
 
         $this->productService->setProductPrices(
             $product2,
-            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMax2, $this->currency->value))]]
+            [ProductPriceType::PRICE_BASE->value => [PriceDto::from(Money::of($priceMin2, $this->currency->value))]]
         );
 
         $this

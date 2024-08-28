@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;
 use Domain\ProductSchema\Services\SchemaCrudService;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -102,8 +103,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '0.0',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -142,8 +145,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '25.0',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -163,14 +168,14 @@ class ProductFilterTest extends TestCase
             ])
             ->assertJsonFragment([
                 'net' => '8.00',
-                'gross' => '8.00',
+                'gross' => '10.00',
             ])
             ->assertJsonMissing([
                 'id' => $product1->getKey(),
             ])
             ->assertJsonMissing([
                 'net' => '10.00',
-                'gross' => '10.00',
+                'gross' => '12.50',
             ]);
     }
 
@@ -184,9 +189,14 @@ class ProductFilterTest extends TestCase
         // Default from migration with vat_rate 0
         $defaultChannel = SalesChannel::query()->where('default', '=', true)->first();
 
+        /**
+         * I'm not sure what result should this really return, how is user access to PRIVATE SalesChannel determined?
+         */
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '25.0',
             'status' => SalesChannelStatus::PRIVATE->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -225,8 +235,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '12',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -247,21 +259,21 @@ class ProductFilterTest extends TestCase
             ])
             ->assertJsonFragment([
                 'net' => '8.00',
-                'gross' => '8.00',
+                'gross' => '8.96',
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
             ])
             ->assertJsonFragment([
                 'net' => '7.09',
-                'gross' => '7.09',
+                'gross' => '7.94',
             ])
             ->assertJsonMissing([
                 'id' => $product1->getKey(),
             ])
             ->assertJsonMissing([
                 'net' => '10.00',
-                'gross' => '10.00',
+                'gross' => '11.20',
             ]);
     }
 
@@ -273,8 +285,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '0.0',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -313,8 +327,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '25.0',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -334,14 +350,14 @@ class ProductFilterTest extends TestCase
             ])
             ->assertJsonFragment([
                 'net' => '8.00',
-                'gross' => '8.00',
+                'gross' => '10.00',
             ])
             ->assertJsonFragment([
                 'id' => $product1->getKey(),
             ])
             ->assertJsonFragment([
                 'net' => '10.00',
-                'gross' => '10.00',
+                'gross' => '12.50',
             ]);
     }
 
@@ -353,8 +369,10 @@ class ProductFilterTest extends TestCase
         $this->{$user}->givePermissionTo(['products.show']);
 
         $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
             'vat_rate' => '12',
             'status' => SalesChannelStatus::PUBLIC->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
         $product1 = $this->prepareProduct('10.00');
@@ -375,27 +393,27 @@ class ProductFilterTest extends TestCase
             ])
             ->assertJsonMissing([
                 'net' => '8.00',
-                'gross' => '8.00',
+                'gross' => '8.96',
             ])
             ->assertJsonFragment([
                 'id' => $product1->getKey(),
             ])
             ->assertJsonFragment([
                 'net' => '10.00',
-                'gross' => '10.00',
+                'gross' => '11.20',
             ])
             ->assertJsonMissing([
                 'id' => $product3->getKey(),
             ])
             ->assertJsonMissing([
                 'net' => '7.09',
-                'gross' => '7.09',
+                'gross' => '7.94',
             ]);
     }
 
     private function prepareProduct(string $price): Product
     {
-        $productPrices = array_map(fn (Currency $currency) => [
+        $productPrices = array_map(fn(Currency $currency) => [
             'value' => $price,
             'currency' => $currency->value,
         ], Currency::cases());

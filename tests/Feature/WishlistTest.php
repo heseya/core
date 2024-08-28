@@ -30,7 +30,7 @@ class WishlistTest extends TestCase
                 'slug',
                 'name',
                 'price',
-                'initial_price',
+                'price_initial',
                 'prices_min',
                 'prices_min_initial',
                 'public',

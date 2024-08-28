@@ -22,7 +22,7 @@ final readonly class SalesChannelService
     public function getCurrentRequestSalesChannel(): SalesChannel
     {
         return Cache::driver('array')->rememberForever(
-            'current_sales_channel',
+            'sales_channel_for_request_' . request()->header('X-Sales-Channel', 'default'),
             function () {
                 try {
                     return request()->header('X-Sales-Channel') === null ? $this->repository->getDefault() : $this->repository->getOne(request()->header('X-Sales-Channel'));

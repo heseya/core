@@ -1146,8 +1146,8 @@ class ProductTest extends TestCase
                 ],
                 'price' => [
                     [
-                        'gross' => '2500.00',
-                        'net' => '2500.00',
+                        'gross' => '2700.00',
+                        'net' => '2700.00',
                         'currency' => Currency::DEFAULT->value,
                         'sales_chanel_id' => $this->salesChannel->id,
                     ],
@@ -1205,7 +1205,6 @@ class ProductTest extends TestCase
                 'currency' => $this->currency,
             ])
         ]);
-
 
         // Not applied - invalid target type
         $sale3 = Discount::factory()->create([

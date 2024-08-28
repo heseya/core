@@ -880,7 +880,7 @@ class SchemaTest extends TestCase
             'name' => 'L',
             'schema_id' => $schema->getKey(),
         ]);
-        $this->priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 1000));
+        $this->priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 10));
 
         $option->items()->sync([
             $item->getKey(),
