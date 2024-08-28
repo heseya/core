@@ -27,14 +27,14 @@ class DiscountSearchTest extends TestCase
     {
         $this->user->givePermissionTo("{$kind}.show");
 
-        $code = $kind === 'coupons' ? [] : ['code' => null];
-        $discount1 = Discount::factory()->create($code + ['name' => 'Discount 1', 'percentage' => '30']);
-        $discount2 = Discount::factory()->create($code + ['name' => 'Discount 2', 'percentage' => '15']);
+        $discount1 = Discount::factory()->create(['code' => $kind === 'coupons' ? 'FOOBAR01' : null, 'name' => 'Discount 1', 'description' => null, 'percentage' => '30']);
+        $discount2 = Discount::factory()->create(['code' => $kind === 'coupons' ? 'FOOBAR02' : null, 'name' => 'Discount 2', 'description' => null, 'percentage' => '15']);
 
-        $this
+        $response = $this
             ->actingAs($this->user)
-            ->json('GET', $kind, ['search' => '15'])
-            ->assertOk()
+            ->json('GET', $kind, ['search' => '15']);
+
+        $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $discount2->getKey()])
             ->assertJsonMissing(['id' => $discount1->getKey()]);
