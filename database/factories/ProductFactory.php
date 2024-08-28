@@ -51,9 +51,7 @@ class ProductFactory extends Factory
             );
 
             $productService->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => [$price],
                 ProductPriceType::PRICE_MIN_INITIAL->value => [$price],
-                ProductPriceType::PRICE_MAX_INITIAL->value => [$price],
             ]);
         });
     }

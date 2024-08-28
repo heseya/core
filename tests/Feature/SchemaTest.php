@@ -1035,7 +1035,7 @@ class SchemaTest extends TestCase
         ]);
         $this->priceMapService->updateOptionPricesForDefaultMaps($red, FakeDto::generatePricesInAllCurrencies([], 1000));
 
-        $this->assertEquals(10, $colors->getPrice($red->getKey(), [
+        $this->assertEquals(1000, $colors->getPrice($red->getKey(), [
             $colors->getKey() => $red->getKey(),
         ], $this->currency)->getAmount()->toFloat());
     }

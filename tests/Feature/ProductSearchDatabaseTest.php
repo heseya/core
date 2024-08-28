@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Media;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -637,8 +638,6 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        /** @var ProductRepository $productRepository */
-        $productRepository = App::make(ProductRepository::class);
         /** @var PriceMapService $priceMapService */
         $priceMapService = App::make(PriceMapService::class);
         $currency = Currency::DEFAULT;
@@ -646,20 +645,21 @@ class ProductSearchDatabaseTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
-
         $priceMapService->updateProductPricesForDefaultMaps($product, [PriceDto::from(Money::of(100, $currency->value))]);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-
         $priceMapService->updateProductPricesForDefaultMaps($product2, [PriceDto::from(Money::of(300, $currency->value))]);
 
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-
         $priceMapService->updateProductPricesForDefaultMaps($product3, [PriceDto::from(Money::of(10, $currency->value))]);
+
+        app(ProductService::class)->updateMinPrices($product);
+        app(ProductService::class)->updateMinPrices($product2);
+        app(ProductService::class)->updateMinPrices($product3);
 
         $this
             ->actingAs($this->{$user})

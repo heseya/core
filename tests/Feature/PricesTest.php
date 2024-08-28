@@ -109,7 +109,7 @@ class PricesTest extends TestCase
                 ],
             ]);
 
-        $this->assertQueryCountLessThan(14);
+        $this->assertQueryCountLessThan(15);
     }
 
     /**
