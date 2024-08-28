@@ -1140,13 +1140,13 @@ class ProductTest extends TestCase
                     'gross' => '3000.00',
                     'net' => '3000.00',
                     'currency' => Currency::DEFAULT->value,
-                    'sales_chanel_id' => $this->salesChannel->id,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
                 'price' => [
                     'gross' => '2700.00',
                     'net' => '2700.00',
                     'currency' => Currency::DEFAULT->value,
-                    'sales_chanel_id' => $this->salesChannel->id,
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ])
             ->assertJsonMissing([
