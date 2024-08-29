@@ -158,7 +158,11 @@ final readonly class ProductService
             $priceMap = $salesChannel->priceMap;
             assert($priceMap instanceof PriceMap);
 
-            $price = $product->mappedPriceForPriceMap($priceMap);
+            try {
+                $price = $product->mappedPriceForPriceMap($priceMap);
+            } catch (\Throwable $th) {
+                continue;
+            }
 
             $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
 

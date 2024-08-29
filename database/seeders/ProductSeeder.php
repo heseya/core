@@ -105,6 +105,8 @@ class ProductSeeder extends Seeder
 
             $priceMapService->updateProductPricesForDefaultMaps($product, PriceDto::collection($prices));
 
+            $product->refresh();
+
             $productService->updateMinPrices($product);
         });
 
