@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
+use Domain\Currency\Currency;
 use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\Request;
