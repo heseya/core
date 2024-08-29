@@ -24,7 +24,6 @@ use App\Exceptions\StoreException;
 use App\Mail\OrderUrls;
 use App\Models\Address;
 use App\Models\App;
-use App\Models\CartResource;
 use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Order;
@@ -33,9 +32,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Status;
 use App\Models\User;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
 use App\Services\Contracts\DepositServiceContract;
-use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -44,11 +42,13 @@ use App\Traits\ModifyLangFallback;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Order\Resources\CartResource;
 use Domain\Order\Resources\OrderResource;
 use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
-use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Exception;
@@ -69,12 +69,12 @@ final readonly class OrderService implements OrderServiceContract
     use ModifyLangFallback;
 
     public function __construct(
-        private DiscountServiceContract $discountService,
+        private DiscountService $discountService,
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
         private MetadataServiceContract $metadataService,
         private DepositServiceContract $depositService,
-        private ProductRepositoryContract $productRepository,
+        private ProductRepository $productRepository,
         private SalesChannelService $salesChannelService,
     ) {}
 
@@ -106,8 +106,13 @@ final readonly class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-        $currency = $dto->currency;
-        $vat_rate = $this->salesChannelService->getVatRate($dto->sales_channel_id);
+        $salesChannel = SalesChannel::findOr($dto->sales_channel_id, fn () => throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_NOT_FOUND));
+
+        $priceMap = $salesChannel->priceMap ?? PriceMap::findOrFail($dto->currency->getDefaultPriceMapId());
+        assert($priceMap instanceof PriceMap);
+        $currency = $priceMap->currency;
+
+        $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
 
         DB::beginTransaction();
 
@@ -215,12 +220,7 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    $prices = $this->productRepository->getProductPrices($product->getKey(), [
-                        ProductPriceType::PRICE_BASE,
-                    ], $currency);
-
-                    /** @var Money $price */
-                    $price = $prices->get(ProductPriceType::PRICE_BASE->value)->firstOrFail()->value;
+                    $price = $product->mappedPriceForPriceMap($priceMap)->value;
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),

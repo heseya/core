@@ -4,25 +4,27 @@ declare(strict_types=1);
 
 namespace Domain\PersonalPrice;
 
-use App\Dtos\ProductPriceDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Product;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
+use Domain\Price\Resources\ProductCachedPriceData;
+use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 final readonly class PersonalPriceService
 {
     public function __construct(
-        private DiscountServiceContract $discountService,
+        private DiscountService $discountService,
     ) {}
 
     /**
-     * @return ProductPriceDto[]
+     * @return Collection<int,ProductCachedPriceData>
      *
      * @throws ClientException
      */
-    public function calcProductsListDiscounts(ProductPricesDto $dto): array
+    public function calcProductsListDiscounts(ProductPricesDto $dto, SalesChannel $salesChannel): Collection
     {
         $query = Product::query()->whereIn('id', $dto->ids);
 
@@ -36,6 +38,6 @@ final readonly class PersonalPriceService
             throw new ClientException(Exceptions::PRODUCT_NOT_FOUND);
         }
 
-        return $this->discountService->calcProductsListDiscounts($products);
+        return $this->discountService->calcProductsListDiscounts($products, $salesChannel);
     }
 }

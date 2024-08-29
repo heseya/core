@@ -157,6 +157,7 @@ enum Exceptions: string
     case CLIENT_SALES_CHANNEL_ORGANIZATION_ACTIVE = 'Sales channel in organization cannot be deactivated';
     case CLIENT_SALES_CHANNEL_DEFAULT = 'There must be exactly one default sales channel.';
     case CLIENT_SALES_CHANNEL_DEFAULT_DELETE = 'You cannot delete default sales channel.';
+    case CLIENT_SALES_CHANNEL_PRICE_MAP = 'Unable to use Sales Channel without assigned Price Map.';
     case CLIENT_ORDER_POSTPAID_PAYMENT = 'Cannot add new payments to postpaid order';
     case CLIENT_SALES_CHANNEL_IN_ORGANIZATION = 'The sales channel must be assigned to the organization';
     case CLIENT_USER_IN_ORGANIZATION = 'An organization member cannot place an order without providing an organization ID';

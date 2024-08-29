@@ -33,6 +33,7 @@ use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\ProductAttribute\Enums\AttributeType;
@@ -40,6 +41,8 @@ use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Tag\Models\Tag;
 use Heseya\Searchable\Criteria\Equals;
 use Heseya\Searchable\Criteria\Like;
@@ -56,13 +59,6 @@ use Illuminate\Support\Facades\Config;
 use Laravel\Scout\Searchable;
 
 /**
- * @property string $name
- * @property string $description_html
- * @property string $description_short
- * @property mixed $pivot
- * @property ProductAttribute|null $product_attribute_pivot
- * @property Collection<int, Price> $pricesBase
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements SeoContract, SortableContract, Translatable
@@ -329,34 +325,58 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $sales->unique('id');
     }
 
+    /**
+     * @deprecated
+     */
     public function pricesBase(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_BASE->value);
     }
 
+    /**
+     * @return MorphMany<Price>
+     */
     public function pricesMin(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN->value);
     }
 
-    public function pricesMax(): MorphMany
-    {
-        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX->value);
-    }
-
+    /**
+     * @return MorphMany<Price>
+     */
     public function pricesMinInitial(): MorphMany
     {
         return $this->prices()->where('price_type', ProductPriceType::PRICE_MIN_INITIAL->value);
     }
 
-    public function pricesMaxInitial(): MorphMany
-    {
-        return $this->prices()->where('price_type', ProductPriceType::PRICE_MAX_INITIAL->value);
-    }
-
+    /**
+     * @return MorphMany<Price>
+     */
     private function prices(): MorphMany
     {
         return $this->morphMany(Price::class, 'model');
+    }
+
+    public function getCachedInitialPriceForSalesChannel(SalesChannel|string|null $salesChannel = null): ?Price
+    {
+        if ($salesChannel === null) {
+            $salesChannel = app(SalesChannelService::class)->getCurrentRequestSalesChannel();
+        }
+
+        return $this->relationLoaded('pricesMinInitial')
+            ? $this->pricesMinInitial->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
+            : $this->pricesMinInitial()->ofSalesChannel($salesChannel)->first();
+    }
+
+    public function getCachedMinPriceForSalesChannel(SalesChannel|string|null $salesChannel = null): ?Price
+    {
+        if ($salesChannel === null) {
+            $salesChannel = app(SalesChannelService::class)->getCurrentRequestSalesChannel();
+        }
+
+        return $this->relationLoaded('pricesMin')
+            ? $this->pricesMin->where('sales_channel_id', $salesChannel instanceof SalesChannel ? $salesChannel->id : $salesChannel)->first()
+            : $this->pricesMin()->ofSalesChannel($salesChannel)->first();
     }
 
     /**
@@ -365,6 +385,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function mapPrices(): HasMany
     {
         return $this->hasMany(PriceMapProductPrice::class);
+    }
+
+    public function mappedPriceForPriceMap(PriceMap|string $priceMapId): PriceMapProductPrice
+    {
+        return $this->relationLoaded('mapPrices')
+            ? $this->mapPrices->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId)->firstOrFail()
+            : $this->mapPrices()->ofPriceMap($priceMapId)->firstOrFail();
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder

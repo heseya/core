@@ -3,8 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Option;
-use Domain\Price\Enums\ProductPriceType;
-use Domain\Price\PriceRepository;
+use Domain\PriceMap\PriceMapService;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Utils\FakeDto;
 
@@ -39,13 +38,12 @@ class OptionFactory extends Factory
                 $result = collect([$result]);
             }
 
-            $priceRepository = app(PriceRepository::class);
+            /** @var PriceMapService $priceMapService */
+            $priceMapService = app(PriceMapService::class);
 
             $prices = FakeDto::generatePricesInAllCurrencies($prices);
 
-            $result->each(fn (Option $option) => $priceRepository->setModelPrices($option, [
-                ProductPriceType::PRICE_BASE->value => $prices,
-            ]));
+            $result->each(fn(Option $option) => $priceMapService->updateOptionPricesForDefaultMaps($option, $prices));
         }
 
         return $result->count() > 1 ? $result : $result->first();

@@ -27,9 +27,7 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\Status;
 use App\Models\WebHook;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
-use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\MathException;
 use Brick\Math\Exception\NumberFormatException;
@@ -44,6 +42,7 @@ use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
@@ -82,7 +81,7 @@ class OrderCreateTest extends TestCase
     private ProductService $productService;
     private DiscountRepository $discountRepository;
     private SchemaCrudService $schemaCrudService;
-    private ProductRepository $productRepository;
+    private PriceMapService $priceMapService;
     private PaymentMethod $paymentMethod;
 
     /**
@@ -99,7 +98,7 @@ class OrderCreateTest extends TestCase
 
         $this->email = $this->faker->freeEmail;
 
-        $this->productRepository = App::make(ProductRepository::class);
+        $this->priceMapService = App::make(PriceMapService::class);
 
         $this->shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
@@ -125,19 +124,11 @@ class OrderCreateTest extends TestCase
             'public' => true,
         ]);
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
         $this->currency = Currency::DEFAULT;
 
-        $productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
-        $prices = $productRepository->getProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE,
-        ], $this->currency);
-
-        $this->productPrice = $prices->get(ProductPriceType::PRICE_BASE->value)?->first()?->value;
+        $this->productPrice = $this->product->mappedPriceForPriceMap($this->currency->getDefaultPriceMapId())->value;
 
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
@@ -186,10 +177,7 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $this->productPrice = Money::of(10, $this->currency->value);
-
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -301,10 +289,7 @@ class OrderCreateTest extends TestCase
         $this->{$user}->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
-
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
 
@@ -345,9 +330,7 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
 
@@ -1122,7 +1105,7 @@ class OrderCreateTest extends TestCase
             'code' => null,
         ]);
 
-        $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
+        $amounts = array_map(fn(Currency $currency) => PriceDto::fromMoney(
             Money::of(50, $currency->value),
         ), Currency::cases());
 
@@ -1136,7 +1119,7 @@ class OrderCreateTest extends TestCase
             'target_is_allow_list' => false,
         ]);
 
-        $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
+        $amounts = array_map(fn(Currency $currency) => PriceDto::fromMoney(
             Money::of(15, $currency->value),
         ), Currency::cases());
 
@@ -1260,9 +1243,7 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $this
             ->actingAs($this->{$user})
@@ -1420,9 +1401,7 @@ class OrderCreateTest extends TestCase
             ])
         );
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 100),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 2;
 
@@ -2143,9 +2122,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
 
@@ -2228,9 +2205,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2309,9 +2284,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2369,9 +2342,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2540,9 +2511,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2585,9 +2554,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2645,9 +2612,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
-            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
-        ]);
+        $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
         $productQuantity = 20;
         $salesChannelId = SalesChannel::query()->value('id');
@@ -2834,7 +2799,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -2914,7 +2879,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -2978,7 +2943,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3035,7 +3000,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3097,7 +3062,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3154,7 +3119,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3218,7 +3183,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3264,7 +3229,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 
@@ -3309,7 +3274,7 @@ class OrderCreateTest extends TestCase
 
         $this->productPrice = Money::of(10, $this->currency->value);
 
-        $this->productRepository->setProductPrices($this->product->getKey(), [
+        $this->productService->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
         ]);
 

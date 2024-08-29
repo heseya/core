@@ -6,14 +6,12 @@ use App\Dtos\CartDto;
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\DiscountTargetType;
-use App\Models\CartItemResponse;
-use App\Models\CartResource;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Repositories\DiscountRepository;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use App\Services\ProductService;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\NumberFormatException;
@@ -21,6 +19,10 @@ use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Order\Resources\CartItemResource;
+use Domain\Order\Resources\CartResource;
+use Domain\Order\Resources\CouponShortResource;
+use Domain\Order\Resources\SalesShortResource;
 use Domain\Price\Dtos\PriceDto;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\OptionService;
@@ -40,7 +42,7 @@ class DiscountApplyTest extends TestCase
     use RefreshDatabase;
 
     private ProductService $productService;
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
     private SchemaCrudService $schemaCrudService;
     private OptionService $optionService;
     private $product;
@@ -51,7 +53,7 @@ class DiscountApplyTest extends TestCase
     private $shippingMethod;
     private CartResource $cart;
     private CartItemDto $cartItemDto;
-    private CartItemResponse $cartItemResponse;
+    private CartItemResource $cartItemResource;
     private CartResource $cartResource;
     private OrderProductDto $orderProductDto;
     private OrderProductDto $orderProductDtoWithSchemas;
@@ -161,22 +163,24 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResponse(
+        $this->cartItemResource = new CartItemResource(
             1,
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
+            $this->currency,
             1,
         );
 
         $this->cart = new CartResource(
-            Collection::make([$this->cartItemResponse]),
-            Collection::make([]),
-            Collection::make([]),
+            CartItemResource::collection([$this->cartItemResource]),
+            CouponShortResource::collection([]),
+            SalesShortResource::collection([]),
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
             Money::zero($this->currency->value),
+            $this->currency,
         );
 
         $this->orderProductDto = OrderProductDto::fromArray([
@@ -232,7 +236,7 @@ class DiscountApplyTest extends TestCase
             'name' => $this->product->name,
         ]);
 
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
     }
 
     /**

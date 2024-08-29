@@ -7,10 +7,13 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\Currency\Currency;
 use Domain\Page\PageResource;
+use Domain\Price\Dtos\ProductCachedPriceDto;
 use Domain\Product\Resources\ProductBannerMediaResource;
 use Domain\ProductSet\ProductSet;
 use Domain\ProductSet\Resources\ProductSetResource;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\Seo\Resources\SeoMetadataResource;
 use Domain\Tag\Resources\TagResource;
 use Illuminate\Http\Request;
@@ -27,15 +30,31 @@ class ProductWithoutSalesResource extends Resource
 
     public function base(Request $request): array
     {
+        $salesChannelService = app(SalesChannelService::class);
+        $salesChannel = $salesChannelService->getCurrentRequestSalesChannel();
+
+        $initial_price = $this->resource->getCachedInitialPriceForSalesChannel($salesChannel);
+        $price = $this->resource->getCachedMinPriceForSalesChannel($salesChannel);
+
+        if ($initial_price === null) {
+            $initial_price = ProductCachedPriceDto::from($this->resource->mappedPriceForPriceMap($salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
+        } else {
+            $initial_price = ProductCachedPriceDto::from($initial_price);
+        }
+        if ($price === null) {
+            $price = $initial_price;
+        } else {
+            $price = ProductCachedPriceDto::from($price);
+        }
+
         $data = [
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
-            'prices_base' => PriceResource::collection($this->resource->pricesBase),
-            'prices_min' => PriceResource::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
-            'prices_max' => PriceResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
-            'prices_min_initial' => PriceResource::collection($this->resource->pricesMinInitial),
-            'prices_max_initial' => PriceResource::collection($this->resource->pricesMaxInitial),
+            'price_initial' => $initial_price,
+            'price' => $price,
+            'prices_min' => ProductCachedPriceDto::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
+            'prices_min_initial' => ProductCachedPriceDto::collection($this->resource->pricesMinInitial),
             'public' => $this->resource->public,
             'visible' => $this->resource->public,
             'available' => $this->resource->available,

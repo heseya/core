@@ -3,10 +3,9 @@
 namespace Tests\Feature\Products;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Models\Discount;
 use App\Models\Product;
-use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Domain\Price\Enums\ProductPriceType;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -26,7 +25,7 @@ class ProductPriceTest extends TestCase
             'description_short' => 'short',
         ]);
 
-        app(ProductRepository::class)->setProductPrices($this->product->getKey(), [
+        app(ProductService::class)->setProductPrices($this->product->getKey(), [
             ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 1000),
         ]);
     }
@@ -72,23 +71,8 @@ class ProductPriceTest extends TestCase
 
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_BASE,
-            'value' => 1000,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
             'price_type' => ProductPriceType::PRICE_MIN,
             'value' => 820,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX,
-            'value' => 820,
-        ]);
-        $this->assertDatabaseHas('prices', [
-            'model_id' => $this->product->getKey(),
-            'price_type' => ProductPriceType::PRICE_MAX_INITIAL,
-            'value' => 1000,
         ]);
         $this->assertDatabaseHas('prices', [
             'model_id' => $this->product->getKey(),

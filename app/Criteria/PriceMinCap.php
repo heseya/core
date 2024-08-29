@@ -2,13 +2,12 @@
 
 namespace App\Criteria;
 
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Price\Enums\ProductPriceType;
-use Domain\SalesChannel\SalesChannelRepository;
+use Domain\SalesChannel\SalesChannelService;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\App;
 
 class PriceMinCap extends Criterion
 {
@@ -21,17 +20,15 @@ class PriceMinCap extends Criterion
         /** @var Money $value */
         $value = $this->value;
 
-        $salesChannel = request()->header('X-Sales-Channel')
-            ? app(SalesChannelRepository::class)->getOne(request()->header('X-Sales-Channel'))
-            : app(SalesChannelRepository::class)->getDefault();
+        $salesChannel = App::make(SalesChannelService::class)->getCurrentRequestSalesChannel();
 
-        $value = $value->dividedBy(BigDecimal::of($salesChannel->vat_rate)->multipliedBy(0.01)->plus(1), roundingMode: RoundingMode::HALF_DOWN);
-
-        return $query->whereHas('pricesMin',
+        return $query->whereHas(
+            'pricesMin',
             fn (Builder $query) => $query
-                ->where('value', '>=', $value->getMinorAmount())
+                ->where('gross', '>=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
-                ->where('price_type', ProductPriceType::PRICE_MIN->value),
+                ->where('price_type', ProductPriceType::PRICE_MIN->value)
+                ->where('sales_channel_id', $salesChannel->id),
         );
     }
 }

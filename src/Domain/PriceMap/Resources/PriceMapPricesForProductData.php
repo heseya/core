@@ -10,8 +10,10 @@ use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Exception;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\DataCollection;
 use Support\Dtos\DataWithGlobalMetadata;
+use Support\LaravelData\Transformers\WithoutWrappingTransformer;
 
 final class PriceMapPricesForProductData extends DataWithGlobalMetadata
 {
@@ -22,6 +24,7 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         public string $product_id,
         public string $product_price,
         public string|null $product_name = null,
+        #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(PriceMapPricesForProductPartialSchemaOptionData::class)]
         public DataCollection $schema_options,
     ) {}
@@ -70,7 +73,7 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         return new self(
             $product->id,
             (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
-            $product->name,
+            $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
             PriceMapPricesForProductPartialSchemaOptionData::collection($schema_options),
         );
     }

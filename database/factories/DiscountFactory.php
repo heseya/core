@@ -54,7 +54,7 @@ class DiscountFactory extends Factory
             $discountRepository = App::make(DiscountRepository::class);
 
             if ($discount->percentage === null) {
-                $amounts = array_map(fn (Currency $currency) => PriceDto::fromMoney(
+                $amounts = array_map(fn(Currency $currency) => PriceDto::fromMoney(
                     Money::of(mt_rand(500, 2000) / 100.0, $currency->value),
                 ), Currency::cases());
 

@@ -6,6 +6,7 @@ namespace Tests\Feature\SalesChannels;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\ValidationError;
+use Domain\Currency\Currency;
 use Domain\Language\Language;
 use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
@@ -28,12 +29,15 @@ final class SalesChannelsCrudTest extends TestCase
         $channel = SalesChannel::query()->first(); // default channel from migration
         SalesChannel::factory()->create(['status' => SalesChannelStatus::PRIVATE]);
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/sales-channels')
-            ->assertOk()
+            ->json('GET', '/sales-channels');
+
+        $response->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $channel->getKey(), 'price_map' => null]);
+            ->assertJsonFragment(['id' => $channel->getKey()]);
+
+        $this->assertEquals(Currency::DEFAULT->getDefaultPriceMapId(), $response->json('data.0.price_map.id'));
     }
 
     /**

@@ -27,6 +27,10 @@ final class MoneyCast implements Cast
             return new Optional();
         }
 
+        if ($value instanceof Money) {
+            $value = $value->getAmount();
+        }
+
         $currency = Arr::get($context, $this->currency_field, Currency::DEFAULT);
 
         $currency = match (true) {

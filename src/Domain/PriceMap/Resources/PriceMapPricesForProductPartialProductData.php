@@ -26,22 +26,24 @@ final class PriceMapPricesForProductPartialProductData extends DataWithGlobalMet
         return new self(
             $product->id,
             (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
-            $product->name,
+            $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
         );
     }
 
     public static function fromModel(PriceMapProductPrice $price): static
     {
+        $product = $price->product;
+
         return new self(
             $price->product_id,
             (string) $price->value->getAmount(),
-            $price->product?->name,
+            $product?->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
         );
     }
 
     public function setProduct(Product $product): self
     {
-        $this->product_name = $product->name;
+        $this->product_name = $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale());
 
         return $this;
     }

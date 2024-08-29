@@ -15,7 +15,7 @@ use App\Http\Requests\SaleUpdateRequest;
 use App\Http\Resources\CouponResource;
 use App\Http\Resources\SaleResource;
 use App\Models\Discount;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class DiscountController extends Controller
 {
     public function __construct(
-        private DiscountServiceContract $discountService,
+        private DiscountService $discountService,
     ) {}
 
     public function indexCoupons(CouponIndexRequest $request): JsonResource

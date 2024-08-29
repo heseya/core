@@ -10,9 +10,25 @@ enum ProductPriceType: string
 {
     use EnumTrait;
 
+    public const PRICE_INITIAL = self::PRICE_MIN_INITIAL;
+    public const PRICE = self::PRICE_MIN;
+
+    /**
+     * @deprecated
+     */
     case PRICE_BASE = PriceTypeValues::PRICE_BASE;
+
     case PRICE_MIN = PriceTypeValues::PRICE_MIN;
+
+    /**
+     * @deprecated
+     */
     case PRICE_MAX = PriceTypeValues::PRICE_MAX;
+
     case PRICE_MIN_INITIAL = PriceTypeValues::PRICE_MIN_INITIAL;
+
+    /**
+     * @deprecated
+     */
     case PRICE_MAX_INITIAL = PriceTypeValues::PRICE_MAX_INITIAL;
 }

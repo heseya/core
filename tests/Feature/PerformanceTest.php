@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\SchemaType;
 use App\Models\Country;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -17,8 +16,8 @@ use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\Status;
-use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\DiscountRepository;
+use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -32,6 +31,7 @@ use Domain\Metadata\Models\Metadata;
 use Domain\Page\Page;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
@@ -71,7 +71,7 @@ class PerformanceTest extends TestCase
             ->assertOk()
             ->assertJsonCount(100, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(22);
     }
 
     public function testIndexPerformanceProductsFull100(): void
@@ -161,7 +161,7 @@ class PerformanceTest extends TestCase
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
             ->assertOk();
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(18);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))
@@ -424,24 +424,20 @@ class PerformanceTest extends TestCase
 
         $products = Product::factory()
             ->count(1000)
-            ->sequence(fn ($sequence) => ['slug' => $sequence->index])
+            ->sequence(fn($sequence) => ['slug' => $sequence->index])
             ->create([
                 'public' => true,
             ]);
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
 
-        $products->each(function (Product $product) use ($productRepository) {
-            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+        $products->each(function (Product $product) use ($priceMapService) {
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $prices,
-                ProductPriceType::PRICE_MIN->value => $prices,
-                ProductPriceType::PRICE_MAX->value => $prices,
-            ]);
+            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
         });
 
         $set->products()->sync($products);
@@ -481,7 +477,7 @@ class PerformanceTest extends TestCase
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
         // To dispatch ProductPriceUpdated +3 for each product, but it require prices so another +2 (old + new) for each product
-        $this->assertQueryCountLessThan(11131);
+        $this->assertQueryCountLessThan(11132);
     }
 
     /**
@@ -1002,9 +998,11 @@ class PerformanceTest extends TestCase
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
-        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $sales, $tags, $pages, $items) {
+        /** @var ProductRepository $productRepository */
+        $productRepository = App::make(ProductRepository::class);
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
+        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $priceMapService, $sales, $tags, $pages, $items) {
             $this->prepareProductSchemas($product);
 
             for ($i = 0; $i < 5; ++$i) {
@@ -1025,17 +1023,13 @@ class PerformanceTest extends TestCase
             $product->save();
             $product->refresh();
 
-            $prices = array_map(fn (Currency $currency) => PriceDto::from(
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
                 Money::of(round(mt_rand(500, 6000), -2), $currency->value),
             ), Currency::cases());
 
-            $productRepository->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_BASE->value => $prices,
-                ProductPriceType::PRICE_MIN->value => $prices,
-                ProductPriceType::PRICE_MAX->value => $prices,
-            ]);
+            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
 
-            $productService->updateMinMaxPrices($product);
+            $productService->updateMinPrices($product);
         });
     }
 

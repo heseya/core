@@ -28,6 +28,7 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -218,15 +219,19 @@ final class Schema extends Model implements SortableContract, Translatable
      * @throws MathException
      * @throws MoneyMismatchException
      */
-    public function getPrice(mixed $value, array $schemas, Currency $currency): Money
+    public function getPrice(mixed $value, array $schemas, Currency|PriceMap $priceMap): Money
     {
+        $priceMap = $priceMap instanceof Currency ? PriceMap::findOrFail($priceMap->getDefaultPriceMapId()) : $priceMap;
+
+        assert($priceMap instanceof PriceMap);
+
         $schemaKeys = Collection::make($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
-            return Money::zero($currency->value);
+            return Money::zero($priceMap->currency->value);
         }
 
-        return $this->getUsedPrice($value, $schemas, $currency);
+        return $this->getUsedPrice($value, $schemas, $priceMap);
     }
 
     /**
@@ -261,10 +266,10 @@ final class Schema extends Model implements SortableContract, Translatable
      * @throws MathException
      * @throws MoneyMismatchException
      */
-    private function getUsedPrice(mixed $value, array $schemas, Currency $currency): Money
+    private function getUsedPrice(mixed $value, array $schemas, PriceMap $priceMap): Money
     {
         if (!$this->required && $value === null) {
-            return Money::zero($currency->value);
+            return Money::zero($priceMap->currency->value);
         }
 
         /** @var Schema|null $usedSchema */
@@ -273,7 +278,7 @@ final class Schema extends Model implements SortableContract, Translatable
             return $usedSchema->getUsedPrice(
                 $schemas[$usedSchema->getKey()],
                 $schemas,
-                $currency,
+                $priceMap,
             )->multipliedBy($value);
         }
 
@@ -281,9 +286,9 @@ final class Schema extends Model implements SortableContract, Translatable
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
 
-            return $option->getPriceForCurrency($currency);
+            return $option->getPriceForPriceMap($priceMap);
         } catch (Throwable $th) {
-            return Money::zero($currency->value);
+            return Money::zero($priceMap->currency->value);
         }
     }
 }

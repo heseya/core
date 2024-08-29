@@ -29,6 +29,7 @@ final class SalesChannelsTest extends TestCase
         /** @var SalesChannel $channel */
         $channel = SalesChannel::factory()->create([
             'vat_rate' => '23',
+            'status' => SalesChannelStatus::PUBLIC,
         ]);
 
         /** @var ShippingMethod $shipping_method */
@@ -58,6 +59,7 @@ final class SalesChannelsTest extends TestCase
             ])
         );
 
+        //$this->{$user}->givePermissionTo('sales_channels.show_hidden');
         $this->{$user}->givePermissionTo('cart.verify');
         $this
             ->actingAs($this->{$user})

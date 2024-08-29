@@ -4,7 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Media;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\ProductRepository;
+use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
@@ -12,6 +13,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -23,7 +25,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
-use function Symfony\Component\String\s;
 
 class ProductSearchDatabaseTest extends TestCase
 {
@@ -637,33 +638,28 @@ class ProductSearchDatabaseTest extends TestCase
     {
         $this->{$user}->givePermissionTo('products.show');
 
-        /** @var ProductRepositoryContract $productRepository */
-        $productRepository = App::make(ProductRepositoryContract::class);
+        /** @var PriceMapService $priceMapService */
+        $priceMapService = App::make(PriceMapService::class);
         $currency = Currency::DEFAULT;
 
         $product = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(100, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(200, $currency->value))],
-        ]);
+        $priceMapService->updateProductPricesForDefaultMaps($product, [PriceDto::from(Money::of(100, $currency->value))]);
 
         $product2 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product2->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(300, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(1000, $currency->value))],
-        ]);
+        $priceMapService->updateProductPricesForDefaultMaps($product2, [PriceDto::from(Money::of(300, $currency->value))]);
 
         $product3 = Product::factory()->create([
             'public' => true,
         ]);
-        $productRepository->setProductPrices($product3->getKey(), [
-            ProductPriceType::PRICE_MIN->value => [PriceDto::from(Money::of(10, $currency->value))],
-            ProductPriceType::PRICE_MAX->value => [PriceDto::from(Money::of(10, $currency->value))],
-        ]);
+        $priceMapService->updateProductPricesForDefaultMaps($product3, [PriceDto::from(Money::of(10, $currency->value))]);
+
+        app(ProductService::class)->updateMinPrices($product);
+        app(ProductService::class)->updateMinPrices($product2);
+        app(ProductService::class)->updateMinPrices($product3);
 
         $this
             ->actingAs($this->{$user})

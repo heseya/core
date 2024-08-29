@@ -24,7 +24,6 @@ use App\Http\Requests\OrderProductUpdateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
-use App\Http\Resources\CartResource;
 use App\Http\Resources\OrderProductResourcePublic;
 use App\Models\Order;
 use App\Models\OrderDocument;
@@ -42,6 +41,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
@@ -212,9 +212,9 @@ class OrderController extends Controller
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function cartProcess(CartRequest $request): JsonResource
+    public function cartProcess(CartRequest $request): HttpFoundationResponse
     {
-        return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
+        return $this->orderService->cartProcess(CartDto::instantiateFromRequest($request))->toResponse($request);
     }
 
     public function updateOrderProduct(

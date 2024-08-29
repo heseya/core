@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
+use Domain\Price\Dtos\ProductCachedPriceDto;
 use Illuminate\Http\Request;
 
 /**
@@ -16,9 +17,8 @@ class ProductShortResource extends Resource
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
-            'prices_base' => PriceResource::collection($this->resource->pricesBase),
-            'prices_min' => PriceResource::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
-            'prices_max' => PriceResource::collection($this->resource->pricesMax ?? $this->resource->pricesMaxInitial),
+            'price_initial' => $request->header('X-Sales-Channel') ? ProductCachedPriceDto::from($this->resource->getCachedInitialPriceForSalesChannel($request->header('X-Sales-Channel'))) : null,
+            'price' => $request->header('X-Sales-Channel') ? ProductCachedPriceDto::from($this->resource->getCachedMinPriceForSalesChannel($request->header('X-Sales-Channel'))) : null,
             'public' => $this->resource->public,
             'visible' => $this->resource->public,
             'available' => $this->resource->available,

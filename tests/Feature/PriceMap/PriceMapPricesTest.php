@@ -4,7 +4,6 @@ namespace Tests\Feature\Organizations;
 
 use App\Models\Option;
 use App\Models\Product;
-use Database\Seeders\PriceMapSeeder;
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
@@ -48,7 +47,6 @@ class PriceMapPricesTest extends TestCase
         $this->option2a = Option::factory()->create(['schema_id' => $this->schema2->id]);
         $this->option2b = Option::factory()->create(['schema_id' => $this->schema2->id]);
 
-        App::make(PriceMapSeeder::class)->run();
         $this->priceMap1 = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
 
         $this->priceMap2 = PriceMap::factory()->create([
@@ -125,14 +123,13 @@ class PriceMapPricesTest extends TestCase
             ]);
 
         $response->assertOk()
-            // TODO uncomment after prices fix
-//            ->assertJsonStructure([
-//                'data' => [
-//                    'products',
-//                    'schema_options',
-//                ],
-//                'meta',
-//            ])
+            ->assertJsonStructure([
+                'data' => [
+                    'products',
+                    'schema_options',
+                ],
+                'meta',
+            ])
             ->assertJsonFragment(['product_price' => '1337.00'])
             ->assertJsonFragment(['schema_option_price' => '2137.00']);
     }

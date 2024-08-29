@@ -9,7 +9,6 @@ use App\Models\Option;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TranslationServiceContract;
-use App\Services\ProductService;
 use Domain\ProductSchema\Dtos\SchemaCreateDto;
 use Domain\ProductSchema\Dtos\SchemaDto;
 use Domain\ProductSchema\Models\Schema;
@@ -22,7 +21,6 @@ final readonly class SchemaCrudService
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
         private OptionService $optionService,
-        private ProductService $productService,
         private TranslationServiceContract $translationService,
     ) {}
 
@@ -81,10 +79,6 @@ final readonly class SchemaCrudService
             $this->metadataService->sync($schema, $dto->metadata_computed);
         }
 
-        if (!$schema->wasRecentlyCreated && $schema->product) {
-            $this->productService->updateMinMaxPrices($schema->product);
-        }
-
         $schema->options->each(
             fn (Option $option) => $this->availabilityService->calculateOptionAvailability($option),
         );
@@ -96,11 +90,6 @@ final readonly class SchemaCrudService
 
     public function destroy(Schema $schema): void
     {
-        $product = $schema->product;
         $schema->delete();
-
-        if ($product) {
-            $this->productService->updateMinMaxPrices($product);
-        }
     }
 }

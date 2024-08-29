@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Product\Dtos;
 
-use Brick\Money\Currency;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
-use Support\LaravelData\Casts\CurrencyCast;
 use Support\LaravelData\Casts\MoneyCast;
 
 final class ProductSearchPriceDto extends Data
@@ -19,7 +19,7 @@ final class ProductSearchPriceDto extends Data
         public Money|Optional $min,
         #[WithCast(MoneyCast::class)]
         public Money|Optional $max,
-        #[WithCast(CurrencyCast::class)]
+        #[WithCast(EnumCast::class, Currency::class)]
         public Currency|Optional $currency,
     ) {}
 }

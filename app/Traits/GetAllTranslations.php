@@ -13,7 +13,9 @@ trait GetAllTranslations
     protected function getAllTranslations(?string $permissions = null): array
     {
         $allTranslations = [];
-        $languages = $this->resource->published;
+        $languages = $this->resource->hasPublishedColumn()
+            ? $this->resource->published // @phpstan-ignore-line
+            : null;
         $dataTranslations = $this->resource->getTranslations(
             allowedLocales: $permissions !== null && Gate::allows($permissions) ? null : $languages,
         );

@@ -20,6 +20,7 @@ use Heseya\Dto\DtoException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\DataCollection;
 
 final readonly class FakeDto
 {
@@ -81,7 +82,7 @@ final readonly class FakeDto
         $name = $faker->sentence(mt_rand(1, 3));
         $description = $faker->sentence(10);
 
-        $data['prices_base'] = self::generatePricesInAllCurrencies($data['prices_base'] ?? []);
+        $data['prices_base'] = self::generatePricesInAllCurrencies($data['prices_base'] ?? [])->toArray();
 
         $langId = App::getLocale();
 
@@ -107,17 +108,17 @@ final readonly class FakeDto
     }
 
     /**
-     * @param array<int,PriceDto>|array<int,array<string,int|string>> $data
+     * @param PriceDto[]|DataCollection<int,PriceDto>|array<int,array<string,int|string>> $data
      *
-     * @return array<int,array<string,int|string>>
+     * @return DataCollection<PriceDto>
      */
     public static function generatePricesInAllCurrencies(
-        array $data = [],
+        array|DataCollection $data = [],
         BigDecimal|int|float|null $amount = null
-    ): array {
+    ): DataCollection {
         $prices = [];
         $usedCurrencies = [];
-        /** @var PriceDto|array $price */
+
         foreach ($data as $price) {
             if (is_array($price) && Arr::has($price, ['value', 'currency'])) {
                 $price = PriceDto::from($price);
@@ -125,10 +126,7 @@ final readonly class FakeDto
             if ($price instanceof PriceDto) {
                 $amount = $amount ?? $price->value->getAmount();
                 $usedCurrencies[] = $price->currency;
-                $prices[] = [
-                    'value' => $price->value->getAmount(),
-                    'currency' => $price->currency->value,
-                ];
+                $prices[] = $price;
             }
         }
 
@@ -140,14 +138,11 @@ final readonly class FakeDto
                     'value' => $amount,
                     'currency' => $case->value,
                 ]);
-                $prices[] = [
-                    'value' => $price->value->getAmount(),
-                    'currency' => $price->currency->value,
-                ];
+                $prices[] = $price;
             }
         }
 
-        return $prices;
+        return PriceDto::collection($prices);
     }
 
     public static function schemaData(array $data = [], bool $addDefaultOption = true): array
@@ -171,7 +166,7 @@ final readonly class FakeDto
             $data['options'] = [
                 [
                     'name' => 'Test',
-                    'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))]),
+                    'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))])->toArray(),
                 ]
             ];
         }
@@ -182,16 +177,16 @@ final readonly class FakeDto
                     4
                 );
 
-                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? []);
+                $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? [])->toArray();
             }
 
             if (($data['required'] ?? false) && empty($data['default'])) {
-                $data['default'] = $data['options'][0]['name'] ?? $data['options'][0]['translations'][$langId]['name'];
+                $data['default'] = 0;
             }
         }
 
         if (($data['required'] ?? false) && empty($data['default']) && !empty($data['options'])) {
-            $data['default'] = $data['options'][0]['name'] ?? $data['options'][0]['translations'][$langId]['name'];
+            $data['default'] = 0;
         }
 
         if ($returnArray) {

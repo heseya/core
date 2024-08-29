@@ -7,16 +7,17 @@ namespace Domain\ProductSchema\Services;
 use App\Events\OptionCreated;
 use App\Models\Option;
 use App\Services\Contracts\MetadataServiceContract;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Dtos\OptionDto;
 use Domain\ProductSchema\Models\Schema;
-use Domain\ProductSchema\OptionRepository;
+use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 
 final readonly class OptionService
 {
     public function __construct(
         private MetadataServiceContract $metadataService,
-        private OptionRepository $optionRepository,
+        private PriceMapService $priceMapService,
     ) {}
 
     /**
@@ -57,8 +58,8 @@ final readonly class OptionService
                 $this->metadataService->sync($option, $optionItem->metadata_computed);
             }
 
-            if (!$optionItem->prices instanceof Optional) {
-                $this->optionRepository->setOptionPrices($option->getKey(), $optionItem->prices->items());
+            if ($optionItem->prices instanceof DataCollection) {
+                $this->priceMapService->updateOptionPricesForDefaultMaps($option, $optionItem->prices);
             }
 
             $keep[] = $option->getKey();

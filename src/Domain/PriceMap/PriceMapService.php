@@ -8,6 +8,7 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
+use Domain\Price\Dtos\PriceDto;
 use Domain\PriceMap\Dtos\PriceMapCreateDto;
 use Domain\PriceMap\Dtos\PriceMapPricesUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapPriceUpdateDto;
@@ -28,8 +29,11 @@ use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Ramsey\Uuid\Uuid;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
@@ -102,6 +106,14 @@ final readonly class PriceMapService
     public function delete(PriceMap $priceMap): void
     {
         $priceMap->delete();
+    }
+
+    /**
+     * @return Collection<int,PriceMap> $priceMaps
+     */
+    public function listDefault(): Collection
+    {
+        return Cache::driver('array')->rememberForever('default_price_maps', fn () => PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get());
     }
 
     public function updatePrices(PriceMap $priceMap, PriceMapPricesUpdateDto $dto): PriceMapUpdatedPricesData
@@ -211,6 +223,36 @@ final readonly class PriceMapService
         return PriceMapProductPriceData::collection($product->mapPrices);
     }
 
+    /**
+     * @param DataCollection<int,PriceDto>|array<int,PriceMap> $priceDtos
+     */
+    public function updateProductPricesForDefaultMaps(Product|string $product, array|DataCollection $priceDtos): void
+    {
+        if ($priceDtos instanceof DataCollection && $priceDtos->dataClass !== PriceDto::class) {
+            throw new InvalidArgumentException();
+        }
+        if (is_array($priceDtos)) {
+            $priceDtos = PriceDto::collection($priceDtos);
+        }
+
+        $data = $priceDtos->toCollection()->map(
+            function (PriceDto $priceDto) use ($product) {
+                $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
+
+                return [
+                    'id' => Uuid::uuid6(),
+                    'price_map_id' => $priceMap->id,
+                    'product_id' => $product instanceof Product ? $product->id : $product,
+                    'value' => $priceDto->value->getMinorAmount(),
+                    'currency' => $priceMap->currency->value,
+                    'is_net' => $priceMap->is_net,
+                ];
+            },
+        )->toArray();
+
+        PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value']);
+    }
+
     public function updateSchemaPrices(Schema $schema, PriceMapSchemaPricesUpdateDto $dto): PriceMapSchemaPricesDataCollection
     {
         /**
@@ -225,6 +267,33 @@ final readonly class PriceMapService
             }
         }
 
-        return new PriceMapSchemaPricesDataCollection($schema);
+        return PriceMapSchemaPricesDataCollection::fromSchema($schema);
+    }
+
+    /**
+     * @param DataCollection<int,PriceDto> $priceDtos
+     */
+    public function updateOptionPricesForDefaultMaps(Option $option, DataCollection $priceDtos): void
+    {
+        if ($priceDtos instanceof DataCollection && $priceDtos->dataClass !== PriceDto::class) {
+            throw new InvalidArgumentException();
+        }
+
+        $data = $priceDtos->toCollection()->map(
+            function (PriceDto $priceDto) use ($option) {
+                $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
+
+                return [
+                    'id' => Uuid::uuid6(),
+                    'price_map_id' => $priceMap->id,
+                    'option_id' => $option->id,
+                    'value' => $priceDto->value->getMinorAmount(),
+                    'currency' => $priceMap->currency->value,
+                    'is_net' => $priceMap->is_net,
+                ];
+            },
+        )->toArray();
+
+        PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value']);
     }
 }

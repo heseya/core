@@ -24,6 +24,6 @@ final class CreatePricesInPriceMapsAfterOptionCreated
                 'value' => 0,
             ];
         }
-        PriceMapSchemaOptionPrice::query()->insert($insert);
+        PriceMapSchemaOptionPrice::query()->insertOrIgnore($insert);
     }
 }

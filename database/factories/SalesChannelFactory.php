@@ -32,7 +32,7 @@ class SalesChannelFactory extends Factory
             'default' => false,
             'activity' => $this->faker->randomElement(SalesChannelActivityType::cases())->value,
 
-            // TODO: remove temp field
+            // TODO: remove this field if we ever create Vat Maps
             'vat_rate' => '0',
         ];
     }

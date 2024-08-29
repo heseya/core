@@ -10,7 +10,7 @@ use App\Models\DiscountCondition;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\Contracts\DiscountServiceContract;
+use App\Services\DiscountService;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -36,7 +36,7 @@ class DiscountConditionsCheckTest extends TestCase
 {
     use RefreshDatabase;
 
-    private DiscountServiceContract $discountService;
+    private DiscountService $discountService;
     private ConditionGroup $conditionGroup;
     private Discount $discount;
     private ShippingMethod $shippingMethod;
@@ -345,7 +345,7 @@ class DiscountConditionsCheckTest extends TestCase
 
         $this->discount->conditionGroups()->attach($this->conditionGroup);
 
-        $this->discountService = App::make(DiscountServiceContract::class);
+        $this->discountService = App::make(DiscountService::class);
     }
 
     public function testCheckConditionGroupPass(): void
@@ -520,9 +520,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                50.0,
-                $this->currency->value
-            ),
+                    50.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -552,9 +552,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                100.0,
-                $this->currency->value
-            ),
+                    100.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -584,9 +584,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                100.0,
-                $this->currency->value
-            ),
+                    100.0,
+                    $this->currency->value
+                ),
             )
         );
     }
@@ -616,9 +616,9 @@ class DiscountConditionsCheckTest extends TestCase
             $this->discountService->checkCondition(
                 condition: $discountCondition,
                 cartValue: Money::of(
-                50.0,
-                $this->currency->value
-            ),
+                    50.0,
+                    $this->currency->value
+                ),
             )
         );
     }

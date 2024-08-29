@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Product\Dtos;
 
-use Brick\Money\Currency;
 use Brick\Money\Money;
-use Domain\Currency\Currency as CurrencyEnum;
+use Domain\Currency\Currency;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -102,7 +101,7 @@ final class ProductSearchDto extends Data
     {
         return match (true) {
             $this->price instanceof Optional,
-            $this->price->currency instanceof Optional => CurrencyEnum::DEFAULT->toCurrencyInstance(),
+            $this->price->currency instanceof Optional => Currency::DEFAULT,
             default => $this->price->currency,
         };
     }
