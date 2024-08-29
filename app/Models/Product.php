@@ -354,7 +354,8 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
      */
     private function prices(): MorphMany
     {
-        return $this->morphMany(Price::class, 'model');
+        return $this->morphMany(Price::class, 'model')
+            ->whereNotNull('sales_channel_id');
     }
 
     public function getCachedInitialPriceForSalesChannel(SalesChannel|string|null $salesChannel = null): ?Price

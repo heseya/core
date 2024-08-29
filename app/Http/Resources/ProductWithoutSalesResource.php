@@ -53,7 +53,7 @@ class ProductWithoutSalesResource extends Resource
             'name' => $this->resource->name,
             'price_initial' => $initial_price,
             'price' => $price,
-            'prices_min' => ProductCachedPriceDto::collection($this->resource->pricesMin ?? $this->resource->pricesMinInitial),
+            'prices_min' => ProductCachedPriceDto::collection($this->resource->pricesMin),
             'prices_min_initial' => ProductCachedPriceDto::collection($this->resource->pricesMinInitial),
             'public' => $this->resource->public,
             'visible' => $this->resource->public,

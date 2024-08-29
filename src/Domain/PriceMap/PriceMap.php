@@ -57,7 +57,7 @@ final class PriceMap extends Model
     /**
      * @return HasMany<SalesChannel>
      */
-    public function salesChannel(): HasMany
+    public function salesChannels(): HasMany
     {
         return $this->hasMany(SalesChannel::class);
     }
