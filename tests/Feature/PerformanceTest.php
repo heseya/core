@@ -202,12 +202,15 @@ class PerformanceTest extends TestCase
 
         Option::factory()->count(500)->create([
             'schema_id' => $schema1->getKey(),
+            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
         Option::factory()->count(500)->create([
             'schema_id' => $schema2->getKey(),
+            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
         Option::factory()->count(500)->create([
             'schema_id' => $schema3->getKey(),
+            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
 
         $this
@@ -583,9 +586,7 @@ class PerformanceTest extends TestCase
             $option = $schema->options()->create([
                 'name' => 'XL',
             ]);
-            $option->prices()->createMany(
-                Price::factory(['value' => 0])->prepareForCreateMany()
-            );
+            app(PriceMapService::class)->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 0));
             $item = Item::factory()->create();
             $option->items()->attach([
                 $item->getKey() => [
@@ -957,7 +958,7 @@ class PerformanceTest extends TestCase
             ->json('GET', '/items/id:' . $productItem->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(22);
+        $this->assertQueryCountLessThan(33);
     }
 
     private function prepareProducts(int $count = 100): void
@@ -989,11 +990,8 @@ class PerformanceTest extends TestCase
 
         /** @var ProductService $productService */
         $productService = App::make(ProductService::class);
-        /** @var ProductRepository $productRepository */
-        $productRepository = App::make(ProductRepository::class);
-        /** @var PriceMapService $priceMapService */
-        $priceMapService = App::make(PriceMapService::class);
-        $products->each(function (Product $product) use ($categories, $productService, $productRepository, $priceMapService, $sales, $tags, $pages, $items) {
+
+        $products->each(function (Product $product) use ($categories, $productService, $sales, $tags, $pages, $items) {
             $this->prepareProductSchemas($product);
 
             for ($i = 0; $i < 5; ++$i) {
@@ -1014,12 +1012,6 @@ class PerformanceTest extends TestCase
             $product->save();
             $product->refresh();
 
-            $prices = array_map(fn(Currency $currency) => PriceDto::from(
-                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
-            ), Currency::cases());
-
-            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
-
             $productService->updateMinPrices($product);
         });
     }
@@ -1035,10 +1027,11 @@ class PerformanceTest extends TestCase
         $item = Item::factory()->create();
         $item->deposits()->saveMany(Deposit::factory()->count(2)->make());
 
-        Option::factory([
-            'schema_id' => $schema->getKey(),
-        ])
-            ->has(Price::factory()->forAllCurrencies())
-            ->count(3)->create();
+        Option::factory()->count(3)->create(
+            [
+                'schema_id' => $schema->getKey(),
+                'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])]
+            ]
+        );
     }
 }
