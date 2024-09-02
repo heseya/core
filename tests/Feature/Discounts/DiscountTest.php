@@ -46,6 +46,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -963,6 +964,8 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
+            ])
+            ->assertJson([
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
@@ -970,7 +973,7 @@ class DiscountTest extends TestCase
                         'gross' => "{$minPriceDiscounted}.00",
                         'sales_channel_id' => $this->salesChannel->id,
                     ],
-                ],
+                ]
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1055,6 +1058,8 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
+            ])
+            ->assertJson([
                 'prices_min' => [
                     [
                         'currency' => $this->currency->value,
@@ -2629,7 +2634,7 @@ class DiscountTest extends TestCase
                     'currency' => $currency,
                 ], Currency::values()),
             ])
-            ->assertJsonFragment([
+            ->assertJson([
                 'id' => $product2->getKey(),
                 'prices_min_initial' => [
                     [
@@ -2648,7 +2653,7 @@ class DiscountTest extends TestCase
                     ],
                 ],
             ])
-            ->assertJsonFragment([
+            ->assertJson([
                 'id' => $product3->getKey(),
                 'prices_min_initial' => [
                     [
@@ -2763,7 +2768,7 @@ class DiscountTest extends TestCase
 
         $response
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
-            ->assertJsonFragment([
+            ->assertJson([
                 'id' => $product2->getKey(),
                 'prices_min_initial' => [
                     [
@@ -2782,7 +2787,7 @@ class DiscountTest extends TestCase
                     ],
                 ],
             ])
-            ->assertJsonFragment([
+            ->assertJson([
                 'id' => $product3->getKey(),
                 'prices_min_initial' => [
                     [

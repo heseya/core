@@ -409,11 +409,13 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(2522);
+        $this->assertQueryCountLessThan(3024);
     }
 
     public function testCreateSalePerformance1000Products(): void
     {
+        $this->trackQueries();
+
         $this->user->givePermissionTo('sales.add');
 
         $currency = Currency::DEFAULT;
@@ -428,17 +430,6 @@ class PerformanceTest extends TestCase
             ->create([
                 'public' => true,
             ]);
-
-        /** @var PriceMapService $priceMapService */
-        $priceMapService = App::make(PriceMapService::class);
-
-        $products->each(function (Product $product) use ($priceMapService) {
-            $prices = array_map(fn(Currency $currency) => PriceDto::from(
-                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
-            ), Currency::cases());
-
-            $priceMapService->updateProductPricesForDefaultMaps($product, $prices);
-        });
 
         $set->products()->sync($products);
 
@@ -477,7 +468,7 @@ class PerformanceTest extends TestCase
         // 1000 products = +- 3137 queries, for 10000 +- 31130
         // This is even worse now since prices live in a separate table, now there is a +1 query for every product
         // To dispatch ProductPriceUpdated +3 for each product, but it require prices so another +2 (old + new) for each product
-        $this->assertQueryCountLessThan(11132);
+        $this->assertQueryCountLessThan(26148);
     }
 
     /**

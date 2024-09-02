@@ -697,7 +697,7 @@ readonly class DiscountService
 
         $sales = $this->getAllAplicableSalesForProduct($product, $salesWithBlockList);
 
-        foreach (SalesChannel::active()->hasPriceMap()->with('priceMap')->get() as $salesChannel) {
+        foreach ($this->salesChannelService->getCachedActiveSalesChannels() as $salesChannel) {
             try {
                 $oldPrices = $this->priceService->getCachedProductPrices($product, [
                     ProductPriceType::PRICE_MIN,
