@@ -31,8 +31,6 @@ class WishlistTest extends TestCase
                 'name',
                 'price',
                 'price_initial',
-                'prices_min',
-                'prices_min_initial',
                 'public',
                 'visible',
                 'available',
