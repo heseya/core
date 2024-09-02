@@ -3,12 +3,10 @@
 namespace Database\Factories;
 
 use App\Models\Product;
-use App\Repositories\ProductRepository;
-use App\Services\ProductService;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
-use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMapService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
@@ -41,18 +39,13 @@ class ProductFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function (Product $product): void {
-            $productService = App::make(ProductService::class);
+            $priceMapService = App::make(PriceMapService::class);
 
-            $price = PriceDto::from(
-                Money::of(
-                    round(mt_rand(500, 6000), -2),
-                    Currency::DEFAULT->value,
-                )
-            );
+            $prices = array_map(fn(Currency $currency) => PriceDto::from(
+                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
+            ), Currency::cases());
 
-            $productService->setProductPrices($product->getKey(), [
-                ProductPriceType::PRICE_MIN_INITIAL->value => [$price],
-            ]);
+            $priceMapService->updateProductPricesForDefaultMaps($product, PriceDto::collection($prices));
         });
     }
 }

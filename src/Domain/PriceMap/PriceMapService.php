@@ -240,10 +240,10 @@ final readonly class PriceMapService
                 $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
 
                 return [
-                    'id' => Uuid::uuid6(),
+                    'id' => Uuid::uuid6()->toString(),
                     'price_map_id' => $priceMap->id,
                     'product_id' => $product instanceof Product ? $product->id : $product,
-                    'value' => $priceDto->value->getMinorAmount(),
+                    'value' => $priceDto->value->getMinorAmount()->toInt(),
                     'currency' => $priceMap->currency->value,
                     'is_net' => $priceMap->is_net,
                 ];

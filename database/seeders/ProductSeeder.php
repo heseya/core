@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Tests\Utils\FakeDto;
 
 class ProductSeeder extends Seeder
 {
@@ -50,7 +51,6 @@ class ProductSeeder extends Seeder
             ->state(fn($sequence) => [
                 'shipping_digital' => mt_rand(0, 1),
             ])
-            ->has(Price::factory()->forAllCurrencies(), 'pricesBase')
             ->create();
 
         $sets = ProductSet::all();
@@ -79,7 +79,7 @@ class ProductSeeder extends Seeder
 
         $products->each(function ($product, $index) use ($productService, $priceMapService, $sets, $brands, $categories, $language): void {
             if (mt_rand(0, 1)) {
-                $this->schemas($product, $language);
+                $this->schemas($product, $language, $priceMapService);
             }
 
             $this->media($product);
@@ -99,14 +99,6 @@ class ProductSeeder extends Seeder
             $this->translations($product, $language);
             $product->save();
 
-            $prices = array_map(fn(Currency $currency) => PriceDto::from(
-                Money::of(round(mt_rand(500, 6000), -2), $currency->value),
-            ), Currency::cases());
-
-            $priceMapService->updateProductPricesForDefaultMaps($product, PriceDto::collection($prices));
-
-            $product->refresh();
-
             $productService->updateMinPrices($product);
         });
 
@@ -124,7 +116,7 @@ class ProductSeeder extends Seeder
         $seo->save();
     }
 
-    private function schemas(Product $product, string $language): void
+    private function schemas(Product $product, string $language, PriceMapService $priceMapService): void
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->create();
@@ -140,12 +132,12 @@ class ProductSeeder extends Seeder
 
         Option::factory([
             'schema_id' => $schema->getKey(),
-        ])->has(Price::factory()->forAllCurrencies())
-            ->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language): void {
-                $optionTranslation = Option::factory()->definition();
-                $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
-                $option->save();
-            });
+        ])->count(mt_rand(0, 4))->create()?->each(function (Option $option) use ($language, $priceMapService): void {
+            $optionTranslation = Option::factory()->definition();
+            $option->setLocale($language)->fill(Arr::only($optionTranslation, ['name']));
+            $option->save();
+            $priceMapService->updateOptionPricesForDefaultMaps($option, FakeDto::generatePricesInAllCurrencies([], 100));
+        });
     }
 
     private function media(Product $product): void

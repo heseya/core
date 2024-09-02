@@ -385,7 +385,7 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
      */
     public function mapPrices(): HasMany
     {
-        return $this->hasMany(PriceMapProductPrice::class);
+        return $this->hasMany(PriceMapProductPrice::class, 'product_id');
     }
 
     public function mappedPriceForPriceMap(PriceMap|string $priceMapId): PriceMapProductPrice
