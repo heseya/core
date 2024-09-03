@@ -30,7 +30,9 @@ use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\Product\Dtos\ProductVariantPriceDto;
 use Domain\Product\Models\ProductBannerMedia;
+use Domain\Product\Resources\ProductVariantPriceResource;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
@@ -45,6 +47,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
@@ -143,18 +146,26 @@ final readonly class ProductService
         DB::commit();
     }
 
-    public function updateMinPrices(Product $product): void
+    /**
+     * @param Collection<int,SalesChannel>|null $salesChannels
+     */
+    public function updateMinPrices(Product $product, ?Collection $salesChannels = null): void
     {
-        $this->updateInitialPricesForAllActiveSalesChannels($product);
+        $salesChannels = $salesChannels === null ? $this->salesChannelService->getCachedActiveSalesChannels() : $salesChannels;
 
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->updateInitialPricesForSalesChannels($product, $salesChannels);
+
+        $this->discountService->applyDiscountsOnProduct($product, $salesChannels);
     }
 
-    public function updateInitialPricesForAllActiveSalesChannels(Product $product): void
+    /**
+     * @param Collection<int,SalesChannel> $salesChannels
+     */
+    public function updateInitialPricesForSalesChannels(Product $product, Collection $salesChannels): void
     {
         $prices = [];
 
-        foreach (SalesChannel::active()->hasPriceMap()->with('priceMap')->get() as $salesChannel) {
+        foreach ($salesChannels as $salesChannel) {
             $priceMap = $salesChannel->priceMap;
             assert($priceMap instanceof PriceMap);
 
@@ -181,7 +192,29 @@ final readonly class ProductService
         $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
+    public function getPriceForVariant(Product $product, ProductVariantPriceDto $dto, bool $calculateForCurrentUser = false): ProductVariantPriceResource
+    {
+        $salesChannel = $this->salesChannelService->getCurrentRequestSalesChannel();
+        $priceMap = $salesChannel->priceMap;
+
+        if ($priceMap === null) {
+            throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_PRICE_MAP);
+        }
+
+        $price_initial = $product->mappedPriceForPriceMap($priceMap);
+
+        $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
+        $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $dto->schemas);
+
+        return ProductVariantPriceResource::from([
+            'price_initial' => ProductCachedPriceDto::from($price_initial, $salesChannel),
+            'price' => $price,
+        ]);
+    }
+
     /**
+     * Returns initial mix/max prices, without calculating tax.
+     *
      * @return Money[]
      */
     public function getMinMaxPrices(Product $product, Currency|PriceMap|SalesChannel $filter = null): array

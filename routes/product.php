@@ -30,4 +30,7 @@ Route::prefix('products')->group(function (): void {
         ->middleware('can:products.edit');
     Route::delete('id:{product:id}/attachments/id:{attachment:id}', [ProductController::class, 'deleteAttachment'])
         ->middleware('can:products.edit');
+
+    Route::post('id:{product:id}/process', [ProductController::class, 'process'])
+        ->middleware('can:products.show', 'can:cart.verify');
 });

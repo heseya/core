@@ -10,6 +10,7 @@ use App\Models\App;
 use App\Models\User;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\PaymentMethods\Models\PaymentMethod;
+use Domain\PriceMap\Jobs\RefreshCachedPricesForSalesChannel;
 use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
 use Domain\SalesChannel\Dtos\SalesChannelIndexDto;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
@@ -104,6 +105,10 @@ final class SalesChannelRepository
         }
         $channel->loadCount('organizations');
 
+        if ($channel->priceMap) {
+            dispatch(new RefreshCachedPricesForSalesChannel($channel));
+        }
+
         return $channel;
     }
 
@@ -133,6 +138,10 @@ final class SalesChannelRepository
         $channel->fill($dto->toArray());
         $channel->save();
         $channel->loadCount('organizations');
+
+        if ($channel->wasChanged('vat_rate') && $channel->priceMap) {
+            dispatch(new RefreshCachedPricesForSalesChannel($channel));
+        }
 
         return $channel;
     }

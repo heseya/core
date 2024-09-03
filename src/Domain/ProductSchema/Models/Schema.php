@@ -214,7 +214,7 @@ final class Schema extends Model implements SortableContract, Translatable
     }
 
     /**
-     * @param array<string,Schema> $schemas
+     * @param array<string,string> $schemas
      *
      * @throws MathException
      * @throws MoneyMismatchException
@@ -261,7 +261,7 @@ final class Schema extends Model implements SortableContract, Translatable
     }
 
     /**
-     * @param array<string,Schema> $schemas
+     * @param array<string,string> $schemas
      *
      * @throws MathException
      * @throws MoneyMismatchException

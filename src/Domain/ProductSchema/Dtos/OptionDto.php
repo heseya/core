@@ -67,7 +67,7 @@ final class OptionDto extends Data
     {
         return [
             'items.*' => ['uuid', 'exists:items,id'],
-            'prices' => ['required', new PricesEveryCurrency()],
+            'prices' => ['sometimes', new PricesEveryCurrency()],
             'prices.*' => ['sometimes', new Price(['value'], min: BigDecimal::zero())],
         ];
     }
