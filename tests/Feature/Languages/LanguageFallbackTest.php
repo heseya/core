@@ -5,8 +5,10 @@ namespace Tests\Feature\Languages;
 use App\Enums\SchemaType;
 use App\Models\Option;
 use App\Models\Product;
+use Domain\Currency\Currency;
 use Domain\Language\Enums\LangFallbackType;
 use Domain\Language\Language;
+use Domain\Price\Dtos\PriceDto;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductSchema\Models\Schema;
@@ -190,7 +192,11 @@ class LanguageFallbackTest extends TestCase
     {
         return [
             'as user fallback default with default and another no hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, true, true, [],
+                'user',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                [],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -198,7 +204,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default and another no hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, true, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -206,7 +216,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default not published and another no hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, false, true, [],
+                'user',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -214,7 +228,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default not published and another no hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, false, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -222,7 +240,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with no default and another no hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, null, true, [],
+                'user',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -230,7 +252,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with no default and another no hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, null, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -238,7 +264,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default and another hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, true, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -246,7 +276,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default and another hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, true, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -254,7 +288,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default not published and another hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, false, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -262,7 +300,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with default not published and another hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, false, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -270,7 +312,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with no default and another hidden no unpublished' => [
-                'user', LangFallbackType::DEFAULT, null, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -278,7 +324,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback default with no default and another hidden unpublished' => [
-                'user', LangFallbackType::DEFAULT, null, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -286,7 +336,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default and another no hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, true, true, [],
+                'application',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                [],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -294,7 +348,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default and another no hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, true, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -302,7 +360,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default not published and another no hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, false, true, [],
+                'application',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -310,7 +372,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default not published and another no hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, false, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -318,7 +384,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with no default and another no hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, null, true, [],
+                'application',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -326,7 +396,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with no default and another no hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, null, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -334,7 +408,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default and another hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, true, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -342,7 +420,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default and another hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, true, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                true,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -350,7 +432,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default not published and another hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, false, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -358,7 +444,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with default not published and another hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, false, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                false,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -366,7 +456,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with no default and another hidden no unpublished' => [
-                'application', LangFallbackType::DEFAULT, null, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -374,7 +468,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback default with no default and another hidden unpublished' => [
-                'application', LangFallbackType::DEFAULT, null, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::DEFAULT,
+                null,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -382,7 +480,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default and another no hidden no unpublished' => [
-                'user', LangFallbackType::ANY, true, true, [],
+                'user',
+                LangFallbackType::ANY,
+                true,
+                true,
+                [],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -390,7 +492,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default and another no hidden unpublished' => [
-                'user', LangFallbackType::ANY, true, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -398,7 +504,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default not published and another no hidden no unpublished' => [
-                'user', LangFallbackType::ANY, false, true, [],
+                'user',
+                LangFallbackType::ANY,
+                false,
+                true,
+                [],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -406,7 +516,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default not published and another no hidden unpublished' => [
-                'user', LangFallbackType::ANY, false, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -414,7 +528,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another no hidden no unpublished' => [
-                'user', LangFallbackType::ANY, null, true, [],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                true,
+                [],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -422,7 +540,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another no hidden unpublished' => [
-                'user', LangFallbackType::ANY, null, true, ['products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -430,7 +552,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another not published no hidden no unpublished' => [
-                'user', LangFallbackType::ANY, null, false, [],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                false,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -438,7 +564,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another not published no hidden unpublished' => [
-                'user', LangFallbackType::ANY, null, false, ['products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -446,7 +576,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default and another hidden no unpublished' => [
-                'user', LangFallbackType::ANY, true, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -454,7 +588,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default and another hidden unpublished' => [
-                'user', LangFallbackType::ANY, true, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -462,7 +600,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default not published and another hidden no unpublished' => [
-                'user', LangFallbackType::ANY, false, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -470,7 +612,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with default not published and another hidden unpublished' => [
-                'user', LangFallbackType::ANY, false, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -478,7 +624,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another hidden no unpublished' => [
-                'user', LangFallbackType::ANY, null, true, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -486,7 +636,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another hidden unpublished' => [
-                'user', LangFallbackType::ANY, null, true, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -494,7 +648,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another not published hidden no unpublished' => [
-                'user', LangFallbackType::ANY, null, false, ['languages.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -502,7 +660,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as user fallback any with no default and another not published hidden unpublished' => [
-                'user', LangFallbackType::ANY, null, false, ['languages.show_hidden', 'products.show_hidden'],
+                'user',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -510,7 +672,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default and another no hidden no unpublished' => [
-                'application', LangFallbackType::ANY, true, true, [],
+                'application',
+                LangFallbackType::ANY,
+                true,
+                true,
+                [],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -518,7 +684,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default and another no hidden unpublished' => [
-                'application', LangFallbackType::ANY, true, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -526,7 +696,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default not published and another no hidden no unpublished' => [
-                'application', LangFallbackType::ANY, false, true, [],
+                'application',
+                LangFallbackType::ANY,
+                false,
+                true,
+                [],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -534,7 +708,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default not published and another no hidden unpublished' => [
-                'application', LangFallbackType::ANY, false, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -542,7 +720,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another no hidden no unpublished' => [
-                'application', LangFallbackType::ANY, null, true, [],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                true,
+                [],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -550,7 +732,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another no hidden unpublished' => [
-                'application', LangFallbackType::ANY, null, true, ['products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -558,7 +744,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another not published no hidden no unpublished' => [
-                'application', LangFallbackType::ANY, null, false, [],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                false,
+                [],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -566,7 +756,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another not published no hidden unpublished' => [
-                'application', LangFallbackType::ANY, null, false, ['products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -574,7 +768,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default and another hidden no unpublished' => [
-                'application', LangFallbackType::ANY, true, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -582,7 +780,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default and another hidden unpublished' => [
-                'application', LangFallbackType::ANY, true, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                true,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -590,7 +792,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default not published and another hidden no unpublished' => [
-                'application', LangFallbackType::ANY, false, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -598,7 +804,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with default not published and another hidden unpublished' => [
-                'application', LangFallbackType::ANY, false, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                false,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Nazwa',
                     'description_html' => 'HTML opis',
@@ -606,7 +816,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another hidden no unpublished' => [
-                'application', LangFallbackType::ANY, null, true, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['languages.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -614,7 +828,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another hidden unpublished' => [
-                'application', LangFallbackType::ANY, null, true, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                true,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -622,7 +840,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another not published hidden no unpublished' => [
-                'application', LangFallbackType::ANY, null, false, ['languages.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['languages.show_hidden'],
                 [
                     'name' => '',
                     'description_html' => '',
@@ -630,7 +852,11 @@ class LanguageFallbackTest extends TestCase
                 ],
             ],
             'as app fallback any with no default and another not published hidden unpublished' => [
-                'application', LangFallbackType::ANY, null, false, ['languages.show_hidden', 'products.show_hidden'],
+                'application',
+                LangFallbackType::ANY,
+                null,
+                false,
+                ['languages.show_hidden', 'products.show_hidden'],
                 [
                     'name' => 'Name',
                     'description_html' => 'HTML Beschreibung',
@@ -739,6 +965,7 @@ class LanguageFallbackTest extends TestCase
         $option = Option::factory()->create([
             'name' => 'Opcja 1',
             'schema_id' => $schema->getKey(),
+            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
 
         $product->schemas()->save($schema);
