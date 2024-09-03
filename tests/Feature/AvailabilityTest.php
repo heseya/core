@@ -147,8 +147,8 @@ class AvailabilityTest extends TestCase
                 'available' => true,
             ]);
 
-        $this->assertTrue($item->options->every(fn ($option) => $option->available));
-        $this->assertTrue($item->options->pluck('schema')->every(fn ($schema) => $schema->available));
+        $this->assertTrue($item->options->every(fn($option) => $option->available));
+        $this->assertTrue($item->options->pluck('schema')->every(fn($schema) => $schema->available));
         $this->assertTrue($this->product->refresh()->available);
 
         Event::assertDispatched(ProductUpdated::class);
@@ -379,7 +379,7 @@ class AvailabilityTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => SalesChannel::query()->where('default', true)->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
@@ -459,7 +459,7 @@ class AvailabilityTest extends TestCase
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => SalesChannel::query()->where('default', true)->value('id'),
             'email' => 'test@test.test',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => Address::factory()->create()->toArray(),
@@ -652,7 +652,7 @@ class AvailabilityTest extends TestCase
 
         $this->actingAs($this->{$user})->postJson('/orders', [
             'currency' => $this->currency,
-            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'sales_channel_id' => SalesChannel::query()->where('default', true)->value('id'),
             'email' => $email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_place' => $address->toArray(),
@@ -680,7 +680,7 @@ class AvailabilityTest extends TestCase
 
         $schemas = $this->createSchemasWithOptions($schemaCount);
 
-        $prices = array_map(fn (Currency $currency) => [
+        $prices = array_map(fn(Currency $currency) => [
             'value' => '10.00',
             'currency' => $currency->value,
         ], Currency::cases());

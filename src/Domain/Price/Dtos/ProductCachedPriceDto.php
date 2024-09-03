@@ -8,6 +8,7 @@ use App\Models\Price;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMapProductPrice;
+use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
 use Spatie\LaravelData\Attributes\Validation\Exists;
@@ -43,7 +44,7 @@ final class ProductCachedPriceDto extends Data
         ]);
     }
 
-    public static function fromPriceMapProductPriceAndSalesChannel(PriceMapProductPrice $price, SalesChannel $salesChannel): self
+    public static function fromPriceMapPriceAndSalesChannel(PriceMapProductPrice|PriceMapSchemaOptionPrice $price, SalesChannel $salesChannel): self
     {
         if ($price->is_net) {
             $net = $price->value;

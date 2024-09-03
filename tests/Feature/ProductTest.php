@@ -33,6 +33,7 @@ use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceService;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -70,6 +71,7 @@ class ProductTest extends TestCase
     private ProductService $productService;
     private SchemaCrudService $schemaCrudService;
     private SalesChannel $salesChannel;
+    private PriceMapService $priceMapService;
 
     public static function noIndexProvider(): array
     {
@@ -99,6 +101,7 @@ class ProductTest extends TestCase
         $this->discountRepository = App::make(DiscountRepository::class);
         $this->priceService = App::make(PriceService::class);
         $this->salesChannel = App::make(SalesChannelRepository::class)->getDefault();
+        $this->priceMapService = App::make(PriceMapService::class);
 
         $this->productPrices = array_map(fn(Currency $currency) => [
             'value' => '100.00',
@@ -131,9 +134,7 @@ class ProductTest extends TestCase
             'name' => 'L',
             'order' => 2,
         ]);
-        $l->prices()->createMany(
-            Price::factory(['value' => 0])->prepareForCreateMany(),
-        );
+        $this->priceMapService->updateOptionPricesForDefaultMaps($l, FakeDto::generatePricesInAllCurrencies([],0));
 
         $l->items()->create([
             'name' => 'Koszulka L',
@@ -146,9 +147,7 @@ class ProductTest extends TestCase
             'name' => 'XL',
             'order' => 1,
         ]);
-        $xl->prices()->createMany(
-            Price::factory(['value' => 0])->prepareForCreateMany(),
-        );
+        $this->priceMapService->updateOptionPricesForDefaultMaps($xl, FakeDto::generatePricesInAllCurrencies([],0));
 
         $item = $xl->items()->create([
             'name' => 'Koszulka XL',

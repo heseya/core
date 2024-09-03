@@ -46,6 +46,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -963,14 +964,12 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'net' => "{$minPriceDiscounted}.00",
-                        'gross' => "{$minPriceDiscounted}.00",
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
-                ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'net' => "{$minPriceDiscounted}.00",
+                    'gross' => "{$minPriceDiscounted}.00",
+                    'sales_channel_id' => $this->salesChannel->id,
+                ]
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1055,13 +1054,11 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'net' => "1000.00",
-                        'gross' => "1000.00",
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'net' => "1000.00",
+                    'gross' => "1000.00",
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ])
             ->assertJsonFragment([
@@ -2631,40 +2628,32 @@ class DiscountTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_min_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '150.00',
-                        'net' => '150.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price_initial' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '150.00',
+                    'net' => '150.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '140.00',
-                        'net' => '140.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '140.00',
+                    'net' => '140.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_min_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '290.00',
-                        'net' => '290.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price_initial' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                    'net' => '290.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '280.00',
-                        'net' => '280.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '280.00',
+                    'net' => '280.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 
@@ -2765,40 +2754,32 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountData + ['id' => $discount->getKey()])
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
-                'prices_min_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '190.00',
-                        'net' => '190.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price_initial' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '190.00',
+                    'net' => '190.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '190.00',
-                        'net' => '190.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '190.00',
+                    'net' => '190.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
-                'prices_min_initial' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '290.00',
-                        'net' => '290.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price_initial' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                    'net' => '290.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
-                'prices_min' => [
-                    [
-                        'currency' => $this->currency->value,
-                        'gross' => '290.00',
-                        'net' => '290.00',
-                        'sales_channel_id' => $this->salesChannel->id,
-                    ],
+                'price' => [
+                    'currency' => $this->currency->value,
+                    'gross' => '290.00',
+                    'net' => '290.00',
+                    'sales_channel_id' => $this->salesChannel->id,
                 ],
             ]);
 

@@ -13,6 +13,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\SalesChannel\Models\SalesChannel;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 final readonly class SalesChannelService
@@ -31,6 +32,14 @@ final readonly class SalesChannelService
                 }
             },
         );
+    }
+
+    /**
+     * @return Collection<int,SalesChannel>
+     */
+    public function getCachedActiveSalesChannels(): Collection
+    {
+        return Cache::driver('array')->rememberForever('active_sales_channels', fn () => SalesChannel::active()->hasPriceMap()->with('priceMap')->get());
     }
 
     /**

@@ -5,6 +5,9 @@ namespace App\Http\Resources;
 use App\Models\Option;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\Currency\Currency;
+use Domain\Price\Dtos\ProductCachedPriceDto;
+use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\Request;
 
 /**
@@ -17,11 +20,15 @@ class OptionResource extends Resource
 
     public function base(Request $request): array
     {
+        $salesChannelService = app(SalesChannelService::class);
+        $salesChannel = $salesChannelService->getCurrentRequestSalesChannel();
+
+        $price = ProductCachedPriceDto::from($this->resource->getMappedPriceForPriceMap($salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
+
         $data = [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'price' => $request->header('X-Sales-Channel') ? PriceResource::make($this->resource->getMappedPriceForSalesChannel($request->header('X-Sales-Channel'))) : null,
-            'prices' => PriceResource::collection($this->resource->mapPrices),
+            'price' => $price,
             'available' => $this->resource->available,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
