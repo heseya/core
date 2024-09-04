@@ -25,11 +25,13 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
+use Domain\Product\Dtos\ProductVariantPriceDto;
 use Heseya\Dto\DtoException;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class ProductController extends Controller
@@ -192,5 +194,10 @@ final class ProductController extends Controller
         $this->attachmentService->removeAttachment($attachment);
 
         return Response::noContent();
+    }
+
+    public function process(Request $request, Product $product, ProductVariantPriceDto $dto): HttpResponse
+    {
+        return $this->productService->getPriceForVariant($product, $dto)->toResponse($request);
     }
 }

@@ -273,6 +273,8 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,SalesChannel>|null $salesChannels
+     *
      * @throws ServerException
      * @throws MoneyMismatchException
      * @throws UnknownCurrencyException
@@ -283,7 +285,7 @@ readonly class DiscountService
      * @throws NumberFormatException
      * @throws StoreException
      */
-    public function calculateDiscount(Discount $discount, bool $updated): void
+    public function calculateDiscount(Discount $discount, ?Collection $salesChannels = null): void
     {
         // If discount has conditions based on time, then must be added or removed from cache
         $this->checkIsDiscountActive($discount);
@@ -294,11 +296,11 @@ readonly class DiscountService
 
         // if job is called after update, then calculate discount for all products,
         // because it may change the list of related products or target_is_allow_list value
-        if (!$updated && $discount->active) {
+        if ($discount->wasRecentlyCreated && $discount->active) {
             $products = $this->allDiscountProductsIds($discount);
         }
 
-        $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList);
+        $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList, $salesChannels);
     }
 
     /**
@@ -336,6 +338,8 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,Product> $products
+     *
      * @throws MathException
      * @throws StoreException
      * @throws MoneyMismatchException
@@ -567,6 +571,9 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,Product> $products
+     * @param Collection<int,SalesChannel> $salesChannels
+     *
      * @throws MoneyMismatchException
      * @throws ServerException
      * @throws UnknownCurrencyException
@@ -577,15 +584,17 @@ readonly class DiscountService
      * @throws DtoException
      * @throws StoreException
      */
-    public function applyDiscountsOnProducts(Collection $products): void
+    public function applyDiscountsOnProducts(Collection $products, ?Collection $salesChannels = null): void
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
         foreach ($products as $product) {
-            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
+            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $salesChannels);
         }
     }
 
     /**
+     * @param Collection<int,SalesChannel>|null $salesChannels
+     *
      * @throws ServerException
      * @throws MoneyMismatchException
      * @throws UnknownCurrencyException
@@ -596,10 +605,10 @@ readonly class DiscountService
      * @throws DtoException
      * @throws StoreException
      */
-    public function applyDiscountsOnProduct(Product $product): void
+    public function applyDiscountsOnProduct(Product $product, ?Collection $salesChannels = null): void
     {
         $salesWithBlockList = $this->getSalesWithBlockList();
-        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
+        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $salesChannels);
     }
 
     /**
@@ -678,6 +687,9 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,Discount> $salesWithBlockList
+     * @param Collection<int,SalesChannel>|null $salesChannels
+     *
      * @throws StoreException
      * @throws ClientException
      * @throws NumberFormatException
@@ -691,13 +703,18 @@ readonly class DiscountService
     public function applyAllDiscountsOnProduct(
         Product $product,
         Collection $salesWithBlockList,
+        ?Collection $salesChannels = null,
     ): void {
+        if ($salesChannels === null) {
+            $salesChannels = $this->salesChannelService->getCachedActiveSalesChannels();
+        }
+
         $allOldPrices = [];
         $allNewPrices = [];
 
         $sales = $this->getAllAplicableSalesForProduct($product, $salesWithBlockList);
 
-        foreach ($this->salesChannelService->getCachedActiveSalesChannels() as $salesChannel) {
+        foreach ($salesChannels as $salesChannel) {
             try {
                 $oldPrices = $this->priceService->getCachedProductPrices($product, [
                     ProductPriceType::PRICE_MIN,
@@ -731,6 +748,8 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,Discount> $salesWithBlockList
+     *
      * @return Collection<int,Discount>
      */
     public function getAllAplicableSalesForProduct(Product $product, Collection $salesWithBlockList, bool $calcForCurrentUser = false): Collection
@@ -1053,6 +1072,7 @@ readonly class DiscountService
 
     /**
      * @param Collection<int,Discount> $sales
+     * @param array<string,string> $schemas
      *
      * @throws MoneyMismatchException
      * @throws ServerException
@@ -1062,10 +1082,11 @@ readonly class DiscountService
      * @throws NumberFormatException
      * @throws DtoException
      */
-    private function calcAllDiscountsOnProduct(
+    public function calcAllDiscountsOnProductVariant(
         Product $product,
         Collection $sales,
         SalesChannel $salesChannel,
+        array $schemas = [],
     ): ProductCachedPriceDto {
         $priceMap = $salesChannel->priceMap;
         assert($priceMap instanceof PriceMap);
@@ -1086,6 +1107,18 @@ readonly class DiscountService
             $gross = $initialPrice->gross;
         }
 
+        foreach ($schemas as $schemaId => $optionId) {
+            /** @var Schema $schema */
+            $schema = $product->schemas()->findOrFail($schemaId);
+
+            $schema_price = $schema->getPrice($optionId, $schemas, $priceMap->currency);
+            if ($priceMap->is_net) {
+                $schema_price = $this->salesChannelService->addVat($schema_price, $this->salesChannelService->getVatRate($salesChannel));
+            }
+
+            $gross = $gross->plus($schema_price);
+        }
+
         $minPrice = $gross;
         foreach ($sales as $sale) {
             if ($minPrice->isGreaterThan($minimalProductPrice)) {
@@ -1102,7 +1135,26 @@ readonly class DiscountService
     }
 
     /**
-     * @param array<DiscountTargetType> $targetTypes
+     * @param Collection<int,Discount> $sales
+     *
+     * @throws MoneyMismatchException
+     * @throws ServerException
+     * @throws UnknownCurrencyException
+     * @throws RoundingNecessaryException
+     * @throws MathException
+     * @throws NumberFormatException
+     * @throws DtoException
+     */
+    private function calcAllDiscountsOnProduct(
+        Product $product,
+        Collection $sales,
+        SalesChannel $salesChannel,
+    ): ProductCachedPriceDto {
+        return $this->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel);
+    }
+
+    /**
+     * @param array<int,DiscountTargetType> $targetTypes
      *
      * @throws ClientException
      * @throws MathException
@@ -1203,9 +1255,9 @@ readonly class DiscountService
     }
 
     /**
-     * @param Collection<array-key, Discount> $discounts
+     * @param Collection<array-key,Discount> $discounts
      *
-     * @return Collection<array-key, Discount>
+     * @return Collection<array-key,Discount>
      */
     private function sortDiscounts(Collection $discounts): Collection
     {
@@ -1218,6 +1270,10 @@ readonly class DiscountService
     }
 
     /**
+     * @param Collection<int,string> $productIds
+     * @param Collection<int,Discount> $salesWithBlockList
+     * @param Collection<int,SalesChannel>|null $salesChannels
+     *
      * @throws MoneyMismatchException
      * @throws ServerException
      * @throws UnknownCurrencyException
@@ -1228,7 +1284,7 @@ readonly class DiscountService
      * @throws NumberFormatException
      * @throws StoreException
      */
-    private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
+    public function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList, ?Collection $salesChannels = null): void
     {
         $productQuery = Product::with([
             'discounts',
@@ -1241,11 +1297,7 @@ readonly class DiscountService
             $productQuery = $productQuery->whereIn('id', $productIds);
         }
 
-        $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
-            foreach ($products as $product) {
-                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
-            }
-        });
+        $productQuery->chunk(100, fn (Collection $products) => $products->each(fn (Product $product) => $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $salesChannels)));
     }
 
     /**

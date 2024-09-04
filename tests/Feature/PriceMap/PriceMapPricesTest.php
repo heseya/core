@@ -9,10 +9,12 @@ use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
+use Tests\Utils\FakeDto;
 
 class PriceMapPricesTest extends TestCase
 {
@@ -27,9 +29,13 @@ class PriceMapPricesTest extends TestCase
     private PriceMap $priceMap1;
     private PriceMap $priceMap2;
 
+    private PriceMapService $priceMapService;
+
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->priceMapService = App::make(PriceMapService::class);
 
         $this->product1 = Product::factory()->create([
             'public' => true,
@@ -53,9 +59,8 @@ class PriceMapPricesTest extends TestCase
             'currency' => Currency::DEFAULT->value,
         ]);
 
-        $priceMapService = App::make(PriceMapService::class);
-        $priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap1);
-        $priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap2);
+        $this->priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap1);
+        $this->priceMapService->createPricesForAllMissingProductsAndSchemas($this->priceMap2);
 
         PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product1->getKey()])->update(['value' => 10100]);
         PriceMapProductPrice::where(['price_map_id' => $this->priceMap1->getKey(), 'product_id' => $this->product2->getKey()])->update(['value' => 10200]);
@@ -258,5 +263,44 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment(['id' => $this->option1a->getKey(), 'price' => '105.00'])
             ->assertJsonFragment(['id' => $this->option1b->getKey(), 'price' => '106.00']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProcess(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->priceMapService->updateOptionPricesForDefaultMaps($this->option1a, FakeDto::generatePricesInAllCurrencies([], 123));
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products/id:' . $this->product1->getKey() . '/process', [
+                'schemas' => [
+                    $this->schema1->getKey() => $this->option1a->getKey(),
+                ]
+            ]);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'price_initial' => [
+                    'net' => '101.00',
+                    'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ])
+            ->assertJsonFragment([
+                'price' => [
+                    'net' => '224.00', // 101 + 123
+                    'gross' => '224.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ]);
     }
 }

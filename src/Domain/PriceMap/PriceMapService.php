@@ -19,6 +19,7 @@ use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdateOptionDto;
 use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdatePartialDto;
 use Domain\PriceMap\Dtos\PriceMapUpdateDto;
 use Domain\PriceMap\Jobs\CreatePricesForAllProductsAndOptionsJob;
+use Domain\PriceMap\Jobs\RefreshCachedPricesForSalesChannel;
 use Domain\PriceMap\Resources\PriceMapData;
 use Domain\PriceMap\Resources\PriceMapPricesForProductData;
 use Domain\PriceMap\Resources\PriceMapProductPriceData;
@@ -99,6 +100,12 @@ final readonly class PriceMapService
     public function update(PriceMap $priceMap, PriceMapUpdateDto $dto): PriceMap
     {
         $priceMap->fill($dto->toArray())->save();
+
+        if ($priceMap->wasChanged('is_net')) {
+            foreach ($priceMap->salesChannels as $salesChannel) {
+                dispatch(new RefreshCachedPricesForSalesChannel($salesChannel));
+            }
+        }
 
         return $priceMap;
     }

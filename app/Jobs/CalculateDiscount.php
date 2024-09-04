@@ -36,6 +36,6 @@ class CalculateDiscount implements ShouldQueue
      */
     public function handle(DiscountService $discountService): void
     {
-        $discountService->calculateDiscount($this->discount, $this->updated);
+        $discountService->calculateDiscount($this->discount);
     }
 }
