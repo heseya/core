@@ -20,22 +20,14 @@ return new class extends Migration
                 /** @var PriceMap $priceMap */
                 $priceMap = PriceMap::find($case->getDefaultPriceMapId());
                 if ($priceMap->salesChannels->count() === 0) {
-                    $salesChannel = SalesChannel::factory()->create([
+                    SalesChannel::factory()->create([
                         'name' => 'Default channel for ' . $case->value,
                         'price_map_id' => $priceMap->id,
                         'status' => SalesChannelStatus::PRIVATE->value,
                         'activity' => SalesChannelActivityType::ACTIVE->value,
                         'default' => false,
                     ]);
-                } else {
-                    $salesChannel = $priceMap->salesChannels->first();
                 }
-
-                Price::query()
-                    ->where('currency', $case->value)
-                    ->where('model_type', (new Product())->getMorphClass())
-                    ->whereNull('sales_channel_id')
-                    ->update(['sales_channel_id' => $salesChannel->getKey()]);
             }
         }
 
