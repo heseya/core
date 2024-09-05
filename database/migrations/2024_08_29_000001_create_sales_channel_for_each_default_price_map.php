@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Price;
 use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;

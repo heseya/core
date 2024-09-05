@@ -27,7 +27,7 @@ class SchemaUpdateRequest extends FormRequest
             'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
 
-            'default' => ['nullable', 'required_if:required,true', 'integer', 'min:0', 'max:' . count($this->options ?? [])],
+            'default' => ['nullable', 'required_if:required,true', 'integer', 'min:0'],
 
             'options' => ['nullable', 'array'],
             'options.*.translations' => ['sometimes', new Translations(['name'])],

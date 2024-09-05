@@ -203,8 +203,12 @@ final readonly class ProductService
 
         $price_initial = $product->mappedPriceForPriceMap($priceMap);
 
-        $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
-        $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $dto->schemas);
+        if (is_array($dto->schemas) && !empty($dto->schemas)) {
+            $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
+            $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $dto->schemas);
+        } else {
+            $price = ProductCachedPriceDto::from($price_initial, $salesChannel);
+        }
 
         return ProductVariantPriceResource::from([
             'price_initial' => ProductCachedPriceDto::from($price_initial, $salesChannel),

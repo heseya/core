@@ -17,10 +17,10 @@ use Domain\Price\Dtos\ProductCachedPricesDtoCollection;
 use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Cache;
 use Ramsey\Uuid\Uuid;
 use Support\Dtos\ModelIdentityDto;
 
@@ -31,6 +31,7 @@ final class PriceRepository
      */
     public function setCachedProductPrices(ModelIdentityDto|Product $product, array|ProductCachedPricesDtoCollection $priceMatrix): void
     {
+        $salesChannels = app(SalesChannelService::class)->getCachedActiveSalesChannels();
         $priceMatrix = new ProductCachedPricesDtoCollection(items: $priceMatrix);
 
         $rows = [];
@@ -39,7 +40,7 @@ final class PriceRepository
         /** @var ProductCachedPricesDto $pricesCollection */
         foreach ($priceMatrix as $pricesCollection) {
             foreach ($pricesCollection->prices as $price) {
-                $salesChannel = Cache::driver('array')->rememberForever('sales_channel_' . $price->sales_channel_id, fn () => SalesChannel::with('priceMap')->findOrFail($price->sales_channel_id));
+                $salesChannel = $salesChannels->firstOrFail($price->sales_channel_id);
 
                 $rows[] = [
                     'id' => Uuid::uuid4(),
@@ -68,6 +69,7 @@ final class PriceRepository
             ['value', 'net', 'gross', 'is_net'],
         );
 
+        // Remove prices if priceMap currency changed
         foreach ($salesChannelsToPreserve as $salesChannelToPreserve) {
             Price::query()
                 ->where('model_id', $product->getKey())
