@@ -15,9 +15,9 @@ use App\Models\WebHook;
 use Domain\Currency\Currency;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Ramsey\Uuid\Uuid;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -37,7 +37,7 @@ class ItemTest extends TestCase
     {
         parent::setUp();
 
-        Carbon::setTestNow(null);
+        Date::setTestNow(now());
 
         $this->item = Item::factory()->create();
 
@@ -202,7 +202,7 @@ class ItemTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/items', [
                 'sold_out' => 1,
-                'day' => Carbon::now(),
+                'day' => Date::now(),
             ])
             ->assertStatus(422);
     }
@@ -218,7 +218,7 @@ class ItemTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/items', [
                 'sort' => 'quantity:asc',
-                'day' => Carbon::now(),
+                'day' => Date::now(),
             ])
             ->assertStatus(422);
     }
@@ -230,7 +230,7 @@ class ItemTest extends TestCase
     {
         $this->{$user}->givePermissionTo('items.show');
 
-        $created_at = Carbon::yesterday()->startOfDay()->addHours(12);
+        $created_at = Date::yesterday()->startOfDay()->addHours(12);
 
         $item2 = Item::factory()->create([
             'created_at' => $created_at,
@@ -271,11 +271,11 @@ class ItemTest extends TestCase
         $this->{$user}->givePermissionTo('items.show');
 
         $item2 = Item::factory()->create([
-            'created_at' => Carbon::yesterday(),
+            'created_at' => Date::yesterday(),
         ]);
         Deposit::factory([
             'quantity' => 5,
-            'created_at' => Carbon::yesterday(),
+            'created_at' => Date::yesterday(),
         ])->create([
             'item_id' => $item2->getKey(),
         ]);
@@ -288,7 +288,7 @@ class ItemTest extends TestCase
 
         $this
             ->actingAs($this->{$user})
-            ->json('GET', '/items', ['day' => Carbon::yesterday()])
+            ->json('GET', '/items', ['day' => Date::yesterday()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
@@ -787,6 +787,8 @@ class ItemTest extends TestCase
             'shipping_date' => now(),
         ]);
 
+        $this->item->deposits()->delete();
+
         Deposit::factory()->create([
             'quantity' => 20,
             'from_unlimited' => false,
@@ -1078,12 +1080,12 @@ class ItemTest extends TestCase
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => Carbon::now()->startOfDay()->addDays(4)->toDateTimeString(),
+            'shipping_date' => Date::now()->startOfDay()->addDays(4)->toDateTimeString(),
         ]);
 
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDay()->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Date::now()->startOfDay()->addDay()->toDateTimeString(),
         ];
 
         $this->actingAs($this->{$user})->patchJson(
@@ -1187,7 +1189,7 @@ class ItemTest extends TestCase
     public function testUpdateUnlimitedShippingDate(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
-        $date = Carbon::today()->addDays(4);
+        $date = Date::today()->addDays(4);
 
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
@@ -1223,7 +1225,7 @@ class ItemTest extends TestCase
     public function testUpdateUnlimitedShippingDateWithSameDateAsDeposit(string $user): void
     {
         $this->{$user}->givePermissionTo('items.edit');
-        $date = Carbon::today()->addDays(4);
+        $date = Date::today()->addDays(4);
 
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
@@ -1292,7 +1294,7 @@ class ItemTest extends TestCase
             'name' => 'Test',
             'sku' => 'TES/T1',
             'unlimited_stock_shipping_time' => null,
-            'unlimited_stock_shipping_date' => Carbon::now()->startOfDay()->addDays(5)->toIso8601String(),
+            'unlimited_stock_shipping_date' => Date::now()->startOfDay()->addDays(5)->toIso8601String(),
         ];
 
         $response = $this->actingAs($this->{$user})->postJson('/items', $item);
@@ -1326,7 +1328,7 @@ class ItemTest extends TestCase
             'quantity' => 2.0,
             'shipping_time' => $time + 5,
         ]);
-        $date = Carbon::now()->startOfDay()->addDays(5)->toIso8601String();
+        $date = Date::now()->startOfDay()->addDays(5)->toIso8601String();
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,

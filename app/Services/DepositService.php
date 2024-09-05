@@ -7,7 +7,7 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\OrderProduct;
 use App\Services\Contracts\DepositServiceContract;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 final class DepositService implements DepositServiceContract
 {
@@ -113,7 +113,7 @@ final class DepositService implements DepositServiceContract
             ->whereNotNull('shipping_date')
             ->where('item_id', '=', $item->getKey())
             ->where('from_unlimited', '=', false)
-            ->where('shipping_date', '>=', Carbon::now())
+            ->where('shipping_date', '>=', Date::now())
             ->groupBy(['shipping_date'])
             ->having('quantity', '>', '0')
             ->orderBy('shipping_date', $order)
@@ -242,11 +242,11 @@ final class DepositService implements DepositServiceContract
         bool $fromUnlimited,
     ): bool {
         if ($shippingTimeAndDate['shipping_date'] !== null) {
-            $shippingDate = Carbon::parse($shippingTimeAndDate['shipping_date']);
+            $shippingDate = Date::parse($shippingTimeAndDate['shipping_date']);
 
             $groupedDepositsByDate = $this->getDepositsGroupByDateForItem($item, 'DESC');
             foreach ($groupedDepositsByDate as $deposit) {
-                $depositDate = Carbon::parse($deposit['shipping_date']);
+                $depositDate = Date::parse($deposit['shipping_date']);
 
                 if (!$depositDate->isAfter($shippingDate) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
@@ -265,7 +265,7 @@ final class DepositService implements DepositServiceContract
             $groupedDepositsByTime = $this->getDepositsGroupByTimeForItem($item, 'DESC');
             foreach ($groupedDepositsByTime as $deposit) {
                 if (($deposit['shipping_time'] <= $shippingTimeAndDate['shipping_time']
-                        || $shippingTimeAndDate['shipping_time'] === null) && $quantity > 0) {
+                    || $shippingTimeAndDate['shipping_time'] === null) && $quantity > 0) {
                     $quantity -= $deposit['quantity'];
                     $this->removeFromWarehouse(
                         $orderProduct,
