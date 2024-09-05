@@ -12,6 +12,7 @@ use Spatie\LaravelData\Data;
 final class ProductVariantPriceResource extends Data
 {
     public function __construct(
+        public string $product_id,
         public ProductCachedPriceDto $price,
         public ProductCachedPriceDto $price_initial,
     ) {}

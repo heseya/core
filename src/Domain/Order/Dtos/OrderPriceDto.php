@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Order\Dtos;
 
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -29,7 +30,9 @@ final class OrderPriceDto extends Data
         #[WithCast(EnumCast::class, Currency::class)]
         public Currency $currency,
         public BigDecimal $vat_rate,
-    ) {}
+    ) {
+        $this->vat_rate = $this->vat_rate->toScale(2, RoundingMode::HALF_UP);
+    }
 
     public static function fromMoneyAndSalesChannel(Money $price, SalesChannel $salesChannel, bool $is_net = true): self
     {

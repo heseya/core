@@ -22,6 +22,10 @@ return new class extends Migration
                 $order->update(['vat_rate' => $order->salesChannel?->vat_rate ?? '0']);
             }
         });
+
+        Schema::table('prices', function (Blueprint $table) {
+            $table->boolean('is_net')->default(true)->change();
+        });
     }
 
     public function down(): void
