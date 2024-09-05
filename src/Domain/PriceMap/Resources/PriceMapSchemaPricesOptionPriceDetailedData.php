@@ -20,8 +20,8 @@ final class PriceMapSchemaPricesOptionPriceDetailedData extends DataWithGlobalMe
     public static function fromModel(PriceMapSchemaOptionPrice $price): static
     {
         return new self(
-            $price->price_map_id,
-            $price->map?->name ?? '',
+            $price->map?->id ?? 'MAP_DELETED',
+            $price->map?->name ?? 'MAP_DELETED',
             $price->is_net,
             $price->currency->value,
             (string) $price->value->getAmount(),
