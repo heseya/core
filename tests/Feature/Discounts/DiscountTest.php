@@ -1346,7 +1346,7 @@ class DiscountTest extends TestCase
         $discount['amounts'] = Arr::map($discount['amounts'], fn(array $amount) => [
             'currency' => $amount['currency'],
             'value' => $amount['value'],
-            'is_net' => false,
+            'is_net' => true,
         ]);
 
         $response
@@ -2414,7 +2414,7 @@ class DiscountTest extends TestCase
                     'amounts' => array_map(fn(string $currency) => [
                         'currency' => $currency,
                         'value' => '50.00',
-                        'is_net' => false,
+                        'is_net' => true,
                     ], Currency::values()),
                     'metadata' => [],
                 ] + $code
@@ -2621,7 +2621,7 @@ class DiscountTest extends TestCase
             ->assertJsonFragment($discountNew + [
                 'id' => $discount->getKey(),
                 'amounts' => array_map(fn(string $currency) => [
-                    'is_net' => false,
+                    'is_net' => true,
                     'value' => '10.00',
                     'currency' => $currency,
                 ], Currency::values()),

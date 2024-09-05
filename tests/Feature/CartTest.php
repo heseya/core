@@ -4119,11 +4119,21 @@ class CartTest extends TestCase
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '3',
-                'price' => '500.00',
+                'price' => [
+                    'net' => '500.00',
+                    'gross' => '500.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => '2000.00',
+                'price' => [
+                    'net' => '2000.00',
+                    'gross' => '2000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 

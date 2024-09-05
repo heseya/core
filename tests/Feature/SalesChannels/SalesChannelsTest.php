@@ -77,31 +77,37 @@ final class SalesChannelsTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonFragment(['shipping_price' => [
-                'net' => '10.00',
+                'net' => '8.13',
                 'gross' => '10.00',
                 'vat_rate' => '0.23',
                 'currency' => 'PLN',
             ]]) // shipping price should remain the same
+            ->assertJsonFragment(['price' => [
+                'net' => '10.00',
+                'gross' => '12.30',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]]) // single product price
             ->assertJsonFragment(['price_discounted' => [
-                'net' => '12.30',
+                'net' => '10.00',
                 'gross' => '12.30',
                 'vat_rate' => '0.23',
                 'currency' => 'PLN',
             ]]) // single product price
             ->assertJsonFragment(['cart_total_initial' => [
-                'net' => '24.60',
+                'net' => '20.00',
                 'gross' => '24.60',
                 'vat_rate' => '0.23',
                 'currency' => 'PLN',
             ]])
             ->assertJsonFragment(['cart_total' => [
-                'net' => '24.60',
+                'net' => '20.00',
                 'gross' => '24.60',
                 'vat_rate' => '0.23',
                 'currency' => 'PLN',
             ]])
             ->assertJsonFragment(['summary' => [
-                'net' => '34.60',
+                'net' => '28.13',
                 'gross' => '34.60',
                 'vat_rate' => '0.23',
                 'currency' => 'PLN',
