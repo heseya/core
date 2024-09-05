@@ -7,6 +7,7 @@ namespace Domain\Order\Resources;
 use App\Http\Resources\Resource;
 use App\Models\Order;
 use App\Traits\MetadataResource;
+use Domain\Order\Dtos\OrderPriceDto;
 use Illuminate\Http\Request;
 
 /**
@@ -27,11 +28,11 @@ final class OrderPublicResource extends Resource
             'status' => OrderStatusResource::make($this->resource->status),
             'paid' => $this->resource->paid,
             'payable' => $this->resource->payable,
-            'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
-            'cart_total' => $this->resource->cart_total->getAmount(),
-            'shipping_price_initial' => $this->resource->shipping_price_initial->getAmount(),
-            'shipping_price' => $this->resource->shipping_price->getAmount(),
-            'summary' => $this->resource->summary->getAmount(),
+            'cart_total_initial' => OrderPriceDto::from($this->resource->cart_total_initial, $this->resource->vat_rate, false),
+            'cart_total' => OrderPriceDto::from($this->resource->cart_total, $this->resource->vat_rate, false),
+            'shipping_price_initial' => OrderPriceDto::from($this->resource->shipping_price_initial, $this->resource->vat_rate, false),
+            'shipping_price' => OrderPriceDto::from($this->resource->shipping_price, $this->resource->vat_rate, false),
+            'summary' => OrderPriceDto::from($this->resource->summary, $this->resource->vat_rate, false),
             'currency' => $this->resource->currency,
             'shipping_method' => OrderShippingMethodResource::make($this->resource->shippingMethod),
             'digital_shipping_method' => OrderShippingMethodResource::make($this->resource->digitalShippingMethod),

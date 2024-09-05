@@ -22,7 +22,7 @@ final class PriceDto extends Data
         public Money $value,
         #[WithCast(EnumCast::class, Currency::class)]
         public Currency $currency,
-        public bool $is_net = false,
+        public bool $is_net = true,
     ) {}
 
     public static function fromModel(Price $price): self

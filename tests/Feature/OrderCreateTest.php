@@ -417,7 +417,12 @@ class OrderCreateTest extends TestCase
 
         $response->assertJsonFragment([
             'id' => $order->id,
-            'summary' => '0.00',
+            'summary' => [
+                'net' => '0.00',
+                'gross' => '0.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ],
             'paid' => true,
             'payable' => false,
         ]);
@@ -1160,11 +1165,36 @@ class OrderCreateTest extends TestCase
 
         $response->assertCreated()
             ->assertJsonFragment([
-                'cart_total_initial' => '150.00',
-                'cart_total' => '0.01',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.01',
+                'cart_total_initial' => [
+                    'net' => '150.00',
+                    'gross' => '150.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
         $order = Order::find($response->getData()->data->id);
 

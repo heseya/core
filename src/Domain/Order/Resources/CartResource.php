@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Order\Resources;
 
-use Brick\Money\Money;
 use Carbon\Carbon;
 use Domain\Currency\Currency;
+use Domain\Order\Dtos\OrderPriceDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -16,8 +16,6 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\DataCollection;
 use Support\Dtos\DataWithGlobalMetadata;
-use Support\LaravelData\Casts\MoneyCast;
-use Support\LaravelData\Transformers\MoneyToAmountTransformer;
 use Support\LaravelData\Transformers\WithoutWrappingTransformer;
 
 final class CartResource extends DataWithGlobalMetadata
@@ -37,21 +35,11 @@ final class CartResource extends DataWithGlobalMetadata
         #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(SalesShortResource::class)]
         public DataCollection $sales,
-        #[WithTransformer(MoneyToAmountTransformer::class)]
-        #[WithCast(MoneyCast::class)]
-        public Money $cart_total_initial,
-        #[WithTransformer(MoneyToAmountTransformer::class)]
-        #[WithCast(MoneyCast::class)]
-        public Money $cart_total,
-        #[WithTransformer(MoneyToAmountTransformer::class)]
-        #[WithCast(MoneyCast::class)]
-        public Money $shipping_price_initial,
-        #[WithTransformer(MoneyToAmountTransformer::class)]
-        #[WithCast(MoneyCast::class)]
-        public Money $shipping_price,
-        #[WithTransformer(MoneyToAmountTransformer::class)]
-        #[WithCast(MoneyCast::class)]
-        public Money $summary,
+        public OrderPriceDto $cart_total_initial,
+        public OrderPriceDto $cart_total,
+        public OrderPriceDto $shipping_price_initial,
+        public OrderPriceDto $shipping_price,
+        public OrderPriceDto $summary,
         #[WithCast(EnumCast::class, Currency::class)]
         public Currency $currency,
         public ?float $shipping_time = null,

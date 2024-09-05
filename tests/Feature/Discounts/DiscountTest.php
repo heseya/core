@@ -1534,12 +1534,12 @@ class DiscountTest extends TestCase
                 'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'value' => $value['value'],
-                    'is_net' => false,
+                    'is_net' => true,
                 ], $this->minValues),
                 'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'value' => $value['value'],
-                    'is_net' => false,
+                    'is_net' => true,
                 ], $this->maxValues),
             ])
             ->assertJsonFragment([
@@ -2207,12 +2207,12 @@ class DiscountTest extends TestCase
                 'min_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'value' => $value['value'],
-                    'is_net' => false,
+                    'is_net' => true,
                 ], $this->minValues),
                 'max_values' => array_map(fn($value) => [
                     'currency' => $value['currency'],
                     'value' => $value['value'],
-                    'is_net' => false,
+                    'is_net' => true,
                 ], $this->maxValues),
             ])
             ->assertJsonFragment([
@@ -2364,7 +2364,7 @@ class DiscountTest extends TestCase
             'max_values' => array_map(fn($value) => [
                 'currency' => $value['currency'],
                 'value' => $value['value'],
-                'is_net' => false,
+                'is_net' => true,
             ], $this->maxValues),
         ]);
 

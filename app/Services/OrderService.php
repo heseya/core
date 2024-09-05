@@ -28,6 +28,7 @@ use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\OrderSchema;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Status;
@@ -206,6 +207,7 @@ final readonly class OrderService implements OrderServiceContract
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
                     'payment_method_type' => $paymentMethod->type,
+                    'vat_rate' => $vat_rate,
                 ] + $dto->toArray(),
             );
 
@@ -221,6 +223,9 @@ final readonly class OrderService implements OrderServiceContract
                     $product = $products->firstWhere('id', $item->getProductId());
 
                     $price = $product->mappedPriceForPriceMap($priceMap)->value;
+                    if (!$priceMap->is_net) {
+                        $price = $this->salesChannelService->removeVat($price, $vat_rate);
+                    }
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
@@ -243,14 +248,19 @@ final readonly class OrderService implements OrderServiceContract
                     foreach ($item->getSchemas() as $schemaId => $value) {
                         /** @var Schema $schema */
                         $schema = $product->schemas()->findOrFail($schemaId);
-                        $price = $schema->getPrice($value, $item->getSchemas(), $currency);
+
+                        $price = $schema->getPrice($value, $item->getSchemas(), $priceMap);
+                        if (!$priceMap->is_net) {
+                            $price = $this->salesChannelService->removeVat($price, $vat_rate);
+                        }
 
                         /** @var Option $option */
                         $option = $schema->options()->findOrFail($value);
                         $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
                         $value = $option->name;
 
-                        $orderProduct->schemas()->create([
+                        /** @var OrderSchema $orderSchema */
+                        $orderSchema = $orderProduct->schemas()->create([
                             'name' => $schema->getTranslation('name', $language),
                             'value' => $value,
                             'price_initial' => $price,
@@ -279,10 +289,13 @@ final readonly class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value);
-                $shippingPrice = $shippingPrice->plus(
-                    $digitalShippingMethod?->getPrice($order->cart_total) ?? Money::zero($currency->value),
-                );
+                $shippingPrice = Money::zero($currency->value);
+                if ($shippingMethod !== null) {
+                    $shippingPrice = $shippingPrice->plus($shippingMethod->getPrice($order->cart_total));
+                }
+                if ($digitalShippingMethod !== null) {
+                    $shippingPrice = $shippingPrice->plus($digitalShippingMethod->getPrice($order->cart_total));
+                }
 
                 // Always gross
                 $order->shipping_price_initial = $shippingPrice;
@@ -298,30 +311,15 @@ final readonly class OrderService implements OrderServiceContract
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
 
-                    $orderProduct->base_price_initial = $this->salesChannelService->addVat(
-                        $orderProduct->base_price_initial,
-                        $vat_rate,
-                    );
-                    $orderProduct->base_price = $this->salesChannelService->addVat(
-                        $orderProduct->base_price,
-                        $vat_rate,
-                    );
-                    $orderProduct->price_initial = $this->salesChannelService->addVat(
-                        $orderProduct->price_initial,
-                        $vat_rate,
-                    );
-                    $orderProduct->price = $this->salesChannelService->addVat(
-                        $orderProduct->price,
-                        $vat_rate,
-                    );
+                    $orderProduct->base_price_initial = $this->salesChannelService->addVat($orderProduct->base_price_initial, $vat_rate);
+                    $orderProduct->base_price = $this->salesChannelService->addVat($orderProduct->base_price, $vat_rate);
+                    $orderProduct->price_initial = $this->salesChannelService->addVat($orderProduct->price_initial, $vat_rate);
+                    $orderProduct->price = $this->salesChannelService->addVat($orderProduct->price, $vat_rate);
 
                     /** @var Discount $discount */
                     foreach ($orderProduct->discounts as $discount) {
                         if ($discount->order_discount?->applied !== null) {
-                            $discount->order_discount->applied = $this->salesChannelService->addVat(
-                                $discount->order_discount->applied,
-                                $vat_rate,
-                            );
+                            $discount->order_discount->applied = $this->salesChannelService->addVat($discount->order_discount->applied, $vat_rate);
                             $discount->order_discount->save();
                         }
                     }
@@ -330,22 +328,13 @@ final readonly class OrderService implements OrderServiceContract
                 /** @var Discount $discount */
                 foreach ($order->discounts as $discount) {
                     if ($discount->order_discount?->applied !== null) {
-                        $discount->order_discount->applied = $this->salesChannelService->addVat(
-                            $discount->order_discount->applied,
-                            $vat_rate,
-                        );
+                        $discount->order_discount->applied = $this->salesChannelService->addVat($discount->order_discount->applied, $vat_rate);
                         $discount->order_discount->save();
                     }
                 }
 
-                $order->cart_total_initial = $this->salesChannelService->addVat(
-                    $order->cart_total_initial,
-                    $vat_rate,
-                );
-                $order->cart_total = $this->salesChannelService->addVat(
-                    $order->cart_total,
-                    $vat_rate,
-                );
+                $order->cart_total_initial = $this->salesChannelService->addVat($order->cart_total_initial, $vat_rate);
+                $order->cart_total = $this->salesChannelService->addVat($order->cart_total, $vat_rate);
 
                 // shipping price magic 🙈
                 $order->summary = $order->shipping_price->plus($order->cart_total);

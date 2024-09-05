@@ -76,11 +76,36 @@ final class SalesChannelsTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertJsonFragment(['shipping_price' => '10.00']) // shipping price should remain the same
-            ->assertJsonFragment(['price_discounted' => '12.30']) // single product price
-            ->assertJsonFragment(['cart_total_initial' => '24.60'])
-            ->assertJsonFragment(['cart_total' => '24.60'])
-            ->assertJsonFragment(['summary' => '34.60']);
+            ->assertJsonFragment(['shipping_price' => [
+                'net' => '10.00',
+                'gross' => '10.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]) // shipping price should remain the same
+            ->assertJsonFragment(['price_discounted' => [
+                'net' => '12.30',
+                'gross' => '12.30',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]) // single product price
+            ->assertJsonFragment(['cart_total_initial' => [
+                'net' => '24.60',
+                'gross' => '24.60',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]])
+            ->assertJsonFragment(['cart_total' => [
+                'net' => '24.60',
+                'gross' => '24.60',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]])
+            ->assertJsonFragment(['summary' => [
+                'net' => '34.60',
+                'gross' => '34.60',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]);
     }
 
     /**
