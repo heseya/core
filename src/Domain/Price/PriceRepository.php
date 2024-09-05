@@ -40,7 +40,7 @@ final class PriceRepository
         /** @var ProductCachedPricesDto $pricesCollection */
         foreach ($priceMatrix as $pricesCollection) {
             foreach ($pricesCollection->prices as $price) {
-                $salesChannel = $salesChannels->firstOrFail($price->sales_channel_id);
+                $salesChannel = $salesChannels->firstOrFail('id', '=', $price->sales_channel_id);
 
                 $rows[] = [
                     'id' => Uuid::uuid4(),
