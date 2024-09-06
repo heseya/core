@@ -198,11 +198,11 @@ final class ProductController extends Controller
 
     public function processSingle(Request $request, Product $product): HttpResponse
     {
-        return $this->productService->getPriceForVariant($product, $request->input('schemas', []))->toResponse($request);
+        return $this->productService->getPriceForVariant($product, $request->input('schemas', []), true)->toResponse($request);
     }
 
     public function process(Request $request, ProductVariantPriceDtoCollection $collection): HttpResponse
     {
-        return $this->productService->getPricesForVariants($collection)->toResponse($request);
+        return $this->productService->getPricesForVariants($collection, true)->toResponse($request);
     }
 }
