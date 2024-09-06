@@ -63,6 +63,7 @@ use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Order\Dtos\OrderPriceDto;
 use Domain\Order\Resources\CartItemResource;
 use Domain\Order\Resources\CartResource;
 use Domain\Order\Resources\CouponShortResource;
@@ -338,6 +339,9 @@ readonly class DiscountService
     }
 
     /**
+     * Calculate prices and discounts in Cart
+     * All discounts are applied to Net prices.
+     *
      * @param Collection<int,Product> $products
      *
      * @throws MathException
@@ -384,20 +388,27 @@ readonly class DiscountService
             }
 
             $price = $product->mappedPriceForPriceMap($priceMap)->value;
+            if (!$priceMap->is_net) {
+                $price = $this->salesChannelService->removeVat($price, $vat_rate);
+            }
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
                 $schema = $product->schemas()->findOrFail($schemaId);
 
-                $price = $price->plus(
-                    $schema->getPrice($value, $cartItem->getSchemas(), $currency),
-                );
+                $option_price = $schema->getPrice($value, $cartItem->getSchemas(), $priceMap);
+                if (!$priceMap->is_net) {
+                    $option_price = $this->salesChannelService->removeVat($option_price, $vat_rate);
+                }
+
+                $price = $price->plus($option_price);
             }
             $cartValue = $cartValue->plus($price->multipliedBy($cartItem->getQuantity()));
+
             $cartItems[] = new CartItemResource(
                 $cartItem->getCartItemId(),
-                $price,
-                $price,
+                OrderPriceDto::from($price, $vat_rate),
+                OrderPriceDto::from($price, $vat_rate),
                 Currency::from($price->getCurrency()->getCurrencyCode()),
                 $cartItem->getQuantity(),
             );
@@ -413,11 +424,11 @@ readonly class DiscountService
             CartItemResource::collection($cartItems),
             CouponShortResource::collection([]),
             SalesShortResource::collection([]),
-            $cartValue,
-            $cartValue,
-            $shippingPrice,
-            $shippingPrice,
-            $summary,
+            OrderPriceDto::from($cartValue, $vat_rate),
+            OrderPriceDto::from($cartValue, $vat_rate),
+            OrderPriceDto::from($shippingPrice, $vat_rate),
+            OrderPriceDto::from($shippingPrice, $vat_rate),
+            OrderPriceDto::from($summary, $vat_rate),
             $currency,
             $cartShippingTimeAndDate['shipping_time'] ?? null,
             $cartShippingTimeAndDate['shipping_date'] ?? null,
@@ -430,10 +441,10 @@ readonly class DiscountService
         foreach ($discounts as $discount) {
             if (
                 $this->checkDiscountTarget($discount, $cart)
-                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net)
             ) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
-                $newSummary = $cartResource->cart_total->plus($cartResource->shipping_price);
+                $newSummary = $cartResource->cart_total->net->plus($cartResource->shipping_price->net);
                 $appliedDiscount = $summary->minus($newSummary);
                 $cartResource = $this->addDiscountToCartResource($appliedDiscount, $discount, $cartResource);
 
@@ -441,38 +452,32 @@ readonly class DiscountService
             }
         }
 
-        $shippingPrice = $shippingMethod?->getPrice($summary) ?? Money::zero($currency->value);
-        $shippingPrice = $shippingPrice->plus(
-            $shippingMethodDigital?->getPrice($summary) ?? Money::zero($currency->value),
-        );
+        $shippingPrice = Money::zero($currency->value);
+        if ($shippingMethod !== null) {
+            $shippingPrice = $shippingPrice->plus($shippingMethod->getPrice($summary));
+        }
+        if ($shippingMethodDigital !== null) {
+            $shippingPrice = $shippingPrice->plus($shippingMethodDigital->getPrice($summary));
+        }
+        $shippingPrice = $this->salesChannelService->removeVat($shippingPrice, $vat_rate);
 
-        $cartResource->summary = $cartValue->plus($shippingPrice);
-        $cartResource->shipping_price_initial = $shippingPrice;
-        $cartResource->shipping_price = $shippingPrice;
+        $cartResource->summary = OrderPriceDto::from($cartValue->plus($shippingPrice), $vat_rate);
+        $cartResource->shipping_price_initial = OrderPriceDto::from($shippingPrice, $vat_rate);
+        $cartResource->shipping_price = OrderPriceDto::from($shippingPrice, $vat_rate);
 
         foreach ($discounts->filter(fn ($discount) => $discount->target_type === DiscountTargetType::SHIPPING_PRICE) as $discount) {
             if (
                 $this->checkShippingPriceTarget($discount, $cart)
-                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net)
             ) {
                 $oldShipping = $cartResource->shipping_price;
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
-                $appliedDiscount = $oldShipping->minus($cartResource->shipping_price);
+                $appliedDiscount = $oldShipping->net->minus($cartResource->shipping_price->net);
                 $cartResource = $this->addDiscountToCartResource($appliedDiscount, $discount, $cartResource);
             }
         }
 
-        foreach ($cartResource->items as $item) {
-            $item->price = $this->salesChannelService->addVat($item->price, $vat_rate);
-            $item->price_discounted = $this->salesChannelService->addVat($item->price_discounted, $vat_rate);
-        }
-
-        $cartResource->cart_total_initial = $this->salesChannelService->addVat(
-            $cartResource->cart_total_initial,
-            $vat_rate,
-        );
-        $cartResource->cart_total = $this->salesChannelService->addVat($cartResource->cart_total, $vat_rate);
-        $cartResource->summary = $cartResource->cart_total->plus($cartResource->shipping_price);
+        $cartResource->summary = OrderPriceDto::from($cartResource->cart_total->net->plus($cartResource->shipping_price->net), $vat_rate);
 
         return $cartResource;
     }
@@ -651,10 +656,13 @@ readonly class DiscountService
             fn (CartItemResource $value) => $value->cartitem_id === $cartItem->getCartItemId(),
         )->first();
 
-        $result->price_discounted = $this->calcPrice(
-            $result->price_discounted,
-            $cartItem->getProductId(),
-            $discount,
+        $result->price_discounted = OrderPriceDto::from(
+            $this->calcPrice(
+                $result->price_discounted->net,
+                $cartItem->getProductId(),
+                $discount,
+            ),
+            $result->price_discounted->vat_rate,
         );
 
         return $result;
@@ -727,7 +735,7 @@ readonly class DiscountService
 
             $newPrice = $this->calcAllDiscountsOnProduct($product, $sales, $salesChannel);
 
-            if ($oldPrice === null || !$oldPrice->gross->isEqualTo($newPrice->gross)) {
+            if ($oldPrice === null || !$oldPrice->net->isEqualTo($newPrice->net)) {
                 $allNewPrices[] = $newPrice;
             }
         }
@@ -1102,24 +1110,24 @@ readonly class DiscountService
 
         if ($initialPrice === null) {
             $basePrice = $product->mappedPriceForPriceMap($priceMap);
-            $gross = $priceMap->is_net ? $this->salesChannelService->addVat($basePrice->value, $this->salesChannelService->getVatRate($salesChannel)) : $basePrice->value;
+            $net = $priceMap->is_net ? $basePrice->value : $this->salesChannelService->removeVat($basePrice->value, $this->salesChannelService->getVatRate($salesChannel));
         } else {
-            $gross = $initialPrice->gross;
+            $net = $initialPrice->net;
         }
 
         foreach ($schemas as $schemaId => $optionId) {
             /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
-            $schema_price = $schema->getPrice($optionId, $schemas, $priceMap->currency);
-            if ($priceMap->is_net) {
-                $schema_price = $this->salesChannelService->addVat($schema_price, $this->salesChannelService->getVatRate($salesChannel));
+            $schema_price = $schema->getPrice($optionId, $schemas, $priceMap);
+            if (!$priceMap->is_net) {
+                $schema_price = $this->salesChannelService->removeVat($schema_price, $this->salesChannelService->getVatRate($salesChannel));
             }
 
-            $gross = $gross->plus($schema_price);
+            $net = $net->plus($schema_price);
         }
 
-        $minPrice = $gross;
+        $minPrice = $net;
         foreach ($sales as $sale) {
             if ($minPrice->isGreaterThan($minimalProductPrice)) {
                 $minPrice = $this->calcProductPriceDiscount($sale, $minPrice, $minimalProductPrice);
@@ -1127,8 +1135,8 @@ readonly class DiscountService
         }
 
         return ProductCachedPriceDto::from([
-            'net' => $this->salesChannelService->removeVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)),
-            'gross' => $minPrice,
+            'net' => $minPrice,
+            'gross' => $this->salesChannelService->addVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)),
             'currency' => $priceMap->currency,
             'sales_channel_id' => $salesChannel->id,
         ]);
@@ -1188,8 +1196,6 @@ readonly class DiscountService
             $order = $this->roundProductPrices($order);
         }
 
-        //        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
-        //        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
         $order->summary = $order->cart_total->plus($order->shipping_price);
         $order->paid = $order->summary->isLessThanOrEqualTo(0);
 
@@ -1209,7 +1215,6 @@ readonly class DiscountService
         $order->refresh();
         $totalPrice = Money::zero($order->currency->value);
         foreach ($order->products as $product) {
-            //            $product->price = round($product->price, 2, PHP_ROUND_HALF_UP);
             $totalPrice = $totalPrice->plus($product->price->multipliedBy($product->quantity));
         }
 
@@ -1354,7 +1359,7 @@ readonly class DiscountService
                     'price_initial' => $product->price_initial,
                     'base_price' => $product->price,
                     'base_price_initial' => $product->price,
-                    'vat_rate' => 0, // TODO: add VAT form sales channel
+                    'vat_rate' => $product->vat_rate,
                 ]);
 
                 foreach ($product->schemas as $schema) {
@@ -1420,14 +1425,16 @@ readonly class DiscountService
                 $discount->shippingMethods->pluck('id')->toArray(),
             ) === $discount->target_is_allow_list
         ) {
-            $cartResource->shipping_price = $cartResource->shipping_price->minus(
-                $this->calcAppliedDiscount(
-                    $cartResource->shipping_price,
-                    $this->calc($cartResource->shipping_price, $discount),
-                    'minimal_shipping_price',
+            $cartResource->shipping_price = OrderPriceDto::from(
+                $cartResource->shipping_price->net->minus(
+                    $this->calcAppliedDiscount(
+                        $cartResource->shipping_price->net,
+                        $this->calc($cartResource->shipping_price->net, $discount),
+                        'minimal_shipping_price',
+                    ),
                 ),
+                $cartResource->shipping_price->vat_rate,
             );
-            //            $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
 
         return $cartResource;
@@ -1443,15 +1450,16 @@ readonly class DiscountService
      */
     private function applyDiscountOnCartTotal(Discount $discount, CartResource $cartResource): CartResource
     {
-        $cartResource->cart_total = $cartResource->cart_total->minus(
-            $this->calcAppliedDiscount(
-                $cartResource->cart_total,
-                $this->calc($cartResource->cart_total, $discount),
-                'minimal_order_price',
+        $cartResource->cart_total = OrderPriceDto::from(
+            $cartResource->cart_total->net->minus(
+                $this->calcAppliedDiscount(
+                    $cartResource->cart_total->net,
+                    $this->calc($cartResource->cart_total->net, $discount),
+                    'minimal_order_price',
+                ),
             ),
+            $cartResource->cart_total->vat_rate,
         );
-
-        //        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
 
         return $cartResource;
     }
@@ -1482,11 +1490,11 @@ readonly class DiscountService
 
             $cartItems[] = $cartItem;
 
-            $cartValue = $cartValue->plus($cartItem->price_discounted->multipliedBy($item->getQuantity()));
+            $cartValue = $cartValue->plus($cartItem->price_discounted->net->multipliedBy($item->getQuantity()));
         }
 
         $cart->items = CartItemResource::collection($cartItems);
-        $cart->cart_total = $cartValue;
+        $cart->cart_total = OrderPriceDto::from($cartValue, $cart->cart_total->vat_rate);
 
         return $cart;
     }
@@ -1512,9 +1520,9 @@ readonly class DiscountService
             return $cart;
         }
 
-        $minimalProductPrice = Money::ofMinor(1, $cartItem->price_discounted->getCurrency());
+        $minimalProductPrice = Money::ofMinor(1, $cartItem->price_discounted->currency->toCurrencyInstance());
 
-        if ($cartItem->quantity > 1 && !$cartItem->price_discounted->isEqualTo($minimalProductPrice)) {
+        if ($cartItem->quantity > 1 && !$cartItem->price_discounted->net->isLessThanOrEqualTo($minimalProductPrice)) {
             $cart->items = $cart->items->through(function (CartItemResource $value) use ($cartItem): CartItemResource {
                 if ($value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity) {
                     $value->quantity = $cartItem->quantity - 1;
@@ -1533,18 +1541,14 @@ readonly class DiscountService
             $cart->items[] = $cartItem;
         }
 
-        $price = $cartItem->price_discounted;
+        $price = $cartItem->price_discounted->net;
 
-        if (!$price->isEqualTo($minimalProductPrice)) {
-            //            $newPrice = round($price - $this->calc($priceAsMoney, $discount)->getAmount()->toFloat(), 2, PHP_ROUND_HALF_UP);
+        if (!$price->isLessThanOrEqualTo($minimalProductPrice)) {
             $newPrice = $price->minus($this->calc($price, $discount));
 
-            $cartItem->price_discounted = Money::max($newPrice, $minimalProductPrice);
+            $cartItem->price_discounted = OrderPriceDto::from(Money::max($newPrice, $minimalProductPrice), $cartItem->price_discounted->vat_rate);
 
-            //            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
-            $cart->cart_total = $cart->cart_total->minus(
-                $price->minus($cartItem->price_discounted)->multipliedBy($cartItem->quantity),
-            );
+            $cart->cart_total = OrderPriceDto::from($cart->cart_total->net->minus($price->minus($cartItem->price_discounted->net)->multipliedBy($cartItem->quantity)), $cart->cart_total->vat_rate);
         }
 
         return $cart;

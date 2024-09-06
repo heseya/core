@@ -101,6 +101,14 @@ final readonly class PriceMapService
     {
         $priceMap->fill($dto->toArray())->save();
 
+        if ($priceMap->wasChanged('currency')) {
+            $priceMap->productPrices()->update([
+                'currency' => $priceMap->currency->value,
+            ]);
+            $priceMap->schemaOptionsPrices()->update([
+                'currency' => $priceMap->currency->value,
+            ]);
+        }
         if ($priceMap->wasChanged('is_net')) {
             foreach ($priceMap->salesChannels as $salesChannel) {
                 dispatch(new RefreshCachedPricesForSalesChannel($salesChannel));

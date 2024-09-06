@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Traits\MetadataResource;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
+use Domain\Order\Dtos\OrderPriceDto;
 use Domain\Organization\Resources\OrganizationResource;
 use Domain\PaymentMethods\Resources\PaymentMethodResource;
 use Illuminate\Http\Request;
@@ -40,10 +41,10 @@ final class OrderResource extends Resource
             'email' => $this->resource->email,
             'payable' => $this->resource->payable,
             'currency' => $this->resource->currency,
-            'summary' => $this->resource->summary->getAmount(),
-            'summary_paid' => $this->resource->paid_amount->getAmount(),
-            'shipping_price_initial' => $this->resource->shipping_price_initial->getAmount(),
-            'shipping_price' => $this->resource->shipping_price->getAmount(),
+            'summary' => OrderPriceDto::from($this->resource->summary, $this->resource->vat_rate, false),
+            'summary_paid' => OrderPriceDto::from($this->resource->paid_amount, $this->resource->vat_rate, false),
+            'shipping_price_initial' => OrderPriceDto::from($this->resource->shipping_price_initial, $this->resource->vat_rate, false),
+            'shipping_price' => OrderPriceDto::from($this->resource->shipping_price, $this->resource->vat_rate, false),
             'comment' => $this->resource->comment,
             'status' => $this->resource->status ? OrderStatusResource::make($this->resource->status) : null,
             'shipping_method' => $this->resource->shippingMethod ?
@@ -58,8 +59,8 @@ final class OrderResource extends Resource
                 : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),
             'paid' => $this->resource->paid,
-            'cart_total' => $this->resource->cart_total->getAmount(),
-            'cart_total_initial' => $this->resource->cart_total_initial->getAmount(),
+            'cart_total' => OrderPriceDto::from($this->resource->cart_total, $this->resource->vat_rate, false),
+            'cart_total_initial' => OrderPriceDto::from($this->resource->cart_total_initial, $this->resource->vat_rate, false),
             'created_at' => $this->resource->created_at,
             'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,

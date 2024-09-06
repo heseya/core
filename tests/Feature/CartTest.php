@@ -241,18 +241,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '9200.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9200.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -294,23 +329,68 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '300.00',
-                'cart_total' => '300.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '300.00',
+                'cart_total_initial' => [
+                    'net' => '300.00',
+                    'gross' => '300.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '300.00',
+                    'gross' => '300.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '300.00',
+                    'gross' => '300.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '2',
-                'price' => '200.00',
-                'price_discounted' => '200.00',
+                'price' => [
+                    'net' => '200.00',
+                    'gross' => '200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '200.00',
+                    'gross' => '200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -394,17 +474,52 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9200.00',
-                    'cart_total' => '8280.00',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '8280.00',
+                    'cart_total_initial' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '8280.00',
+                        'gross' => '8280.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '8280.00',
+                        'gross' => '8280.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment(
                 [
@@ -458,22 +573,67 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '9200.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9200.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -509,18 +669,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '9200.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9200.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])->assertJsonMissing([
                 'cartitem_id' => '2',
             ]);
@@ -707,20 +902,65 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '7780.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '7780.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '7780.00',
+                    'gross' => '7780.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '7780.00',
+                    'gross' => '7780.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4140.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4140.00',
+                    'gross' => '4140.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
@@ -824,16 +1064,51 @@ class CartTest extends TestCase
             ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '0.01',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.01',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '46.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '46.00',
+                    'gross' => '46.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
@@ -936,16 +1211,51 @@ class CartTest extends TestCase
             ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '0.01',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '0.01',
-                'summary' => '0.02',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.02',
+                    'gross' => '0.02',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '0.01',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $couponProduct->getKey(),
@@ -995,17 +1305,52 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9200.00',
-                    'cart_total' => '8280.00',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '8280.00',
+                    'cart_total_initial' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '8280.00',
+                        'gross' => '8280.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '8280.00',
+                        'gross' => '8280.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment(
                 [
@@ -1088,23 +1433,68 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9200.00',
-                    'cart_total' => '8073.00',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '8073.00',
+                    'cart_total_initial' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '8073.00',
+                        'gross' => '8073.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '8073.00',
+                        'gross' => '8073.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4140.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4140.00',
+                    'gross' => '4140.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'quantity' => 1,
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '3933.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '3933.00',
+                    'gross' => '3933.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'quantity' => 1,
             ])
             ->assertJsonFragment(
@@ -1189,17 +1579,52 @@ class CartTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9200.00',
-                    'cart_total' => '0.02',
-                    'shipping_price_initial' => '8.11',
-                    'shipping_price' => '8.11',
-                    'summary' => '8.13',
+                    'cart_total_initial' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '0.02',
+                        'gross' => '0.02',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '8.11',
+                        'gross' => '8.11',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '8.11',
+                        'gross' => '8.11',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '8.13',
+                        'gross' => '8.13',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '0.01',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '0.01',
+                    'gross' => '0.01',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'quantity' => 2,
             ])
             ->assertJsonFragment(
@@ -1287,7 +1712,12 @@ class CartTest extends TestCase
 
         $response->assertValid()
             ->assertOk()
-            ->assertJsonFragment(['summary' => '108.12']); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
+            ->assertJsonFragment(['summary' => [
+                'net' => '108.12',
+                'gross' => '108.12',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
     }
 
     /**
@@ -1351,7 +1781,12 @@ class CartTest extends TestCase
 
         $response->assertValid()
             ->assertValid()->assertOk()
-            ->assertJsonFragment(['summary' => '23.11']); // 3*((10(price) +20(schema)) -25(discount)) +8.11(shipping)
+            ->assertJsonFragment(['summary' => [
+                'net' => '23.11',
+                'gross' => '23.11',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 3*((10(price) +20(schema)) -25(discount)) +8.11(shipping)
     }
 
     /**
@@ -1555,17 +1990,52 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9202.00',
-                    'cart_total' => '8074.76',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '8074.76',
+                    'cart_total_initial' => [
+                        'net' => '9202.00',
+                        'gross' => '9202.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '8074.76',
+                        'gross' => '8074.76',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '8074.76',
+                        'gross' => '8074.76',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4601.00',
-                'price_discounted' => '4485.98',
+                'price' => [
+                    'net' => '4601.00',
+                    'gross' => '4601.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4485.98',
+                    'gross' => '4485.98',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment(
                 [
@@ -1657,22 +2127,67 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '90.00',
-                    'cart_total' => '83.48',
-                    'shipping_price_initial' => '8.11',
-                    'shipping_price' => '8.11',
-                    'summary' => '91.59',
+                    'cart_total_initial' => [
+                        'net' => '90.00',
+                        'gross' => '90.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '83.48',
+                        'gross' => '83.48',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '8.11',
+                        'gross' => '8.11',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '8.11',
+                        'gross' => '8.11',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '91.59',
+                        'gross' => '91.59',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '45.00',
-                'price_discounted' => '45.00',
+                'price' => [
+                    'net' => '45.00',
+                    'gross' => '45.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '45.00',
+                    'gross' => '45.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '45.00',
-                'price_discounted' => '38.48',
+                'price' => [
+                    'net' => '45.00',
+                    'gross' => '45.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '38.48',
+                    'gross' => '38.48',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment(
                 [
@@ -2021,18 +2536,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '0.00',
-                'cart_total' => '0.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.00',
+                'cart_total_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2066,18 +2616,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '0.00',
-                'cart_total' => '0.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.00',
+                'cart_total_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2113,18 +2698,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '200.00',
-                'cart_total' => '200.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '208.11',
+                'cart_total_initial' => [
+                    'net' => '200.00',
+                    'gross' => '200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '200.00',
+                    'gross' => '200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '8.11',
+                    'gross' => '8.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '8.11',
+                    'gross' => '8.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '208.11',
+                    'gross' => '208.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2219,17 +2839,52 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '4600.00',
-                    'cart_total' => '4140.00',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '4140.00',
+                    'cart_total_initial' => [
+                        'net' => '4600.00',
+                        'gross' => '4600.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '4140.00',
+                        'gross' => '4140.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '4140.00',
+                        'gross' => '4140.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4140.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4140.00',
+                    'gross' => '4140.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment(
                 [
@@ -2311,19 +2966,54 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '9200.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9200.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonCount(0, 'data.sales')
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing(
                 [
@@ -2402,17 +3092,52 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment(
                 [
-                    'cart_total_initial' => '9200.00',
-                    'cart_total' => '9200.00',
-                    'shipping_price_initial' => '0.00',
-                    'shipping_price' => '0.00',
-                    'summary' => '9200.00',
+                    'cart_total_initial' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'cart_total' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price_initial' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'shipping_price' => [
+                        'net' => '0.00',
+                        'gross' => '0.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
+                    'summary' => [
+                        'net' => '9200.00',
+                        'gross' => '9200.00',
+                        'vat_rate' => '0.00',
+                        'currency' => 'PLN',
+                    ],
                 ] + $result,
             )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing(
                 [
@@ -2449,18 +3174,53 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9200.00',
-                'cart_total' => '9200.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9200.00',
+                'cart_total_initial' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9200.00',
+                    'gross' => '9200.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'quantity' => 2,
             ]);
     }
@@ -2491,18 +3251,53 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '4600.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '4600.00',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2576,11 +3371,36 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '1000.00',
-                'cart_total' => '1000.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '1000.00',
+                'cart_total_initial' => [
+                    'net' => '1000.00',
+                    'gross' => '1000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '1000.00',
+                    'gross' => '1000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '1000.00',
+                    'gross' => '1000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
             ])
             ->assertJsonCount(1, 'data.items')
@@ -2591,13 +3411,33 @@ class CartTest extends TestCase
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '2',
-                'price' => '1000.00',
-                'price_discounted' => '1000.00',
+                'price' => [
+                    'net' => '1000.00',
+                    'gross' => '1000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '1000.00',
+                    'gross' => '1000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2639,11 +3479,36 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '0.00',
-                'cart_total' => '0.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.00',
+                'cart_total_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2689,11 +3554,36 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '4600.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '4600.00',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonCount(1, 'data.items');
     }
@@ -2736,11 +3626,36 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '0.00',
-                'cart_total' => '0.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.00',
+                'cart_total_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -2790,18 +3705,53 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '4600.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '4600.00',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2840,18 +3790,53 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '100.00',
-                'cart_total' => '100.00',
-                'shipping_price_initial' => '8.11',
-                'shipping_price' => '8.11',
-                'summary' => '108.11',
+                'cart_total_initial' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '8.11',
+                    'gross' => '8.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '8.11',
+                    'gross' => '8.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '108.11',
+                    'gross' => '108.11',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '100.00',
-                'price_discounted' => '100.00',
+                'price' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '100.00',
+                    'gross' => '100.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '2',
@@ -2882,18 +3867,53 @@ class CartTest extends TestCase
         ])
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '4600.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '4600.00',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -2927,16 +3947,51 @@ class CartTest extends TestCase
         $response
             ->assertValid()->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '4600.00',
-                'cart_total' => '4600.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '4600.00',
+                'cart_total_initial' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'id' => $discountApplied->getKey(),
@@ -3014,26 +4069,71 @@ class CartTest extends TestCase
             ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '9700.00',
-                'cart_total' => '9700.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '9700.00',
+                'cart_total_initial' => [
+                    'net' => '9700.00',
+                    'gross' => '9700.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '9700.00',
+                    'gross' => '9700.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '9700.00',
+                    'gross' => '9700.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4600.00',
+                'price' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '4600.00',
+                    'gross' => '4600.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '3',
-                'price' => '500.00',
+                'price' => [
+                    'net' => '500.00',
+                    'gross' => '500.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonMissing([
                 'cartitem_id' => '2',
-                'price' => '2000.00',
+                'price' => [
+                    'net' => '2000.00',
+                    'gross' => '2000.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 
@@ -3129,11 +4229,36 @@ class CartTest extends TestCase
             ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '0.00',
-                'cart_total' => '0.00',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '0.00',
+                'cart_total_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
                 'coupons' => [],
                 'sales' => [],
                 'items' => [],
@@ -3198,16 +4323,51 @@ class CartTest extends TestCase
             ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '49.00',
-                'cart_total' => '24.50',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '10.00',
-                'summary' => '34.50',
+                'cart_total_initial' => [
+                    'net' => '49.00',
+                    'gross' => '49.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '24.50',
+                    'gross' => '24.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '34.50',
+                    'gross' => '34.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '49.00',
-                'price_discounted' => '24.50',
+                'price' => [
+                    'net' => '49.00',
+                    'gross' => '49.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '24.50',
+                    'gross' => '24.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
 
         $this
@@ -3228,16 +4388,51 @@ class CartTest extends TestCase
             ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '98.00',
-                'cart_total' => '49.00',
-                'shipping_price_initial' => '10.00',
-                'shipping_price' => '10.00',
-                'summary' => '59.00',
+                'cart_total_initial' => [
+                    'net' => '98.00',
+                    'gross' => '98.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '49.00',
+                    'gross' => '49.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '10.00',
+                    'gross' => '10.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '59.00',
+                    'gross' => '59.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '49.00',
-                'price_discounted' => '24.50',
+                'price' => [
+                    'net' => '49.00',
+                    'gross' => '49.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '24.50',
+                    'gross' => '24.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
 
         $this
@@ -3258,16 +4453,51 @@ class CartTest extends TestCase
             ->assertValid()
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => '147.00',
-                'cart_total' => '73.50',
-                'shipping_price_initial' => '0.00',
-                'shipping_price' => '0.00',
-                'summary' => '73.50',
+                'cart_total_initial' => [
+                    'net' => '147.00',
+                    'gross' => '147.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'cart_total' => [
+                    'net' => '73.50',
+                    'gross' => '73.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price_initial' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'shipping_price' => [
+                    'net' => '0.00',
+                    'gross' => '0.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'summary' => [
+                    'net' => '73.50',
+                    'gross' => '73.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
-                'price' => '49.00',
-                'price_discounted' => '24.50',
+                'price' => [
+                    'net' => '49.00',
+                    'gross' => '49.00',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
+                'price_discounted' => [
+                    'net' => '24.50',
+                    'gross' => '24.50',
+                    'vat_rate' => '0.00',
+                    'currency' => 'PLN',
+                ],
             ]);
     }
 

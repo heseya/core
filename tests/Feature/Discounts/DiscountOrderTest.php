@@ -122,8 +122,12 @@ class DiscountOrderTest extends TestCase
         $response
             ->assertValid()
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '95.00']); // 100 - 100 * 15% + 10 (delivery)
-
+            ->assertJsonFragment(['summary' => [
+                'net' => '95.00',
+                'gross' => '95.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 100 - 100 * 15% + 10 (delivery)
         $order = Order::query()->find($response->getData()->data->id)->first();
 
         $this->assertDatabaseHas('order_discounts', [
@@ -168,7 +172,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '60.00']); // 100 - 50 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '60.00',
+                'gross' => '60.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 100 - 50 + 10 (delivery)
     }
 
     /**
@@ -199,7 +208,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '100.00']); // 100 - 100 * 10% + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '100.00',
+                'gross' => '100.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 100 - 100 * 10% + 10 (delivery)
 
         $orderId = $response->getData()->data->id;
 
@@ -442,7 +456,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '542.00']);
+            ->assertJsonFragment(['summary' => [
+                'net' => '542.00',
+                'gross' => '542.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]);
 
         $orderId = $response->getData()->data->id;
 
@@ -526,7 +545,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '185.50']); // 90 (first product) + 85,5 (second product) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '185.50',
+                'gross' => '185.50',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 90 (first product) + 85,5 (second product) + 10 (delivery)
 
         $order = Order::query()->find($response->getData()->data->id);
 
@@ -667,7 +691,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '1817.60']);
+            ->assertJsonFragment(['summary' => [
+                'net' => '1817.60',
+                'gross' => '1817.60',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]);
 
         $orderId = $response->getData()->data->id;
 
@@ -723,7 +752,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '7275.38']);
+            ->assertJsonFragment(['summary' => [
+                'net' => '7275.38',
+                'gross' => '7275.38',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]);
 
         $orderId = $response->getData()->data->id;
 
@@ -788,7 +822,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '34.00']); // 3 * (10 - 2) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '34.00',
+                'gross' => '34.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 3 * (10 - 2) + 10 (delivery)
     }
 
     /**
@@ -848,7 +887,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.01']); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '110.01',
+                'gross' => '110.01',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -918,7 +962,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '20.00']); // (10 + 20 - 20) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '20.00',
+                'gross' => '20.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // (10 + 20 - 20) + 10 (delivery)
     }
 
     /**
@@ -988,7 +1037,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '70.00']); // 3 * (30 - 10) + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '70.00',
+                'gross' => '70.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 3 * (30 - 10) + 10 (delivery)
     }
 
     /**
@@ -1056,7 +1110,12 @@ class DiscountOrderTest extends TestCase
             'payment_method_id' => $this->paymentMethod->getKey(),
         ])
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '110.01']); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '110.01',
+                'gross' => '110.01',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
     }
 
     /**
@@ -1110,7 +1169,12 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => '300.00']); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
+            ->assertJsonFragment(['summary' => [
+                'net' => '300.00',
+                'gross' => '300.00',
+                'vat_rate' => '0.00',
+                'currency' => 'PLN',
+            ]]); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
 
         $order = Order::find($response->getData()->data->id);
 

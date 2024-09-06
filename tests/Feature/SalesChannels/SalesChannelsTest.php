@@ -76,11 +76,42 @@ final class SalesChannelsTest extends TestCase
                 ],
             ])
             ->assertOk()
-            ->assertJsonFragment(['shipping_price' => '10.00']) // shipping price should remain the same
-            ->assertJsonFragment(['price_discounted' => '12.30']) // single product price
-            ->assertJsonFragment(['cart_total_initial' => '24.60'])
-            ->assertJsonFragment(['cart_total' => '24.60'])
-            ->assertJsonFragment(['summary' => '34.60']);
+            ->assertJsonFragment(['shipping_price' => [
+                'net' => '8.13',
+                'gross' => '10.00',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]]) // shipping price should remain the same
+            ->assertJsonFragment(['price' => [
+                'net' => '10.00',
+                'gross' => '12.30',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]]) // single product price
+            ->assertJsonFragment(['price_discounted' => [
+                'net' => '10.00',
+                'gross' => '12.30',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]]) // single product price
+            ->assertJsonFragment(['cart_total_initial' => [
+                'net' => '20.00',
+                'gross' => '24.60',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]])
+            ->assertJsonFragment(['cart_total' => [
+                'net' => '20.00',
+                'gross' => '24.60',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]])
+            ->assertJsonFragment(['summary' => [
+                'net' => '28.13',
+                'gross' => '34.60',
+                'vat_rate' => '0.23',
+                'currency' => 'PLN',
+            ]]);
     }
 
     /**
@@ -132,7 +163,8 @@ final class SalesChannelsTest extends TestCase
         );
 
         $this->{$user}->givePermissionTo('orders.add');
-        $this
+
+        $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/orders', [
                 'currency' => $currency,
@@ -155,8 +187,9 @@ final class SalesChannelsTest extends TestCase
                     ],
                 ],
                 'payment_method_id' => $paymentMethod->getKey(),
-            ])
-            ->assertCreated();
+            ]);
+
+        $response->assertCreated();
 
         $this->assertDatabaseHas('orders', [
             'shipping_price' => '1000', // shipping price should remain the same

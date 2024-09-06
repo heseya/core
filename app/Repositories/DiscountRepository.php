@@ -38,7 +38,7 @@ class DiscountRepository
                 'currency' => $amount->value->getCurrency()->getCurrencyCode(),
                 'value' => $amount->value->getMinorAmount(),
                 'gross' => $amount->value->getMinorAmount(),
-                'is_net' => false,
+                'is_net' => true,
             ];
             Cache::driver('array')->forget(self::getCacheKey($discountId, Currency::from($amount->value->getCurrency()->getCurrencyCode())));
         }

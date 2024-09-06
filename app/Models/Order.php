@@ -77,6 +77,7 @@ final class Order extends Model implements SortableContract
         'language',
         'payment_method_type',
         'organization_id',
+        'vat_rate',
     ];
 
     protected array $criteria = [

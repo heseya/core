@@ -30,7 +30,7 @@ use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
-use Domain\Product\Dtos\ProductVariantPriceDto;
+use Domain\Product\Dtos\ProductVariantPriceDtoCollection;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\Product\Resources\ProductVariantPriceResource;
 use Domain\ProductAttribute\Models\Attribute;
@@ -192,7 +192,17 @@ final readonly class ProductService
         $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
-    public function getPriceForVariant(Product $product, ProductVariantPriceDto $dto, bool $calculateForCurrentUser = false): ProductVariantPriceResource
+    public function getPricesForVariants(ProductVariantPriceDtoCollection $collection, bool $calculateForCurrentUser = false): DataCollection
+    {
+        $items = [];
+        foreach ($collection->items() as $dto) {
+            $items[] = $this->getPriceForVariant(Product::query()->findOrFail($dto->product_id), is_array($dto->schemas) ? $dto->schemas : [], $calculateForCurrentUser);
+        }
+
+        return ProductVariantPriceResource::collection($items);
+    }
+
+    public function getPriceForVariant(Product $product, array $schemas, bool $calculateForCurrentUser = false): ProductVariantPriceResource
     {
         $salesChannel = $this->salesChannelService->getCurrentRequestSalesChannel();
         $priceMap = $salesChannel->priceMap;
@@ -203,14 +213,15 @@ final readonly class ProductService
 
         $price_initial = $product->mappedPriceForPriceMap($priceMap);
 
-        if (is_array($dto->schemas) && !empty($dto->schemas)) {
+        if (!empty($schemas)) {
             $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
-            $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $dto->schemas);
+            $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $schemas);
         } else {
             $price = ProductCachedPriceDto::from($price_initial, $salesChannel);
         }
 
         return ProductVariantPriceResource::from([
+            'product_id' => $product->id,
             'price_initial' => ProductCachedPriceDto::from($price_initial, $salesChannel),
             'price' => $price,
         ]);
