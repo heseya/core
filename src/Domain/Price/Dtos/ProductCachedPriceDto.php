@@ -7,6 +7,7 @@ namespace Domain\Price\Dtos;
 use App\Models\Price;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Price\Resources\ProductCachedPriceData;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -59,6 +60,16 @@ final class ProductCachedPriceDto extends Data
             'gross' => $gross,
             'currency' => $price->currency,
             'sales_channel_id' => $salesChannel->id,
+        ]);
+    }
+
+    public static function fromProductCachedPriceData(ProductCachedPriceData $data): self
+    {
+        return self::from([
+            'net' => $data->net,
+            'gross' => $data->gross,
+            'currency' => $data->currency,
+            'sales_channel_id' => $data->sales_channel_id,
         ]);
     }
 }
