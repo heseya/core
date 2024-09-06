@@ -11,6 +11,8 @@ use Spatie\LaravelData\Data;
 
 final class ProductVariantPriceResource extends Data
 {
+    protected static string $_collectionClass = ProductVariantPriceResourceCollection::class;
+
     public function __construct(
         public string $product_id,
         public ProductCachedPriceDto $price,

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Product\Dtos;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Enumerable;
 use Spatie\LaravelData\DataCollection;
 
@@ -23,10 +21,5 @@ final class ProductVariantPriceDtoCollection extends DataCollection
     ) {
         $dataClass = ProductVariantPriceDto::class;
         parent::__construct($dataClass, $items);
-    }
-
-    protected function calculateResponseStatus(Request $request): int
-    {
-        return Response::HTTP_OK;
     }
 }

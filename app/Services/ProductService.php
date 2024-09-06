@@ -33,6 +33,7 @@ use Domain\Product\Dtos\ProductUpdateDto;
 use Domain\Product\Dtos\ProductVariantPriceDtoCollection;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\Product\Resources\ProductVariantPriceResource;
+use Domain\Product\Resources\ProductVariantPriceResourceCollection;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Services\AttributeService;
@@ -192,14 +193,14 @@ final readonly class ProductService
         $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
-    public function getPricesForVariants(ProductVariantPriceDtoCollection $collection, bool $calculateForCurrentUser = false): DataCollection
+    public function getPricesForVariants(ProductVariantPriceDtoCollection $collection, bool $calculateForCurrentUser = false): ProductVariantPriceResourceCollection
     {
         $items = [];
         foreach ($collection->items() as $dto) {
             $items[] = $this->getPriceForVariant(Product::query()->findOrFail($dto->product_id), is_array($dto->schemas) ? $dto->schemas : [], $calculateForCurrentUser);
         }
 
-        return ProductVariantPriceResource::collection($items);
+        return new ProductVariantPriceResourceCollection(items: $items);
     }
 
     public function getPriceForVariant(Product $product, array $schemas, bool $calculateForCurrentUser = false): ProductVariantPriceResource
@@ -324,7 +325,7 @@ final readonly class ProductService
 
         if (!($dto->attributes instanceof Optional)) {
             $this->attributeService->sync($product, $dto->attributes);
-            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
+            $product->loadMissing(['productAttributes' => fn(Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
         }
 
         if (!($dto->descriptions instanceof Optional)) {
@@ -358,7 +359,7 @@ final readonly class ProductService
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $product->items()->sync(collect($items)->mapWithKeys(fn (array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
+        $product->items()->sync(collect($items)->mapWithKeys(fn(array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
     }
 
     private function prepareProductSearchValues(Product $product): Product
