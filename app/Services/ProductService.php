@@ -325,7 +325,7 @@ final readonly class ProductService
 
         if (!($dto->attributes instanceof Optional)) {
             $this->attributeService->sync($product, $dto->attributes);
-            $product->loadMissing(['productAttributes' => fn(Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
+            $product->loadMissing(['productAttributes' => fn (Builder|HasMany $query) => $query->whereIn('attribute_id', array_keys($dto->attributes))]);
         }
 
         if (!($dto->descriptions instanceof Optional)) {
@@ -359,7 +359,7 @@ final readonly class ProductService
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $product->items()->sync(collect($items)->mapWithKeys(fn(array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
+        $product->items()->sync(collect($items)->mapWithKeys(fn (array $item): array => [$item['id'] => ['required_quantity' => $item['required_quantity']]]));
     }
 
     private function prepareProductSearchValues(Product $product): Product
