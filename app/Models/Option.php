@@ -11,11 +11,13 @@ use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
 use Domain\SalesChannel\Models\SalesChannel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Collection;
 
 /**
  * @mixin IdeHelperOption
@@ -84,9 +86,18 @@ class Option extends Model implements Translatable
 
     public function getMappedPriceForPriceMap(PriceMap|string $priceMap): PriceMapSchemaOptionPrice
     {
-        return $this->relationLoaded('mapPrices')
-            ? $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap)->firstOrFail()
-            : $this->mapPrices()->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap)->firstOrFail();
+        if ($this->relationLoaded('mapPrices')) {
+            /** @var Collection<int,PriceMapSchemaOptionPrice> $price */
+            $price = $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap);
+            if ($priceMap instanceof PriceMap) {
+                $price = $price->where('currency', '=', $priceMap->currency);
+            }
+        } else {
+            /** @var Builder<PriceMapSchemaOptionPrice> $price */
+            $price = $this->mapPrices()->ofPriceMap($priceMap);
+        }
+
+        return $price->firstOrFail();
     }
 
     public function getPriceForPriceMap(PriceMap|string $priceMap): Money

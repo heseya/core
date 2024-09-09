@@ -66,6 +66,7 @@ final class OrderResource extends Resource
             'language' => $this->resource->language,
             'payment_method' => $this->resource->payment_method ? PaymentMethodResource::make($this->resource->payment_method) : null,
             'payment_method_type' => $this->resource->payment_method_type,
+            'vat_rate' => $this->resource->vat_rate,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 

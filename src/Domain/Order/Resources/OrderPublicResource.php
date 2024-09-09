@@ -40,6 +40,7 @@ final class OrderPublicResource extends Resource
             'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
             'payment_method_type' => $this->resource->payment_method_type,
+            'vat_rate' => $this->resource->vat_rate,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 }

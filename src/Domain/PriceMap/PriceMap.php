@@ -43,7 +43,8 @@ final class PriceMap extends Model
      */
     public function productPrices(): HasMany
     {
-        return $this->hasMany(PriceMapProductPrice::class, 'price_map_id');
+        return $this->hasMany(PriceMapProductPrice::class, 'price_map_id')
+            ->where('currency', '=', $this->currency->value);
     }
 
     /**
@@ -51,7 +52,8 @@ final class PriceMap extends Model
      */
     public function schemaOptionsPrices(): HasMany
     {
-        return $this->hasMany(PriceMapSchemaOptionPrice::class, 'price_map_id');
+        return $this->hasMany(PriceMapSchemaOptionPrice::class, 'price_map_id')
+            ->where('currency', '=', $this->currency->value);
     }
 
     /**
