@@ -15,7 +15,7 @@ use Spatie\LaravelData\DataCollection;
 final class ProductVariantPriceResourceCollection extends DataCollection
 {
     /**
-     * @param DataCollection<int,ProductVariantPriceResource>|array<int,ProductVariantPriceResource>|array<int,array<string,mixed>> $items
+     * @param array<int,array<string,mixed>>|array<int,ProductVariantPriceResource>|DataCollection<int,ProductVariantPriceResource>|Enumerable<int,ProductVariantPriceResource>|null $items
      */
     public function __construct(
         string $dataClass = ProductVariantPriceResource::class,
