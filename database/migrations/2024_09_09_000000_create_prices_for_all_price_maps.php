@@ -40,7 +40,7 @@ return new class extends Migration
                 foreach ($priceMapsById as $priceMapId => $priceMap) {
                     if (!in_array($priceMap->getKey(), $existingPriceMaps)) {
                         $data[] = [
-                            'id' => Uuid::uuid6(),
+                            'id' => (string) Uuid::uuid6(),
                             'price_map_id' => $priceMap->getKey(),
                             'option_id' => $option->getKey(),
                             'value' => 0,
@@ -75,7 +75,7 @@ return new class extends Migration
                 foreach ($priceMapsById as $priceMapId => $priceMap) {
                     if (!in_array($priceMap->getKey(), $existingPriceMaps)) {
                         $data[] = [
-                            'id' => Uuid::uuid6(),
+                            'id' => (string) Uuid::uuid6(),
                             'price_map_id' => $priceMap->getKey(),
                             'product_id' => $product->getKey(),
                             'value' => 0,
