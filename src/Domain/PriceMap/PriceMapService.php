@@ -27,6 +27,7 @@ use Domain\PriceMap\Resources\PriceMapSchemaPricesDataCollection;
 use Domain\PriceMap\Resources\PriceMapUpdatedPricesData;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\ProductSchema\Models\Schema;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -67,7 +68,7 @@ final readonly class PriceMapService
         Product::query()
             ->whereNotIn('id', $priceMap->productPrices()->pluck('product_id'))
             ->select('id')
-            ->chunk(1000, function (Collection $products) use ($priceMap): void {
+            ->chunkById(1000, function (Collection $products) use ($priceMap): void {
                 PriceMapProductPrice::insert(
                     $products->pluck('id')->map(fn (string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
@@ -83,7 +84,7 @@ final readonly class PriceMapService
         Option::query()
             ->whereNotIn('id', $priceMap->schemaOptionsPrices()->pluck('option_id'))
             ->select('id')
-            ->chunk(1000, function (Collection $options) use ($priceMap): void {
+            ->chunkById(1000, function (Collection $options) use ($priceMap): void {
                 PriceMapSchemaOptionPrice::insert(
                     $options->pluck('id')->map(fn (string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
@@ -99,6 +100,10 @@ final readonly class PriceMapService
 
     public function update(PriceMap $priceMap, PriceMapUpdateDto $dto): PriceMap
     {
+        if (in_array($priceMap->getKey(), Currency::defaultPriceMapIds(), true)) {
+            $dto->currency = $priceMap->currency->value; // unable to change default price map currency
+        }
+
         $priceMap->fill($dto->toArray())->save();
 
         if ($priceMap->wasChanged(['currency', 'is_net'])) {
@@ -120,6 +125,10 @@ final readonly class PriceMapService
 
     public function delete(PriceMap $priceMap): void
     {
+        if (in_array($priceMap->getKey(), Currency::defaultPriceMapIds(), true)) {
+            throw new Exception('Unable to delete default price map');
+        }
+
         $priceMap->delete();
     }
 

@@ -1,13 +1,10 @@
 <?php
 
-use App\Models\Product;
-use App\Services\ProductService;
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
@@ -29,9 +26,6 @@ return new class extends Migration
                 }
             }
         }
-
-        $productService = app(ProductService::class);
-        Product::query()->chunkById(100, fn(Collection $products) => $products->each(fn(Product $product) => $productService->updateMinPrices($product)));
     }
 
     public function down(): void {}
