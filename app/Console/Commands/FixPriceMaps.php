@@ -119,6 +119,6 @@ class FixPriceMaps extends Command
         });
 
         $productService = app(ProductService::class);
-        Product::query()->chunkById(100, fn (Collection $products) => $products->each(fn (Product $product) => $productService->updateMinPrices($product)));
+        Product::query()->chunkById(100, fn (Collection $products) => $products->each(fn (Product $product) => $productService->updateMinPrices($product))); // @phpstan-ignore-line
     }
 }
