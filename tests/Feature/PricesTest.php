@@ -9,7 +9,6 @@ use App\Models\Discount;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
-use App\Repositories\ProductRepository;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
@@ -19,6 +18,8 @@ use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\PriceMap\PriceMapService;
+use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelRepository;
 use Heseya\Dto\DtoException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
@@ -28,8 +29,8 @@ use Tests\TestCase;
 class PricesTest extends TestCase
 {
     private PriceMapService $priceMapService;
-    private ProductRepository $productRepository;
     private ProductService $productService;
+    private SalesChannel $salesChannel;
 
     private Currency $currency;
 
@@ -38,9 +39,9 @@ class PricesTest extends TestCase
         parent::setUp();
 
         $this->priceMapService = App::make(PriceMapService::class);
-        $this->productRepository = App::make(ProductRepository::class);
         $this->productService = App::make(ProductService::class);
         $this->currency = Currency::DEFAULT;
+        $this->salesChannel = App::make(SalesChannelRepository::class)->getDefault();
     }
 
     public function testProductsUnauthorized(): void
@@ -96,6 +97,7 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin1,
                             'net' => $priceMin1,
+                            'sales_channel_id' => $this->salesChannel->getKey(),
                         ],
                     ],
                     [
@@ -104,6 +106,7 @@ class PricesTest extends TestCase
                             'currency' => Currency::DEFAULT,
                             'gross' => $priceMin2,
                             'net' => $priceMin2,
+                            'sales_channel_id' => $this->salesChannel->getKey(),
                         ],
                     ],
                 ],
