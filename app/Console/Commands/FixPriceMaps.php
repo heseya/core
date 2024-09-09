@@ -39,7 +39,7 @@ class FixPriceMaps extends Command
         foreach ($priceMapsById as $priceMapId => $priceMap) {
             $query->orWhereDoesntHave(
                 'mapPrices',
-                fn($q) => $q->where('price_map_id', '=', $priceMapId)->where('currency', '=', $priceMap->currency->value),
+                fn ($q) => $q->where('price_map_id', '=', $priceMapId)->where('currency', '=', $priceMap->currency->value),
             );
         }
         $query->chunkById(100, function (Collection $options) use ($priceMapsById): void {
@@ -81,7 +81,7 @@ class FixPriceMaps extends Command
         foreach ($priceMapsById as $priceMapId => $priceMap) {
             $query->orWhereDoesntHave(
                 'mapPrices',
-                fn($q) => $q->where('price_map_id', '=', $priceMapId)->where('currency', '=', $priceMap->currency->value),
+                fn ($q) => $q->where('price_map_id', '=', $priceMapId)->where('currency', '=', $priceMap->currency->value),
             );
         }
         $query->chunkById(100, function (Collection $products) use ($priceMapsById): void {
@@ -119,6 +119,6 @@ class FixPriceMaps extends Command
         });
 
         $productService = app(ProductService::class);
-        Product::query()->chunkById(100, fn(Collection $products) => $products->each(fn(Product $product) => $productService->updateMinPrices($product)));
+        Product::query()->chunkById(100, fn (Collection $products) => $products->each(fn (Product $product) => $productService->updateMinPrices($product)));
     }
 }
