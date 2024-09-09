@@ -25,7 +25,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
-use Domain\Product\Dtos\ProductVariantPriceDtoCollection;
+use Domain\Product\Dtos\ProductVariantPricesDto;
 use Heseya\Dto\DtoException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -201,8 +201,8 @@ final class ProductController extends Controller
         return $this->productService->getPriceForVariant($product, $request->input('schemas', []), true)->toResponse($request);
     }
 
-    public function process(Request $request, ProductVariantPriceDtoCollection $collection): HttpResponse
+    public function process(Request $request, ProductVariantPricesDto $dto): HttpResponse
     {
-        return $this->productService->getPricesForVariants($collection, true)->toResponse($request);
+        return $this->productService->getPricesForVariants($dto, true)->toResponse($request);
     }
 }

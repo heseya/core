@@ -30,7 +30,8 @@ use Domain\PriceMap\PriceMapService;
 use Domain\Product\Dtos\ProductCreateDto;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\Product\Dtos\ProductUpdateDto;
-use Domain\Product\Dtos\ProductVariantPriceDtoCollection;
+use Domain\Product\Dtos\ProductVariantPriceDto;
+use Domain\Product\Dtos\ProductVariantPricesDto;
 use Domain\Product\Models\ProductBannerMedia;
 use Domain\Product\Resources\ProductVariantPriceResource;
 use Domain\Product\Resources\ProductVariantPriceResourceCollection;
@@ -193,14 +194,9 @@ final readonly class ProductService
         $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
-    public function getPricesForVariants(ProductVariantPriceDtoCollection $collection, bool $calculateForCurrentUser = false): ProductVariantPriceResourceCollection
+    public function getPricesForVariants(ProductVariantPricesDto $dto, bool $calculateForCurrentUser = false): ProductVariantPriceResourceCollection
     {
-        $items = [];
-        foreach ($collection->items() as $dto) {
-            $items[] = $this->getPriceForVariant(Product::query()->findOrFail($dto->product_id), is_array($dto->schemas) ? $dto->schemas : [], $calculateForCurrentUser);
-        }
-
-        return new ProductVariantPriceResourceCollection(items: $items);
+        return new ProductVariantPriceResourceCollection(items: $dto->products->toCollection()->map(fn (ProductVariantPriceDto $partial_dto) => $this->getPriceForVariant(Product::query()->findOrFail($partial_dto->product_id), is_array($partial_dto->schemas) ? $partial_dto->schemas : [], $calculateForCurrentUser)));
     }
 
     public function getPriceForVariant(Product $product, array $schemas, bool $calculateForCurrentUser = false): ProductVariantPriceResource

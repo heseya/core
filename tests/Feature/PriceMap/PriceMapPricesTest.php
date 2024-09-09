@@ -320,18 +320,20 @@ class PriceMapPricesTest extends TestCase
         $response = $this
             ->actingAs($this->{$user})
             ->json('POST', '/products/process', [
-                [
-                    'product_id' => $this->product1->getKey(),
-                    'schemas' => [
-                        $this->schema1->getKey() => $this->option1a->getKey(),
+                'products' => [
+                    [
+                        'product_id' => $this->product1->getKey(),
+                        'schemas' => [
+                            $this->schema1->getKey() => $this->option1a->getKey(),
+                        ],
                     ],
+                    [
+                        'product_id' => $this->product2->getKey(),
+                        'schemas' => [
+                            $this->schema2->getKey() => $this->option2a->getKey(),
+                        ],
+                    ]
                 ],
-                [
-                    'product_id' => $this->product2->getKey(),
-                    'schemas' => [
-                        $this->schema2->getKey() => $this->option2a->getKey(),
-                    ],
-                ]
             ]);
 
         $response->assertOk()
