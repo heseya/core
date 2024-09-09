@@ -268,7 +268,7 @@ class PriceMapPricesTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testProcess(string $user): void
+    public function testProcessSingle(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');
         $this->{$user}->givePermissionTo('cart.verify');
@@ -298,6 +298,71 @@ class PriceMapPricesTest extends TestCase
                 'price' => [
                     'net' => '224.00', // 101 + 123
                     'gross' => '224.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProcess(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->priceMapService->updateOptionPricesForDefaultMaps($this->option1a, FakeDto::generatePricesInAllCurrencies([], 123));
+        $this->priceMapService->updateOptionPricesForDefaultMaps($this->option2a, FakeDto::generatePricesInAllCurrencies([], 123));
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products/process', [
+                'products' => [
+                    [
+                        'product_id' => $this->product1->getKey(),
+                        'schemas' => [
+                            $this->schema1->getKey() => $this->option1a->getKey(),
+                        ],
+                    ],
+                    [
+                        'product_id' => $this->product2->getKey(),
+                        'schemas' => [
+                            $this->schema2->getKey() => $this->option2a->getKey(),
+                        ],
+                    ]
+                ],
+            ]);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'product_id' => $this->product1->getKey(),
+                'price_initial' => [
+                    'net' => '101.00',
+                    'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ],
+                'price' => [
+                    'net' => '224.00', // 101 + 123
+                    'gross' => '224.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ])
+            ->assertJsonFragment([
+                'product_id' => $this->product2->getKey(),
+                'price_initial' => [
+                    'net' => '102.00',
+                    'gross' => '102.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ],
+                'price' => [
+                    'net' => '225.00', // 102 + 123
+                    'gross' => '225.00',
                     'currency' => 'PLN',
                     'sales_channel_id' => $salesChannel->getKey(),
                 ]

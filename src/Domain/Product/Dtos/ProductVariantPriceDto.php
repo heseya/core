@@ -10,6 +10,8 @@ use Spatie\LaravelData\Optional;
 
 final class ProductVariantPriceDto extends Data
 {
+    protected static string $_collectionClass = ProductVariantPriceDtoCollection::class;
+
     /**
      * @param array<string,string>|Optional|null $schemas
      */
