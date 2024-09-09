@@ -970,10 +970,11 @@ class LanguageFallbackTest extends TestCase
 
         $product->schemas()->save($schema);
 
-        $this
+        $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es'])
-            ->assertOk()
+            ->json('GET', '/products/id:' . $product->getKey(), headers: ['Accept-Language' => 'es']);
+
+        $response->assertOk()
             ->assertJsonFragment([
                 'id' => $option->getKey(),
                 'name' => 'Opcja 1',

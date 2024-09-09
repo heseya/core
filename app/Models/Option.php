@@ -86,13 +86,15 @@ class Option extends Model implements Translatable
 
     public function getMappedPriceForPriceMap(PriceMap|string $priceMap): PriceMapSchemaOptionPrice
     {
-        /** @var Builder<PriceMapSchemaOptionPrice>|Collection<int,PriceMapSchemaOptionPrice> $price */
-        $price = $this->relationLoaded('mapPrices')
-            ? $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap)
-            : $this->mapPrices()->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap);
-
-        if ($priceMap instanceof PriceMap) {
-            $price = $price->where('currency', '=', $priceMap->currency->value);
+        if ($this->relationLoaded('mapPrices')) {
+            /** @var Collection<int,PriceMapSchemaOptionPrice> $price */
+            $price = $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap);
+            if ($priceMap instanceof PriceMap) {
+                $price = $price->where('currency', '=', $priceMap->currency);
+            }
+        } else {
+            /** @var Builder<PriceMapSchemaOptionPrice> $price */
+            $price = $this->mapPrices()->ofPriceMap($priceMap);
         }
 
         return $price->firstOrFail();

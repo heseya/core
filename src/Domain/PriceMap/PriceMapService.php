@@ -101,15 +101,15 @@ final readonly class PriceMapService
     {
         $priceMap->fill($dto->toArray())->save();
 
-        if ($priceMap->wasChanged('currency')) {
+        if ($priceMap->wasChanged(['currency', 'is_net'])) {
             $priceMap->productPrices()->update([
                 'currency' => $priceMap->currency->value,
+                'is_net' => $priceMap->is_net,
             ]);
             $priceMap->schemaOptionsPrices()->update([
                 'currency' => $priceMap->currency->value,
+                'is_net' => $priceMap->is_net,
             ]);
-        }
-        if ($priceMap->wasChanged('is_net')) {
             foreach ($priceMap->salesChannels as $salesChannel) {
                 dispatch(new RefreshCachedPricesForSalesChannel($salesChannel));
             }
@@ -265,7 +265,7 @@ final readonly class PriceMapService
             },
         )->toArray();
 
-        PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value']);
+        PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value', 'currency', 'is_net']);
     }
 
     public function updateSchemaPrices(Schema $schema, PriceMapSchemaPricesUpdateDto $dto): PriceMapSchemaPricesDataCollection
@@ -309,6 +309,6 @@ final readonly class PriceMapService
             },
         )->toArray();
 
-        PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value']);
+        PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value', 'currency', 'is_net']);
     }
 }

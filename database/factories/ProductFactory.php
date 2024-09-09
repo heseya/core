@@ -39,6 +39,7 @@ class ProductFactory extends Factory
     public function configure(): self
     {
         return $this->afterCreating(function (Product $product): void {
+            /** @var PriceMapService $priceMapService */
             $priceMapService = App::make(PriceMapService::class);
 
             $prices = array_map(fn(Currency $currency) => PriceDto::from(

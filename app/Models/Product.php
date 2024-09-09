@@ -390,13 +390,15 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
 
     public function mappedPriceForPriceMap(PriceMap|string $priceMap): PriceMapProductPrice
     {
-        /** @var Builder<PriceMapProductPrice>|Collection<int,PriceMapProductPrice> $price */
-        $price = $this->relationLoaded('mapPrices')
-            ? $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap)
-            : $this->mapPrices()->ofPriceMap($priceMap);
-
-        if ($priceMap instanceof PriceMap) {
-            $price = $price->where('currency', '=', $priceMap->currency->value);
+        if ($this->relationLoaded('mapPrices')) {
+            /** @var Collection<int,PriceMapProductPrice> $price */
+            $price = $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap);
+            if ($priceMap instanceof PriceMap) {
+                $price = $price->where('currency', '=', $priceMap->currency);
+            }
+        } else {
+            /** @var Builder<PriceMapProductPrice> $price */
+            $price = $this->mapPrices()->ofPriceMap($priceMap);
         }
 
         return $price->firstOrFail();

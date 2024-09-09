@@ -88,6 +88,11 @@ final class PriceMapProductPrice extends Model
      */
     public function scopeOfPriceMap(Builder $query, PriceMap|string $priceMapId): Builder
     {
-        return $query->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId);
+        $query = $query->where('price_map_id', $priceMapId instanceof PriceMap ? $priceMapId->id : $priceMapId);
+        if ($priceMapId instanceof PriceMap) {
+            $query = $query->where('currency', $priceMapId->currency->value);
+        }
+
+        return $query;
     }
 }
