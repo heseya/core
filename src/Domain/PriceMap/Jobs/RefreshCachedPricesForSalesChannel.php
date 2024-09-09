@@ -22,7 +22,12 @@ final class RefreshCachedPricesForSalesChannel implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public SalesChannel $salesChannel) {}
+    public string $sales_channel_id;
+
+    public function __construct(SalesChannel|string $salesChannel)
+    {
+        $this->sales_channel_id = $salesChannel instanceof SalesChannel ? $salesChannel->getKey() : $salesChannel;
+    }
 
     /**
      * Execute the job.
@@ -30,8 +35,10 @@ final class RefreshCachedPricesForSalesChannel implements ShouldQueue
     public function handle(
         ProductService $productService,
     ): void {
+        /** @var SalesChannel $salesChannel */
+        $salesChannel = SalesChannel::query()->firstOrFail($this->sales_channel_id);
         /** @var Collection<int,SalesChannel> $salesChannels */
-        $salesChannels = collect($this->salesChannel);
+        $salesChannels = collect([$salesChannel]);
         Product::query()->chunkById(
             100,
             function (EloquentCollection $products) use ($productService, $salesChannels): void {
