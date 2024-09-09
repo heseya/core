@@ -36,7 +36,7 @@ final class RefreshCachedPricesForSalesChannel implements ShouldQueue
         ProductService $productService,
     ): void {
         /** @var SalesChannel $salesChannel */
-        $salesChannel = SalesChannel::query()->firstOrFail($this->sales_channel_id);
+        $salesChannel = SalesChannel::query()->findOrFail($this->sales_channel_id);
         /** @var Collection<int,SalesChannel> $salesChannels */
         $salesChannels = collect([$salesChannel]);
         Product::query()->chunkById(
