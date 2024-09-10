@@ -10,10 +10,10 @@ use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
-use Domain\ProductSchema\Models\Schema;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\App;
+use Ramsey\Uuid\Uuid;
 
 return new class extends Migration
 {
@@ -25,30 +25,41 @@ return new class extends Migration
             $priceMap = PriceMap::find($case->getDefaultPriceMapId());
 
             if ($priceMap) {
-                Product::query()->with('pricesBase')->chunk(100, function (Collection $products) use ($priceMap) {
+                Product::query()->with('pricesBase')->chunkById(100, function (Collection $products) use ($priceMap) {
+                    $data = [];
                     /** @var Product $product */
                     foreach ($products as $product) {
                         /** @var Price $price */
                         $price = $product->pricesBase->where('currency', $priceMap->currency->value)->first();
-                        if (!$price) {
-                            continue;
-                        }
-                        PriceMapProductPrice::where(['price_map_id' => $priceMap->getKey(), 'product_id' => $product->getKey()])->update(['value' => $price->getRawOriginal('value')]);
+                        $data[] = [
+                            'id' => (string) Uuid::uuid6(),
+                            'price_map_id' => $priceMap->getKey(),
+                            'product_id' => $product->getKey(),
+                            'value' => $price?->getRawOriginal('value') ?? 0,
+                            'currency' => $priceMap->currency->value,
+                            'is_net' => $priceMap->is_net,
+                        ];
                     }
+                    PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value', 'currency', 'is_net']);
                 });
 
-                Schema::query()->with('options', 'options.prices')->chunk(100, function (Collection $schemas) use ($priceMap) {
-                    foreach ($schemas as $schema) {
-                        /** @var Option $option */
-                        foreach ($schema->options as $option) {
-                            /** @var Price $price */
-                            $price = $option->prices->where('currency', $priceMap->currency->value)->first();
-                            if (!$price) {
-                                continue;
-                            }
-                            PriceMapSchemaOptionPrice::where(['price_map_id' => $priceMap->getKey(), 'option_id' => $option->getKey()])->update(['value' => $price->getRawOriginal('value')]);
-                        }
+                Option::query()->with('prices')->chunkById(100, function (Collection $options) use ($priceMap) {
+                    $data = [];
+                    /** @var Option $option */
+                    foreach ($options as $option) {
+                        /** @var Price $price */
+                        $price = $option->prices->where('currency', $priceMap->currency->value)->first();
+
+                        $data[] = [
+                            'id' => (string) Uuid::uuid6(),
+                            'price_map_id' => $priceMap->getKey(),
+                            'option_id' => $option->getKey(),
+                            'value' => $price?->getRawOriginal('value') ?? 0,
+                            'currency' => $priceMap->currency->value,
+                            'is_net' => $priceMap->is_net,
+                        ];
                     }
+                    PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value', 'currency', 'is_net']);
                 });
             }
         }
