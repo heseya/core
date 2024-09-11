@@ -557,7 +557,10 @@ class SavedAddressTest extends TestCase
             'simple' => ['Jan Nowak'],
             'with dash' => ['Anna Nowak-Kowalska'],
             'with apostrophe' => ["Shas'O Kais"],
-            'with more word' => ['Isabella von Carstein'],
+            'with dot in middle' => ["Shas O. Kais"],
+            'with dot' => ["Carlos Sainz Jr."],
+            'with more words' => ['Isabella von Carstein'],
+            'with even more words' => ['Charles Marc Hervé Percival Leclerc'],
         ];
     }
 

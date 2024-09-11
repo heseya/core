@@ -10,7 +10,7 @@ class FullName implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!preg_match('/^[a-zA-Z\p{L}\-\']{2,}(?:\s[a-zA-Z\p{L}\-\']{2,})+$/u', $value)) {
+        if (!preg_match('/^[\p{L}\-\'.]{2,}(?:\s+[\p{L}\-\'.]{2,})+$/u', $value)) {
             $fail(Exceptions::CLIENT_FULL_NAME->value);
         }
     }
