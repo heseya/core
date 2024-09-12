@@ -23,7 +23,7 @@ return new class extends Migration
             foreach ($schemas as $schema) {
                 $default = match (true) {
                     is_numeric($schema->default) => intval($schema->default),
-                    Uuid::isValid($schema->default) => $schema->default,
+                    Uuid::isValid($schema->default ?? '') => $schema->default,
                     default => null,
                 };
 
