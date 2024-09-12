@@ -30,6 +30,7 @@ final class OrganizationCreateDto extends Data
         #[Unique('organizations', 'client_id')]
         public readonly Optional|string|null $client_id,
         public readonly string $billing_email,
+        public readonly Optional|string $contact_email,
         #[Rule(new OrganizationUniqueVat())]
         public readonly AddressCreateDto $billing_address,
         #[Uuid, Exists('sales_channels', 'id')]
@@ -37,6 +38,8 @@ final class OrganizationCreateDto extends Data
         #[DataCollectionOf(OrganizationSavedAddressCreateDto::class), Min(1)]
         public readonly DataCollection $shipping_addresses,
         public readonly array $consents,
+        public readonly Optional|string $creator_name,
+        public readonly bool $import = false,
     ) {}
 
     /**
@@ -49,8 +52,8 @@ final class OrganizationCreateDto extends Data
             'billing_address.company_name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.name'],
             'shipping_addresses.*.address.name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.company_name'],
             'shipping_addresses.*.address.company_name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.name'],
-            'consents' => ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
-            'consents.*' => ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
+            'consents' => $context->payload['import'] ? [] : ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
+            'consents.*' => $context->payload['import'] ? [] : ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
         ];
     }
 }

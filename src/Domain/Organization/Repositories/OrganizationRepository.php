@@ -41,7 +41,7 @@ final readonly class OrganizationRepository
 
         $is_complete = $dto->sales_channel_id && !($dto->sales_channel_id instanceof Optional) && $dto->client_id && !($dto->client_id instanceof Optional);
 
-        return Organization::query()->create(array_merge($dto->toArray(), [
+        return Organization::query()->create(array_merge($dto->except('import')->toArray(), [
             'billing_address_id' => $address->getKey(),
             'is_complete' => $is_complete,
         ]));
