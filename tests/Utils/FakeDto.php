@@ -181,7 +181,7 @@ final readonly class FakeDto
 
                 $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? [])->toArray();
 
-                $has_default = $has_default || $option['default'];
+                $has_default = $has_default || ($option['default'] ?? false);
             }
 
             if ($data['required'] && !$has_default) {
