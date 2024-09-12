@@ -167,26 +167,27 @@ final readonly class FakeDto
                 [
                     'name' => 'Test',
                     'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))])->toArray(),
+                    'default' => true,
                 ]
             ];
         }
 
         if (!empty($data['options'])) {
+            $has_default = false;
+
             foreach ($data['options'] as &$option) {
                 $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
                     4
                 );
 
                 $option['prices'] = self::generatePricesInAllCurrencies($option['prices'] ?? [])->toArray();
+
+                $has_default = $has_default || ($option['default'] ?? false);
             }
 
-            if (($data['required'] ?? false) && empty($data['default'])) {
-                $data['default'] = 0;
+            if ($data['required'] && !$has_default) {
+                $data['options'][0]['default'] = true;
             }
-        }
-
-        if (($data['required'] ?? false) && empty($data['default']) && !empty($data['options'])) {
-            $data['default'] = 0;
         }
 
         if ($returnArray) {

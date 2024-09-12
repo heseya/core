@@ -37,6 +37,7 @@ class Option extends Model implements Translatable
         'available',
         'shipping_time',
         'shipping_date',
+        'default',
     ];
 
     protected array $translatable = [
@@ -45,6 +46,7 @@ class Option extends Model implements Translatable
 
     protected $casts = [
         'available' => 'bool',
+        'default' => 'bool',
     ];
 
     public function items(): BelongsToMany

@@ -31,8 +31,6 @@ final class SchemaStoreRequest extends FormRequest
 
                 'required' => ['nullable', 'boolean'],
 
-                'default' => ['nullable', 'required_if:required,true', 'integer', 'min:0', 'max:' . count($this->options)],
-
                 'options' => ['required', 'array', Rule::when($this->required, [new SchemaZeroOptionExistsForEachCurrency()])],
 
                 'options.*.translations' => ['required', new Translations(['name'])],
@@ -44,11 +42,13 @@ final class SchemaStoreRequest extends FormRequest
                 'options.*.metadata' => ['array'],
                 'options.*.metadata_private' => ['array'],
 
-                'used_schemas' => ['nullable', 'array'],
-                'used_schemas.*' => ['uuid', 'exists:schemas,id'],
+                'options.*.default' => ['sometimes', 'boolean'],
 
                 'options.*.items' => ['nullable', 'array'],
                 'options.*.items.*' => ['uuid', 'exists:items,id'],
+
+                'used_schemas' => ['nullable', 'array'],
+                'used_schemas.*' => ['uuid', 'exists:schemas,id'],
 
                 'product_id' => ['uuid', 'exists:products,id', 'nullable'],
             ],

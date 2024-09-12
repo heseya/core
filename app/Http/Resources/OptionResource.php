@@ -33,6 +33,7 @@ class OptionResource extends Resource
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
             'items' => ItemPublicResource::collection($this->resource->items),
+            'default' => $this->resource->default,
         ];
 
         return array_merge(

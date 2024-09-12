@@ -23,6 +23,7 @@ class OptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
+            'default' => false,
         ];
     }
 
