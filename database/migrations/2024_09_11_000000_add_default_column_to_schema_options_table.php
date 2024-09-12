@@ -34,6 +34,7 @@ return new class extends Migration
                 $default_option = match (true) {
                     is_int($default) => $schema->options->get($default),
                     is_string($default) => $schema->options->first(fn(Option $option): bool => $option->getKey() === $default),
+                    default => null,
                 } ?? $schema->options->first();
 
                 if ($default_option === null) {
