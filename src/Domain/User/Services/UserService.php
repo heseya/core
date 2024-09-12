@@ -55,7 +55,7 @@ final readonly class UserService
     /**
      * @throws ClientException
      */
-    public function create(UserCreateDto $dto): User
+    public function create(UserCreateDto $dto, bool $send_register_email = true): User
     {
         if (!$dto->roles instanceof Optional) {
             $roleModels = Role::query()
@@ -96,7 +96,9 @@ final readonly class UserService
 
         UserCreated::dispatch($user);
 
-        $this->sendRegisterMail($user, $this->getLocaleFromRequest());
+        if ($send_register_email) {
+            $this->sendRegisterMail($user, $this->getLocaleFromRequest());
+        }
 
         return $user;
     }

@@ -32,6 +32,7 @@ final class Organization extends Model
         'change_version',
         'client_id',
         'billing_email',
+        'contact_email',
         'billing_address_id',
         'sales_channel_id',
         'creator_email',

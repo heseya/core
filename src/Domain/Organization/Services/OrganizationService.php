@@ -11,6 +11,8 @@ use App\Events\OrganizationCreated;
 use App\Exceptions\ClientException;
 use App\Mail\OrganizationRegistered;
 use App\Models\User;
+use Domain\Consent\Enums\ConsentType;
+use Domain\Consent\Models\Consent;
 use Domain\Consent\Services\ConsentService;
 use Domain\Organization\Dtos\OrganizationCreateDto;
 use Domain\Organization\Dtos\OrganizationIndexDto;
@@ -20,13 +22,16 @@ use Domain\Organization\Dtos\OrganizationSavedAddressCreateDto;
 use Domain\Organization\Dtos\OrganizationUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Repositories\OrganizationRepository;
+use Domain\User\Dtos\UserCreateDto;
 use Domain\User\Services\AuthService;
+use Domain\User\Services\UserService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Throwable;
 
 final readonly class OrganizationService
@@ -35,6 +40,7 @@ final readonly class OrganizationService
         private OrganizationRepository $organizationRepository,
         private OrganizationSavedAddressService $organizationSavedAddressService,
         private AuthService $authService,
+        private UserService $userService,
         private ConsentService $consentService,
     ) {}
 
@@ -60,8 +66,32 @@ final readonly class OrganizationService
         foreach ($dto->shipping_addresses as $shipping_address) {
             $this->organizationSavedAddressService->storeAddress($shipping_address, SavedAddressType::SHIPPING, $organization->getKey(), $forceDefault);
         }
+        if ($dto->import) {
+            $company_name = match (true) {
+                is_string($dto->billing_address->company_name) => $dto->billing_address->company_name,
+                is_string($dto->billing_address->name) => $dto->billing_address->name,
+                default => $organization->getKey(),
+            };
 
-        $this->consentService->syncOrganizationConsents($organization, $dto->consents);
+            $user = $this->userService->create(UserCreateDto::from([
+                'email' => is_string($dto->contact_email) ? $dto->contact_email : $dto->billing_email,
+                'password' => Str::password(),
+                'name' => is_string($dto->creator_name) ? $dto->creator_name : ('User imported for ' . $company_name),
+            ]), false);
+
+            $organization->users()->attach($user->getKey());
+
+            $consents = Consent::query()
+                ->where('type', '=', ConsentType::ORGANIZATION)
+                ->where('required', true)
+                ->pluck('id', 'id')
+                ->map(fn () => true)
+                ->toArray();
+        } else {
+            $consents = $dto->consents;
+        }
+
+        $this->consentService->syncOrganizationConsents($organization, $consents);
         $organization->refresh();
 
         OrganizationCreated::dispatch($organization);
