@@ -84,7 +84,8 @@ final readonly class OrganizationService
             $consents = Consent::query()
                 ->where('type', '=', ConsentType::ORGANIZATION)
                 ->where('required', true)
-                ->pluck('id')
+                ->pluck('id', 'id')
+                ->map(fn () => true)
                 ->toArray();
         } else {
             $consents = $dto->consents;

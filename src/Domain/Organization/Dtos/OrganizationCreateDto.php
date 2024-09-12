@@ -52,8 +52,8 @@ final class OrganizationCreateDto extends Data
             'billing_address.company_name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.name'],
             'shipping_addresses.*.address.name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.company_name'],
             'shipping_addresses.*.address.company_name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.name'],
-            'consents' => $context->payload['import'] ? [] : ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
-            'consents.*' => $context->payload['import'] ? [] : ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
+            'consents' => ($context->payload['import'] ?? false) ? [] : ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
+            'consents.*' => ($context->payload['import'] ?? false) ? [] : ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
         ];
     }
 }
