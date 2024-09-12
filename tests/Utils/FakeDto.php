@@ -174,6 +174,7 @@ final readonly class FakeDto
 
         if (!empty($data['options'])) {
             $has_default = false;
+
             foreach ($data['options'] as &$option) {
                 $option['translations'][$langId]['name'] = $option['translations'][$langId]['name'] ?? $option['name'] ?? Str::random(
                     4
