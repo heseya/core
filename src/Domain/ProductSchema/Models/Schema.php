@@ -32,6 +32,7 @@ use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -67,7 +68,6 @@ final class Schema extends Model implements SortableContract, Translatable
         'description',
         'hidden',
         'required',
-        'default',
         'available',
         'shipping_time',
         'shipping_date',
@@ -180,6 +180,18 @@ final class Schema extends Model implements SortableContract, Translatable
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
+    }
+
+    /**
+     * @return Attribute<bool,null>
+     */
+    public function default(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value, array $attributes) => $this->relationLoaded('options')
+                ? $this->options->where('default', '=', true)->first()?->id
+                : null,
+        );
     }
 
     /**

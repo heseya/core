@@ -27,8 +27,6 @@ class SchemaUpdateRequest extends FormRequest
             'hidden' => ['nullable', 'boolean', 'declined_if:required,yes,on,1,true'],
             'required' => ['nullable', 'boolean'],
 
-            'default' => ['nullable', 'required_if:required,true', 'integer', 'min:0'],
-
             'options' => ['nullable', 'array'],
             'options.*.translations' => ['sometimes', new Translations(['name'])],
             'options.*.translations.*.name' => ['sometimes', 'string', 'max:255'],
@@ -39,11 +37,13 @@ class SchemaUpdateRequest extends FormRequest
             'options.*.metadata' => ['array'],
             'options.*.metadata_private' => ['array'],
 
-            'used_schemas' => ['nullable', 'array'],
-            'used_schemas.*' => ['uuid', 'exists:schemas,id'],
+            'options.*.default' => ['sometimes', 'boolean'],
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
+
+            'used_schemas' => ['nullable', 'array'],
+            'used_schemas.*' => ['uuid', 'exists:schemas,id'],
 
             'product_id' => ['uuid', 'exists:products,id', 'nullable'],
         ];

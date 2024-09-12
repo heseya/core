@@ -26,6 +26,7 @@ final readonly class OptionService
     public function sync(Schema $schema, array $options): void
     {
         $keep = [];
+        $default_option = null;
 
         foreach ($options as $order => $optionItem) {
             $optionData = array_merge(
@@ -50,6 +51,10 @@ final readonly class OptionService
 
             $option->save();
 
+            if (($option->wasRecentlyCreated || $option->wasChanged('default')) && $option->default) {
+                $default_option = $option;
+            }
+
             if (!($optionItem->items instanceof Optional)) {
                 $option->items()->sync($optionItem->items);
             }
@@ -70,5 +75,22 @@ final readonly class OptionService
         }
 
         $schema->options()->whereNotIn('id', $keep)->delete();
+
+        if ($default_option === null) {
+            $schema->refresh();
+            $default_option = $schema->required
+                ? $schema->options->where('default', '=', true)->first(null, $schema->options->first())
+                : $schema->options->where('default', '=', true)->first();
+        }
+
+        if ($default_option === null) {
+            // Schema has no options or is not required, otherwise it would never be null
+            $schema->required = false;
+            $schema->saveQuietly();
+        } else {
+            $default_option->default = true;
+            $default_option->saveQuietly();
+            $schema->options()->where('id', '!=', $default_option->getKey())->update(['default' => false]);
+        }
     }
 }
