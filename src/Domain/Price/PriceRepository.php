@@ -98,6 +98,7 @@ final class PriceRepository
                     'price_type' => $pricesCollection->type,
                     'currency' => $price->currency,
                     'price_map_id' => $price->currency->getDefaultPriceMapId(), // required for unique index to work correctly
+                    'sales_channel_id' => null,
                     'is_net' => $price->is_net,
                     'value' => (string) $price->value->getMinorAmount(),
                     'net' => $price->is_net ? (string) $price->value->getMinorAmount() : 0,

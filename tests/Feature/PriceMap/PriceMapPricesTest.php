@@ -4,14 +4,19 @@ namespace Tests\Feature\Organizations;
 
 use App\Models\Option;
 use App\Models\Product;
+use App\Services\ProductService;
 use Domain\Currency\Currency;
+use Domain\PriceMap\Jobs\RefreshCachedPricesForSalesChannel;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 use Tests\Utils\FakeDto;
@@ -367,5 +372,52 @@ class PriceMapPricesTest extends TestCase
                     'sales_channel_id' => $salesChannel->getKey(),
                 ]
             ]);
+    }
+
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateVatRate(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('products.show_details');
+
+        $queue = Queue::fake(RefreshCachedPricesForSalesChannel::class);
+
+        $salesChannelRepository = app(SalesChannelRepository::class);
+        $salesChannel = $salesChannelRepository->getDefault();
+
+        $productService = app(ProductService::class);
+
+        $salesChannelRepository->update($salesChannel, SalesChannelUpdateDto::from([
+            'vat_rate' => 10,
+        ]));
+
+        $queue->assertPushed(RefreshCachedPricesForSalesChannel::class);
+        $manualJob = new RefreshCachedPricesForSalesChannel($salesChannel);
+        $manualJob->handle($productService);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->withHeader('X-Sales-Channel', $salesChannel->getKey())
+            ->json('GET', '/products/id:' . $this->product1->getKey());
+
+        $this->assertEquals('111.10', $response->json('data.price.gross'));
+
+        $salesChannelRepository->update($salesChannel, SalesChannelUpdateDto::from([
+            'vat_rate' => 20,
+        ]));
+
+        $queue->assertPushed(RefreshCachedPricesForSalesChannel::class);
+        $manualJob = new RefreshCachedPricesForSalesChannel($salesChannel);
+        $manualJob->handle($productService);
+
+        $response2 = $this
+            ->actingAs($this->{$user})
+            ->withHeader('X-Sales-Channel', $salesChannel->getKey())
+            ->json('GET', '/products/id:' . $this->product1->getKey());
+
+        $this->assertEquals('121.20', $response2->json('data.price.gross'));
     }
 }
