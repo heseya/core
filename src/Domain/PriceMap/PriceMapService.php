@@ -346,7 +346,7 @@ final readonly class PriceMapService
 
         PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value', 'currency', 'is_net']);
 
-        if ($option->schema !== null) {
+        if ($option->schema !== null && $option->schema->product_id !== null) {
             dispatch(new RefreshCachedPricesForProductAndPriceMaps($option->schema->product_id, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
         }
     }
