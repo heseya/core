@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\OrderSchema;
+use Domain\Order\Dtos\OrderPriceDto;
 use Illuminate\Http\Request;
 
 /**
@@ -16,8 +17,8 @@ class OrderSchemaResource extends Resource
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'value' => $this->resource->value,
-            'price' => PriceResource::make($this->resource->price),
-            'price_initial' => PriceResource::make($this->resource->price_initial),
+            'price' => OrderPriceDto::from($this->resource->price, $this->resource->orderProduct->vat_rate, true),
+            'price_initial' => OrderPriceDto::from($this->resource->price, $this->resource->orderProduct->vat_rate, true),
         ];
     }
 }

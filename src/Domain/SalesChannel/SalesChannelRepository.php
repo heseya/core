@@ -139,7 +139,7 @@ final class SalesChannelRepository
         $channel->save();
         $channel->loadCount('organizations');
 
-        if ($channel->wasChanged('vat_rate') && $channel->priceMap) {
+        if ($channel->wasChanged(['vat_rate', 'price_map_id']) && $channel->priceMap) {
             dispatch(new RefreshCachedPricesForSalesChannel($channel));
         }
 
