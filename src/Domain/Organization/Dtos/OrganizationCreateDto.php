@@ -32,7 +32,7 @@ final class OrganizationCreateDto extends Data
     public function __construct(
         #[Unique('organizations', 'client_id')]
         public readonly Optional|string|null $client_id,
-        //#[Email, Max(255)]
+        // #[Email, Max(255)]
         public readonly string $billing_email,
         #[Email, Max(255)]
         public readonly Optional|string $contact_email,
