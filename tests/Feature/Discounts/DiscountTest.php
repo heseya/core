@@ -2253,6 +2253,9 @@ class DiscountTest extends TestCase
             'public' => true,
         ]);
 
+        $defaultDriver = Queue::getDefaultDriver();
+        Queue::setDefaultDriver('sync');
+
         Event::fake([SaleUpdated::class, ProductPriceUpdated::class]);
 
         $discountNew = [
@@ -2280,6 +2283,8 @@ class DiscountTest extends TestCase
 
         Event::assertDispatched(SaleUpdated::class);
         Event::assertDispatched(ProductPriceUpdated::class);
+
+        Queue::setDefaultDriver($defaultDriver);
     }
 
     /**

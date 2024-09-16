@@ -19,6 +19,7 @@ use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdateOptionDto;
 use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdatePartialDto;
 use Domain\PriceMap\Dtos\PriceMapUpdateDto;
 use Domain\PriceMap\Jobs\CreatePricesForAllProductsAndOptionsJob;
+use Domain\PriceMap\Jobs\RefreshCachedPricesForProductAndPriceMaps;
 use Domain\PriceMap\Jobs\RefreshCachedPricesForSalesChannel;
 use Domain\PriceMap\Resources\PriceMapData;
 use Domain\PriceMap\Resources\PriceMapPricesForProductData;
@@ -31,6 +32,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
@@ -171,6 +173,17 @@ final readonly class PriceMapService
             }
         }
 
+        $product_ids = Arr::map($updated_products, fn (PriceMapProductPrice $product) => $product->product_id);
+        $option_ids = Arr::map($updated_options, fn (PriceMapSchemaOptionPrice $option) => $option->option_id);
+        if (!empty($option_ids)) {
+            $product_ids = array_merge($product_ids, Product::query()->whereHas('schemas', fn (Builder $query) => $query->whereHas('options', fn (Builder $subquery) => $subquery->whereIn('id', $option_ids)))->pluck('id')->toArray());
+        }
+        $product_ids = array_unique($product_ids);
+
+        foreach ($product_ids as $product_id) {
+            dispatch(new RefreshCachedPricesForProductAndPriceMaps($product_id, [$priceMap->id]));
+        }
+
         return PriceMapUpdatedPricesData::from([
             'products' => $updated_products,
             'schema_options' => $updated_options,
@@ -237,12 +250,17 @@ final readonly class PriceMapService
      */
     public function updateProductPrices(Product $product, PriceMapProductPricesUpdateDto $dto): DataCollection
     {
+        $price_map_ids = [];
+
         /**
          * @var PriceMapProductPricesUpdatePartialDto $partial
          */
         foreach ($dto->prices as $partial) {
+            $price_map_ids[] = $partial->price_map_id;
             PriceMapProductPrice::query()->where(['price_map_id' => $partial->price_map_id, 'product_id' => $product->id])->update(['value' => ((float) $partial->price) * 100]);
         }
+
+        dispatch(new RefreshCachedPricesForProductAndPriceMaps($product->getKey(), $price_map_ids));
 
         return PriceMapProductPriceData::collection($product->mapPrices);
     }
@@ -266,7 +284,7 @@ final readonly class PriceMapService
                 return [
                     'id' => Uuid::uuid6()->toString(),
                     'price_map_id' => $priceMap->id,
-                    'product_id' => $product instanceof Product ? $product->id : $product,
+                    'product_id' => $product instanceof Product ? $product->getKey() : $product,
                     'value' => $priceDto->value->getMinorAmount()->toInt(),
                     'currency' => $priceMap->currency->value,
                     'is_net' => $priceMap->is_net,
@@ -275,10 +293,14 @@ final readonly class PriceMapService
         )->toArray();
 
         PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value', 'currency', 'is_net']);
+
+        dispatch(new RefreshCachedPricesForProductAndPriceMaps($product instanceof Product ? $product->getKey() : $product, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
     }
 
     public function updateSchemaPrices(Schema $schema, PriceMapSchemaPricesUpdateDto $dto): PriceMapSchemaPricesDataCollection
     {
+        $price_map_ids = [];
+
         /**
          * @var PriceMapSchemaPricesUpdatePartialDto $partial
          */
@@ -289,7 +311,11 @@ final readonly class PriceMapService
             foreach ($partial->options as $option) {
                 PriceMapSchemaOptionPrice::query()->where(['price_map_id' => $partial->price_map_id, 'option_id' => $option->id])->update(['value' => ((float) $option->price) * 100]);
             }
+
+            $price_map_ids[] = $partial->price_map_id;
         }
+
+        dispatch(new RefreshCachedPricesForProductAndPriceMaps($schema->product_id, $price_map_ids));
 
         return PriceMapSchemaPricesDataCollection::fromSchema($schema);
     }
@@ -319,5 +345,9 @@ final readonly class PriceMapService
         )->toArray();
 
         PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value', 'currency', 'is_net']);
+
+        if ($option->schema !== null && $option->schema->product_id !== null) {
+            dispatch(new RefreshCachedPricesForProductAndPriceMaps($option->schema->product_id, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
+        }
     }
 }
