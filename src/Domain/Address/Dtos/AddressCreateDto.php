@@ -26,6 +26,6 @@ final class AddressCreateDto extends Data
         #[Max(2)]
         public readonly string $country,
         #[Max(20)]
-        public readonly string $phone,
+        public readonly Optional|string|null $phone,
     ) {}
 }

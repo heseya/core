@@ -257,6 +257,7 @@ class OrganizationTest extends TestCase
         $address['vat'] = '987654321';
         $shippingAddress = Address::factory()->definition();
         $shippingAddress['company_name'] = null;
+        unset($address['phone'], $shippingAddress['phone']);
 
         /** @var WebHook $webHook */
         $webHook = WebHook::factory()->create([
