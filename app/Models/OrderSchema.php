@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use Domain\Currency\Currency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @mixin IdeHelperOrderSchema
@@ -28,4 +29,9 @@ class OrderSchema extends Model
         'price_initial' => MoneyCast::class,
         'price' => MoneyCast::class,
     ];
+
+    public function orderProduct(): BelongsTo
+    {
+        return $this->belongsTo(OrderProduct::class);
+    }
 }

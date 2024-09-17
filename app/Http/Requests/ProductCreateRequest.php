@@ -41,7 +41,7 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'slug' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('products', 'slug')->whereNull('deleted_at')],
 
-                'prices_base' => ['required', new PricesEveryCurrency()],
+                'prices_base' => ['sometimes', new PricesEveryCurrency()],
                 'prices_base.*' => [new Price(['value'], min: BigDecimal::zero())],
 
                 'public' => ['required', 'boolean'],

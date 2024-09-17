@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Domain\Organization\Dtos;
 
 use App\Rules\ConsentsExists;
+use App\Rules\EmailUnique;
 use App\Rules\OrganizationUniqueVat;
 use App\Rules\RequiredConsents;
 use Domain\Address\Dtos\AddressCreateDto;
 use Domain\Consent\Enums\ConsentType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Exists;
+use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\Unique;
@@ -29,7 +32,10 @@ final class OrganizationCreateDto extends Data
     public function __construct(
         #[Unique('organizations', 'client_id')]
         public readonly Optional|string|null $client_id,
+        // #[Email, Max(255)]
         public readonly string $billing_email,
+        #[Email, Max(255)]
+        public readonly Optional|string $contact_email,
         #[Rule(new OrganizationUniqueVat())]
         public readonly AddressCreateDto $billing_address,
         #[Uuid, Exists('sales_channels', 'id')]
@@ -37,6 +43,10 @@ final class OrganizationCreateDto extends Data
         #[DataCollectionOf(OrganizationSavedAddressCreateDto::class), Min(1)]
         public readonly DataCollection $shipping_addresses,
         public readonly array $consents,
+        #[Email, Max(255), Rule(new EmailUnique())]
+        public readonly Optional|string $creator_email,
+        public readonly Optional|string $creator_name,
+        public readonly bool $import = false,
     ) {}
 
     /**
@@ -49,8 +59,8 @@ final class OrganizationCreateDto extends Data
             'billing_address.company_name' => ['string', 'nullable', 'max:255', 'required_without:billing_address.name'],
             'shipping_addresses.*.address.name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.company_name'],
             'shipping_addresses.*.address.company_name' => ['string', 'nullable', 'max:255', 'required_without:shipping_addresses.*.address.name'],
-            'consents' => ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
-            'consents.*' => ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
+            'consents' => ($context->payload['import'] ?? false) ? [] : ['present', 'array', new RequiredConsents(ConsentType::ORGANIZATION)],
+            'consents.*' => ($context->payload['import'] ?? false) ? [] : ['boolean', new ConsentsExists(ConsentType::ORGANIZATION)],
         ];
     }
 }

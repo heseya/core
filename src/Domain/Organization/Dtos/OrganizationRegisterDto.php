@@ -30,6 +30,8 @@ final class OrganizationRegisterDto extends Data
     public function __construct(
         #[Email, Max(255)]
         public readonly string $billing_email,
+        #[Email, Max(255)]
+        public readonly Optional|string $contact_email,
         #[Rule(new OrganizationUniqueVat())]
         public readonly AddressCreateDto $billing_address,
         #[DataCollectionOf(OrganizationSavedAddressCreateDto::class), Min(1)]

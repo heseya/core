@@ -49,6 +49,7 @@ final class OptionDto extends Data
         #[DataCollectionOf(PriceDto::class)]
         public DataCollection|Optional $prices,
         public readonly array|Optional $items,
+        public readonly bool|Optional $default,
 
         #[MapInputName('metadata')]
         public readonly array|Optional $metadata_public,

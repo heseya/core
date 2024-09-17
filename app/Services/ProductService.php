@@ -191,7 +191,7 @@ final readonly class ProductService
             ]);
         }
 
-        $this->priceService->setCachedProductPrices($product->getKey(), [ProductPriceType::PRICE_INITIAL->value => $prices]);
+        $this->priceService->setCachedProductPrices($product, [ProductPriceType::PRICE_INITIAL->value => $prices]);
     }
 
     public function getPricesForVariants(ProductVariantPricesDto $dto, bool $calculateForCurrentUser = false): ProductVariantPriceResourceCollection

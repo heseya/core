@@ -338,7 +338,6 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
-            'default' => 0,
             'options' => [
                 [
                     'name' => 'L',
@@ -346,6 +345,7 @@ class SchemaTest extends TestCase
                     'items' => [
                         $item->getKey(),
                     ],
+                    'default' => true,
                 ],
             ],
         ]));
@@ -423,7 +423,6 @@ class SchemaTest extends TestCase
             "description->{$this->lang}" => 'test test',
             'hidden' => 0,
             'required' => 0,
-            'default' => null,
             'available' => true,
         ]);
 
@@ -490,7 +489,6 @@ class SchemaTest extends TestCase
                 'attributeMeta' => 'attributeValue',
             ],
             'options' => [],
-            'default' => null,
         ]);
 
         $response = $this
@@ -570,7 +568,6 @@ class SchemaTest extends TestCase
                 'attributeMetaPriv' => 'attributeValue',
             ],
             'options' => [],
-            'default' => null,
         ]);
 
         $response = $this->actingAs($this->{$user})->json('POST', '/schemas', $data);
@@ -625,7 +622,6 @@ class SchemaTest extends TestCase
                     ],
                 ],
             ],
-            'default' => null,
         ]);
 
         $response = $this
@@ -804,7 +800,6 @@ class SchemaTest extends TestCase
             'published' => [$this->lang],
             'hidden' => false,
             'required' => false,
-            'default' => null,
             'options' => [
                 [
                     'id' => $option->getKey(),
@@ -817,6 +812,7 @@ class SchemaTest extends TestCase
                             'name' => 'L',
                         ]
                     ],
+                    'default' => true,
                 ],
             ],
         ]);
@@ -827,7 +823,6 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('schemas', [
             "name->{$this->lang}" => 'Test Updated',
-            'default' => null,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -1067,7 +1062,6 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
-            'default' => 0,
             'options' => [
                 [
                     'id' => $option->getKey(),
@@ -1075,6 +1069,7 @@ class SchemaTest extends TestCase
                     'items' => [
                         $item->getKey(),
                     ],
+                    'default' => true,
                 ],
             ],
         ]);

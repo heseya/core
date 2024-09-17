@@ -27,6 +27,7 @@ Schema:
       type: string
     default:
       type: string
+      format: uuid
     shipping_time:
       type: integer
       example: 5
@@ -73,20 +74,27 @@ Option:
     name:
       type: string
       example: XL
-    prices:
-      description: "Additional price the customer will have to pay after selecting this option (can be negative)"
-      type: array
-      items:
-        type: object
-        properties:
-          gross:
-            type: string
-            example: "9.99"
-          currency:
-            type: string
-            example: "PLN"
+    price:
+      description: "Additional price the customer will have to pay after selecting this option (can't be negative)"
+      type: object
+      properties:
+        net:
+          type: string
+          example: "9.99"
+        gross:
+          type: string
+          example: "9.99"
+        currency:
+          type: string
+          example: "PLN"
+        sales_channel_id:
+          type: string
+          format: uuid
     available:
       description: "Shows whether the option is available for purchase (in stock and not disabled)"
+      type: boolean
+    default:
+      description: "Default option for this schema"
       type: boolean
     shipping_time:
       type: integer
@@ -143,8 +151,6 @@ SchemaRequest:
       type: boolean
     required:
       type: boolean
-    default:
-      type: string
     shipping_time:
       type: integer
       example: 5
@@ -156,18 +162,22 @@ SchemaRequest:
       type: array
       items:
         properties:
+          default:
+            type: boolean
           prices:
-            description: "Additional price the customer will have to pay after selecting this option (can be negative)"
+            description: "Additional price the customer will have to pay after selecting this option (can't be negative) - will be set for default price maps (one per currency)"
             type: array
             items:
               type: object
               properties:
-                gross:
+                value:
                   type: string
                   example: "9.99"
                 currency:
                   type: string
                   example: "PLN"
+                is_net:
+                  type: boolean
           items:
             type: array
             items:
@@ -253,3 +263,4 @@ SchemaShort:
       type: boolean
     default:
       type: string
+      format: uuid

@@ -735,7 +735,7 @@ readonly class DiscountService
 
             $newPrice = $this->calcAllDiscountsOnProduct($product, $sales, $salesChannel);
 
-            if ($oldPrice === null || !$oldPrice->net->isEqualTo($newPrice->net)) {
+            if ($oldPrice === null || !$oldPrice->net->isEqualTo($newPrice->net) || !$oldPrice->gross->isEqualTo($newPrice->gross)) {
                 $allNewPrices[] = $newPrice;
             }
         }

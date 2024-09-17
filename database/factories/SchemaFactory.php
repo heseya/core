@@ -26,7 +26,6 @@ class SchemaFactory extends Factory
             'description' => $this->faker->sentence(10),
             'hidden' => mt_rand(0, 10) === 0,
             'required' => $this->faker->boolean,
-            'default' => null,
             'published' => [App::getLocale()],
             'type' => SchemaType::SELECT->value,
         ];

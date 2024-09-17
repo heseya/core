@@ -6,7 +6,7 @@ Order:
       format: uuid
     code:
       type: string
-      example: 'FMBZRK'
+      example: "FMBZRK"
     email:
       type: string
       example: admin@example.com
@@ -14,68 +14,104 @@ Order:
       type: boolean
     currency:
       type: string
-      example: 'PLN'
+      example: "PLN"
     comment:
       type: string
-      example: 'asap plz'
+      example: "asap plz"
     cart_total_initial:
-      type: string
-      example: '38.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     cart_total:
-      type: string
-      example: '18.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     shipping_price_initial:
-      type: string
-      example: '38.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     shipping_price:
-      type: string
-      example: '18.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     summary:
-      type: string
-      example: '199.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     summary_paid:
-      description: 'Summary amount of paid.'
-      type: string
-      example: '199.99'
+      description: "Summary amount of paid."
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     paid:
       type: boolean
     status:
-      $ref: './Statuses.yml#/Status'
+      $ref: "./Statuses.yml#/Status"
     shipping_method:
-      $ref: '#/OrderShippingMethod'
+      $ref: "#/OrderShippingMethod"
     digital_shipping_method:
-      $ref: '#/OrderShippingMethod'
+      $ref: "#/OrderShippingMethod"
     documents:
-      $ref: './Documents.yml#/Document'
+      $ref: "./Documents.yml#/Document"
     shipping_type:
       type: string
-      example: 'address'
+      example: "address"
     invoice_requested:
       type: boolean
     billing_address:
-      $ref: './Addresses.yml#/Address'
+      $ref: "./Addresses.yml#/Address"
     shipping_place:
       oneOf:
-        - $ref: './Addresses.yml#/Address'
+        - $ref: "./Addresses.yml#/Address"
         - type: string
-          example: 'Test 12 11-111 Test'
+          example: "Test 12 11-111 Test"
     created_at:
       type: string
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     sales_channel:
-      $ref: '#/OrderSalesChannel'
+      $ref: "#/OrderSalesChannel"
     language:
       type: string
       example: pl
     payment_method_type:
       type: string
     payment_method:
-      $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+      $ref: "./../schemas/PaymentMethods.yml#/PaymentMethod"
     organization:
-      $ref: './../schemas/Organizations.yml#/Organization'
+      $ref: "./../schemas/Organizations.yml#/Organization"
 
 OrderProduct:
   type: object
@@ -85,28 +121,40 @@ OrderProduct:
       format: uuid
     quantity:
       type: number
-      example: '12.4'
+      example: "12.4"
     price:
-      type: string
-      example: '199.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     price_initial:
-      type: string
-      example: '299.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     vat_rate:
       type: number
-      example: '0.23'
+      example: "0.23"
     schemas:
       type: array
       items:
-        $ref: '#/OrderSchema'
+        $ref: "#/OrderSchema"
     deposits:
       type: array
       items:
-        $ref: './Deposits.yml#/Deposit'
+        $ref: "./Deposits.yml#/Deposit"
     discounts:
       type: array
       items:
-        $ref: '#/OrderDiscount'
+        $ref: "#/OrderDiscount"
     shipping_digital:
       type: boolean
     is_delivered:
@@ -114,9 +162,9 @@ OrderProduct:
     urls:
       type: array
       items:
-        $ref: '#/OrderProductUrl'
+        $ref: "#/OrderProductUrl"
     product:
-      $ref: '#/OrderProductDetails'
+      $ref: "#/OrderProductDetails"
 
 OrderDiscount:
   type: object
@@ -126,24 +174,24 @@ OrderDiscount:
       format: uuid
     name:
       type: string
-      example: 'Black Week'
+      example: "Black Week"
     code:
       type: string
-      example: 'BLACK22'
+      example: "BLACK22"
     target_type:
       type: string
-      enum: [ 'order-value', 'products', 'product-sets', 'shipping-price' ]
+      enum: ["order-value", "products", "product-sets", "shipping-price"]
     amount:
       type: string
       nullable: true
-      example: '9.99'
+      example: "9.99"
     percentage:
       type: string
       nullable: true
-      example: '25.00'
+      example: "25.00"
     applied_discount:
       type: string
-      example: '9.99'
+      example: "9.99"
 
 OrderSchema:
   type: object
@@ -155,36 +203,48 @@ OrderSchema:
       type: string
       example: XL
     price:
-      type: number
-      example: '49.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     price_initial:
-      type: number
-      example: '59.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
 
 OrderView:
   type: object
   allOf:
-    - $ref: '#/Order'
+    - $ref: "#/Order"
     - properties:
         products:
           type: array
           items:
-            $ref: '#/OrderProduct'
+            $ref: "#/OrderProduct"
         payments:
           type: array
           items:
-            $ref: './Payments.yml#/Payment'
+            $ref: "./Payments.yml#/Payment"
         shipping_number:
           type: string
-          example: '630552359128340015809770'
+          example: "630552359128340015809770"
         buyer:
           oneOf:
-            - $ref: './Users.yml#/UserView'
-            - $ref: './Apps.yml#/AppView'
+            - $ref: "./Users.yml#/UserView"
+            - $ref: "./Apps.yml#/AppView"
         discounts:
           type: array
           items:
-            $ref: '#/OrderDiscount'
+            $ref: "#/OrderDiscount"
 
 OrderSummary:
   properties:
@@ -192,44 +252,74 @@ OrderSummary:
       type: string
       format: uuid
     code:
-      description: 'Product''s secondary identifier'
+      description: "Product's secondary identifier"
       type: string
       example: G3K4DH
     status:
-      $ref: './Statuses.yml#/Status'
+      $ref: "./Statuses.yml#/Status"
     paid:
       type: boolean
     payable:
       type: boolean
     cart_total_initial:
-      type: string
-      example: '380.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     cart_total:
-      type: string
-      example: '180.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     shipping_price_initial:
-      type: string
-      example: '38.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     shipping_price:
-      type: string
-      example: '18.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     summary:
-      type: string
-      example: '18.7'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     shipping_method:
-      $ref: '#/OrderShippingMethod'
+      $ref: "#/OrderShippingMethod"
     digital_shipping_method:
-      $ref: '#/OrderShippingMethod'
+      $ref: "#/OrderShippingMethod"
     created_at:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     sales_channel:
-      $ref: '#/OrderSalesChannel'
+      $ref: "#/OrderSalesChannel"
     language:
       type: string
       example: pl
@@ -262,31 +352,43 @@ OrderProductPublic:
       example: Produkt
     quantity:
       type: number
-      example: '12.4'
+      example: "12.4"
     currency:
       type: string
       example: PLN
     price:
-      type: string
-      example: '199.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     price_initial:
-      type: string
-      example: '299.99'
+      type: object
+      properties:
+        net:
+          type: string
+          example: "38.7"
+        gross:
+          type: string
+          example: "38.7"
     vat_rate:
       type: number
-      example: '0.23'
+      example: "0.23"
     schemas:
       type: array
       items:
-        $ref: '#/OrderSchema'
+        $ref: "#/OrderSchema"
     shipping_digital:
       type: boolean
     product:
-      $ref: './Products.yml#/ProductView'
+      $ref: "./Products.yml#/ProductView"
     urls:
       type: array
       items:
-        $ref: '#/OrderProductUrl'
+        $ref: "#/OrderProductUrl"
 
 OrderSalesChannel:
   type: object
@@ -307,7 +409,7 @@ OrderShippingMethod:
       format: uuid
     name:
       type: string
-      example: 'Next Day Courier'
+      example: "Next Day Courier"
     integration_key:
       type: string
       format: uuid
@@ -319,9 +421,9 @@ OrderShippingMethod:
         - point
         - point-external
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
 
 OrderProductDetails:
   type: object
@@ -330,36 +432,36 @@ OrderProductDetails:
       type: string
       format: uuid
     slug:
-      description: 'Name used in the URL path'
+      description: "Name used in the URL path"
       type: string
       example: white-socks
     name:
-      description: 'Displayed product name'
+      description: "Displayed product name"
       type: string
-      example: 'White socks'
+      example: "White socks"
     cover:
-      $ref: './Media.yml#/Media'
+      $ref: "./Media.yml#/Media"
     sets:
-      description: 'Assigned product sets'
+      description: "Assigned product sets"
       type: array
       items:
-        $ref: '#/OrderProductSet'
+        $ref: "#/OrderProductSet"
     attributes:
-      description: 'Array of assigned attributes'
+      description: "Array of assigned attributes"
       type: array
       items:
-        $ref: '#/OrderAttributeProduct'
+        $ref: "#/OrderAttributeProduct"
     gallery:
-      description: 'Ids of assigned subsets'
+      description: "Ids of assigned subsets"
       type: array
       items:
-        $ref: './Media.yml#/Media'
+        $ref: "./Media.yml#/Media"
     items:
-      $ref: './Items.yml#/ItemWithRequiredQuantity'
+      $ref: "./Items.yml#/ItemWithRequiredQuantity"
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
 
 OrderProductSet:
   type: object
@@ -368,17 +470,17 @@ OrderProductSet:
       type: string
       format: uuid
     name:
-      description: 'Name displayed to the user'
+      description: "Name displayed to the user"
       type: string
       example: AGD
     slug:
-      description: 'Name used in the URL path'
+      description: "Name used in the URL path"
       type: string
       example: agd
     metadata:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
     metadata_private:
-      $ref: './../schemas/Metadata.yml#/Metadata'
+      $ref: "./../schemas/Metadata.yml#/Metadata"
 
 OrderAttributeProduct:
   type: object
@@ -387,16 +489,16 @@ OrderAttributeProduct:
       type: string
       format: uuid
     name:
-      description: 'Name of attribute'
+      description: "Name of attribute"
       type: string
-      example: 'Screen size'
+      example: "Screen size"
     slug:
-      description: 'Slug of name attribute'
+      description: "Slug of name attribute"
       type: string
-      example: 'screen-size'
+      example: "screen-size"
     selected_options:
-      description: 'Array options of attribute'
-      $ref: '#/OrderAttributeOption'
+      description: "Array options of attribute"
+      $ref: "#/OrderAttributeOption"
 
 OrderAttributeOption:
   type: object
@@ -405,15 +507,15 @@ OrderAttributeOption:
       type: string
       format: uuid
     name:
-      description: 'Name of attribute option'
+      description: "Name of attribute option"
       type: string
-      example: 'Screen size'
+      example: "Screen size"
     value_number:
-      description: 'Number value attribute option'
+      description: "Number value attribute option"
       type: number
-      example: '27'
+      example: "27"
     value_date:
-      description: 'Date value attribute option'
+      description: "Date value attribute option"
       type: string
       format: date
-      example: '2022-02-22'
+      example: "2022-02-22"

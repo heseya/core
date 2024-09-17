@@ -85,12 +85,6 @@ final readonly class SchemaCrudService
 
         $this->availabilityService->calculateSchemaAvailability($schema);
 
-        if (is_int($dto->default)) {
-            $default_option = $schema->options->get($dto->default, $schema->options->last());
-            $schema->default = $default_option?->getKey();
-            $schema->saveQuietly();
-        }
-
         return $schema;
     }
 

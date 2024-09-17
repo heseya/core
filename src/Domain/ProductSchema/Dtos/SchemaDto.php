@@ -43,7 +43,6 @@ abstract class SchemaDto extends Data
     public function __construct(
         public bool|Optional $hidden,
         public bool|Optional $required,
-        public int|Optional|null $default,
         public Optional|string|null $validation,
         public array|Optional|null $used_schemas,
         #[DataCollectionOf(OptionDto::class)]

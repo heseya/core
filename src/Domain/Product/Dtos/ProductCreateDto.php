@@ -48,7 +48,7 @@ final class ProductCreateDto extends Data
     public function __construct(
         public string $slug,
         #[DataCollectionOf(PriceDto::class)]
-        public DataCollection $prices_base,
+        public DataCollection|Optional $prices_base,
         public bool $public,
         public bool $shipping_digital,
         public Optional|string $id,
