@@ -13,15 +13,11 @@ use Support\LaravelData\Transformers\WithoutWrappingTransformer;
 final class PriceMapUpdatedPricesData extends DataWithGlobalMetadata
 {
     /**
-     * @param DataCollection<int,PriceMapPricesForProductPartialProductData> $products
-     * @param DataCollection<int,PriceMapPricesForProductPartialSchemaOptionData> $schema_options
+     * @param DataCollection<int,PriceMapPricesForProductData> $data
      */
     public function __construct(
         #[WithTransformer(WithoutWrappingTransformer::class)]
-        #[DataCollectionOf(PriceMapPricesForProductPartialProductData::class)]
-        public DataCollection $products,
-        #[WithTransformer(WithoutWrappingTransformer::class)]
-        #[DataCollectionOf(PriceMapPricesForProductPartialSchemaOptionData::class)]
-        public DataCollection $schema_options,
+        #[DataCollectionOf(PriceMapPricesForProductData::class)]
+        public DataCollection $data,
     ) {}
 }

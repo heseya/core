@@ -130,8 +130,12 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
-                    'products',
-                    'schema_options',
+                    [
+                        'product_id',
+                        'product_price',
+                        'product_name',
+                        'schema_options',
+                    ],
                 ],
                 'meta',
             ])

@@ -171,10 +171,20 @@ final readonly class PriceMapService
             }
         }
 
+        /** @var Builder<Product> $query */
+        $query = Product::query()
+            ->whereIn('id', array_column($updated_products, 'product_id'))
+            ->orWhereHas('schemas', fn (Builder $q) => $q->whereIn('id', array_column($updated_options, 'schema_id')))
+            ->with([
+                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
+                'schemas',
+                'schemas.options',
+                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
+            ]);
+
         return PriceMapUpdatedPricesData::from([
-            'products' => $updated_products,
-            'schema_options' => $updated_options,
-        ]);
+            'data' => $query->get(),
+        ])->withoutWrapping();
     }
 
     /**
