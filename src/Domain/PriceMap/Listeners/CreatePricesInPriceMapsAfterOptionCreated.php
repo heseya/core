@@ -19,7 +19,7 @@ final class CreatePricesInPriceMapsAfterOptionCreated
                 'id' => Str::orderedUuid()->toString(),
                 'price_map_id' => $priceMap->getKey(),
                 'option_id' => $event->getOption()->getKey(),
-                'currency' => $priceMap->currency,
+                'currency' => $priceMap->currency->value,
                 'is_net' => $priceMap->is_net,
                 'value' => 0,
             ];

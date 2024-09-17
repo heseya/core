@@ -25,7 +25,7 @@ class PriceMaxCap extends Criterion
         return $query->whereHas(
             'pricesMin',
             fn (Builder $query) => $query
-                ->where('gross', '<=', $value->getMinorAmount())
+                ->where('net', '<=', $value->getMinorAmount())
                 ->where('currency', $value->getCurrency()->getCurrencyCode())
                 ->where('price_type', ProductPriceType::PRICE_MIN->value)
                 ->where('sales_channel_id', $salesChannel->id),
