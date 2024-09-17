@@ -184,10 +184,19 @@ final readonly class PriceMapService
             dispatch(new RefreshCachedPricesForProductAndPriceMaps($product_id, [$priceMap->id]));
         }
 
+        /** @var Builder<Product> $query */
+        $query = Product::query()
+            ->whereIn('id', $product_ids)
+            ->with([
+                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
+                'schemas',
+                'schemas.options',
+                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
+            ]);
+
         return PriceMapUpdatedPricesData::from([
-            'products' => $updated_products,
-            'schema_options' => $updated_options,
-        ]);
+            'data' => $query->get(),
+        ])->withoutWrapping();
     }
 
     /**
