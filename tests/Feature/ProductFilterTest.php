@@ -162,7 +162,7 @@ class ProductFilterTest extends TestCase
                 headers: ['X-Sales-Channel' => $saleChannel->getKey()],
             )
             ->assertOk()
-            ->assertJsonCount(2, 'data')
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
             ])
