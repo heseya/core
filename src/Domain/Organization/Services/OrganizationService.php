@@ -74,7 +74,11 @@ final readonly class OrganizationService
             };
 
             $user = $this->userService->create(UserCreateDto::from([
-                'email' => is_string($dto->contact_email) ? $dto->contact_email : $dto->billing_email,
+                'email' => match (true) {
+                    is_string($dto->creator_email) => $dto->creator_email,
+                    is_string($dto->contact_email) => $dto->contact_email,
+                    default => $dto->billing_email,
+                },
                 'password' => Str::password(),
                 'name' => is_string($dto->creator_name) ? $dto->creator_name : ('User imported for ' . $company_name),
             ]), false);
