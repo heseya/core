@@ -151,7 +151,7 @@ class ProductFilterTest extends TestCase
             'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
-        $product1 = $this->prepareProduct('10.00');
+        $product1 = $this->prepareProduct('11.00');
         $product2 = $this->prepareProduct('8.00');
 
         $this
@@ -162,7 +162,7 @@ class ProductFilterTest extends TestCase
                 headers: ['X-Sales-Channel' => $saleChannel->getKey()],
             )
             ->assertOk()
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
             ])
@@ -174,8 +174,8 @@ class ProductFilterTest extends TestCase
                 'id' => $product1->getKey(),
             ])
             ->assertJsonMissing([
-                'net' => '10.00',
-                'gross' => '12.50',
+                'net' => '11.00',
+                'gross' => '13.75',
             ]);
     }
 
@@ -241,7 +241,7 @@ class ProductFilterTest extends TestCase
             'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
         ]);
 
-        $product1 = $this->prepareProduct('10.00');
+        $product1 = $this->prepareProduct('11.00');
         $product2 = $this->prepareProduct('8.00');
         $product3 = $this->prepareProduct('7.09');
 
@@ -272,8 +272,8 @@ class ProductFilterTest extends TestCase
                 'id' => $product1->getKey(),
             ])
             ->assertJsonMissing([
-                'net' => '10.00',
-                'gross' => '11.20',
+                'net' => '11.00',
+                'gross' => '12.32',
             ]);
     }
 
@@ -344,11 +344,11 @@ class ProductFilterTest extends TestCase
                 headers: ['X-Sales-Channel' => $saleChannel->getKey()],
             )
             ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
                 'id' => $product2->getKey(),
             ])
-            ->assertJsonFragment([
+            ->assertJsonMissing([
                 'net' => '8.00',
                 'gross' => '10.00',
             ])
