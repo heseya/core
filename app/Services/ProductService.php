@@ -342,7 +342,9 @@ final readonly class ProductService
 
         $this->setBannerMedia($product, $dto);
 
-        $this->updateMinPrices($product);
+        if (!$product->wasRecentlyCreated) {
+            $this->updateMinPrices($product);
+        }
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
         $product->quantity = $availability['quantity'];
