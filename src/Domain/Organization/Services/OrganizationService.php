@@ -77,7 +77,7 @@ final readonly class OrganizationService
                 'email' => match (true) {
                     is_string($dto->creator_email) => $dto->creator_email,
                     is_string($dto->contact_email) => $dto->contact_email,
-                    default => $dto->billing_email
+                    default => $dto->billing_email,
                 },
                 'password' => Str::password(),
                 'name' => is_string($dto->creator_name) ? $dto->creator_name : ('User imported for ' . $company_name),
@@ -177,9 +177,9 @@ final readonly class OrganizationService
     private function sendNewOrganizationAlert(Organization $organization): void
     {
         $admins = User::query()
-            ->whereHas('roles', fn(Builder $query) => $query->whereHas('permissions', fn(Builder $query) => $query->where('name', '=', 'organizations.edit')))
-            ->whereHas('preferences', fn(Builder $query) => $query->where('new_organization_alert', '=', true));
+            ->whereHas('roles', fn (Builder $query) => $query->whereHas('permissions', fn (Builder $query) => $query->where('name', '=', 'organizations.edit')))
+            ->whereHas('preferences', fn (Builder $query) => $query->where('new_organization_alert', '=', true));
 
-        $admins->each(fn(User $admin) => Mail::to($admin->email)->locale('pl')->send(new OrganizationRegistered($organization)));
+        $admins->each(fn (User $admin) => Mail::to($admin->email)->locale('pl')->send(new OrganizationRegistered($organization)));
     }
 }
