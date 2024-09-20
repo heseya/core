@@ -4,12 +4,10 @@ namespace App\Http\Requests;
 
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
-use App\Rules\SchemaZeroOptionExistsForEachCurrency;
 use App\Rules\Translations;
 use App\Traits\MetadataRules;
 use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 final class SchemaStoreRequest extends FormRequest
 {
@@ -31,13 +29,13 @@ final class SchemaStoreRequest extends FormRequest
 
                 'required' => ['nullable', 'boolean'],
 
-                'options' => ['required', 'array', Rule::when($this->required, [new SchemaZeroOptionExistsForEachCurrency()])],
+                'options' => ['required', 'array'],
 
                 'options.*.translations' => ['required', new Translations(['name'])],
                 'options.*.translations.*.name' => ['string', 'max:255'],
 
-                'options.*.prices' => ['sometimes', 'required', new PricesEveryCurrency()],
-                'options.*.prices.*' => ['sometimes', 'required', new Price(['value'], min: BigDecimal::zero())],
+                'options.*.prices' => ['sometimes', new PricesEveryCurrency()],
+                'options.*.prices.*' => ['sometimes', new Price(['value'], min: BigDecimal::zero())],
 
                 'options.*.metadata' => ['array'],
                 'options.*.metadata_private' => ['array'],

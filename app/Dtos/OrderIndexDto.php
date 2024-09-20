@@ -9,10 +9,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class OrderIndexDto extends Dto implements InstantiateFromRequest
 {
-    private string|null $search;
-    private string|null $sort;
-    private string|null $status_id;
-    private string|null $shipping_method_id;
+    private ?string $search;
+    private ?string $sort;
+    private ?string $status_id;
+    private ?string $shipping_method_id;
 
     public static function instantiateFromRequest(FormRequest|OrderIndexRequest $request): self
     {
@@ -24,22 +24,22 @@ class OrderIndexDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getSearch(): string|null
+    public function getSearch(): ?string
     {
         return $this->search;
     }
 
-    public function getSort(): string|null
+    public function getSort(): ?string
     {
         return $this->sort;
     }
 
-    public function getStatusId(): string|null
+    public function getStatusId(): ?string
     {
         return $this->status_id;
     }
 
-    public function getShippingMethodId(): string|null
+    public function getShippingMethodId(): ?string
     {
         return $this->shipping_method_id;
     }

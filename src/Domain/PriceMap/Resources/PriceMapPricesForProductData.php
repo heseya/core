@@ -23,10 +23,10 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
     public function __construct(
         public string $product_id,
         public string $product_price,
-        public string|null $product_name = null,
         #[WithTransformer(WithoutWrappingTransformer::class)]
         #[DataCollectionOf(PriceMapPricesForProductPartialSchemaOptionData::class)]
         public DataCollection $schema_options,
+        public ?string $product_name = null,
     ) {}
 
     public static function fromProduct(Product $product): static
@@ -73,8 +73,8 @@ final class PriceMapPricesForProductData extends DataWithGlobalMetadata
         return new self(
             $product->id,
             (string) ($product->mapPrices->first()?->value->getAmount() ?? '0'),
-            $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
             PriceMapPricesForProductPartialSchemaOptionData::collection($schema_options),
+            $product->getTranslation('name', $product->getLocale(), $product->useFallbackLocale()),
         );
     }
 }

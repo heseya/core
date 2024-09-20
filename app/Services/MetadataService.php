@@ -43,7 +43,7 @@ class MetadataService implements MetadataServiceContract
     /**
      * @param string[] $routeSegments
      */
-    public function returnModel(array $routeSegments): Model|null
+    public function returnModel(array $routeSegments): ?Model
     {
         $className = match ($routeSegments[0]) {
             'pages' => Page::class,

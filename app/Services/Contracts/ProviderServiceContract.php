@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 interface ProviderServiceContract
 {
-    public function getProvidersList(bool|null $active): JsonResource;
+    public function getProvidersList(?bool $active): JsonResource;
 
     public function getProvider(string $authProviderKey): ?AuthProvider;
 

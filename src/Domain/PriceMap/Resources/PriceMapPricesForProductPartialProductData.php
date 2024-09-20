@@ -14,7 +14,7 @@ final class PriceMapPricesForProductPartialProductData extends DataWithGlobalMet
     public function __construct(
         public string $product_id,
         public string $product_price,
-        public string|null $product_name = null,
+        public ?string $product_name = null,
     ) {}
 
     public static function fromProduct(Product $product): static

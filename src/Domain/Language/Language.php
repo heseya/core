@@ -29,7 +29,7 @@ final class Language extends Model
         'hidden' => 'boolean',
     ];
 
-    public static function default(): self|null
+    public static function default(): ?self
     {
         return self::where('default', '=', true)->first();
     }

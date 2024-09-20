@@ -109,10 +109,10 @@ final class ShippingMethodUpdateDto extends Data
         public readonly Optional|string|null $logo_id,
 
         #[StringType]
-        public readonly string|null $integration_key = null,
+        public readonly ?string $integration_key = null,
 
         #[StringType, Nullable]
-        public string|null $app_id = null,
+        public ?string $app_id = null,
     ) {
         /** @var User|App|null $user */
         $user = Auth::user();
@@ -183,7 +183,7 @@ final class ShippingMethodUpdateDto extends Data
         return $this->shipping_points;
     }
 
-    public function getAppId(): string|null
+    public function getAppId(): ?string
     {
         return $this->app_id;
     }

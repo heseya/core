@@ -108,7 +108,6 @@ class ProductServiceTest extends TestCase
         PriceDto $min,
         PriceDto $max,
     ): void {
-
         $options = [
             [
                 'name' => 'Option selected',
@@ -116,19 +115,12 @@ class ProductServiceTest extends TestCase
             ]
         ];
 
-        if (!$required) {
-            $options[] = [
-                'name' => 'Option unselected',
-                'prices' => [['value' => 0, 'currency' => self::$currency->value]]
-            ];
-        }
-
         $schema = $this->schemaCrudService->store(FakeDto::schemaDto([
             'name' => 'Test',
             'required' => $required,
             'product_id' => $this->product->getKey(),
             'options' => $options,
-        ], false, false));
+        ], false, $required));
 
         $this->product->refresh()->load('schemas');
 

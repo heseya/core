@@ -285,7 +285,7 @@ final readonly class ProductSetService
         return $set;
     }
 
-    public function reorder(array $sets, ProductSet|null $parent = null): void
+    public function reorder(array $sets, ?ProductSet $parent = null): void
     {
         foreach ($sets as $key => $id) {
             ProductSet::query()

@@ -51,7 +51,7 @@ final readonly class PriceMapService
      */
     public function list(): PaginatedDataCollection
     {
-        return PriceMapData::collection(PriceMap::query()->paginate());
+        return PriceMapData::collection(PriceMap::query()->paginate(Config::get('pagination.per_page')));
     }
 
     public function create(PriceMapCreateDto $dto): PriceMap
@@ -232,7 +232,7 @@ final readonly class PriceMapService
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMax as price' => fn (Builder $subquery) => $subquery->where(
+                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -249,7 +249,7 @@ final readonly class PriceMapService
             $query->sort($dto->sort);
         }
 
-        $products = $query->paginate();
+        $products = $query->paginate(Config::get('pagination.per_page'));
 
         return PriceMapPricesForProductData::collection($products);
     }
@@ -332,21 +332,23 @@ final readonly class PriceMapService
     /**
      * @param DataCollection<int,PriceDto> $priceDtos
      */
-    public function updateOptionPricesForDefaultMaps(Option $option, DataCollection $priceDtos): void
+    public function updateOptionPricesForDefaultMaps(Option $option, DataCollection $priceDtos, bool $is_default = false): void
     {
         if ($priceDtos instanceof DataCollection && $priceDtos->dataClass !== PriceDto::class) {
             throw new InvalidArgumentException();
         }
 
         $data = $priceDtos->toCollection()->map(
-            function (PriceDto $priceDto) use ($option) {
+            function (PriceDto $priceDto) use ($option, $is_default) {
                 $priceMap = $this->listDefault()->where('id', $priceDto->currency->getDefaultPriceMapId())->firstOrFail();
 
                 return [
                     'id' => Uuid::uuid6(),
                     'price_map_id' => $priceMap->id,
                     'option_id' => $option->id,
-                    'value' => $priceDto->value->getMinorAmount(),
+                    'value' => $is_default
+                        ? 0
+                        : $priceDto->value->getMinorAmount(),
                     'currency' => $priceMap->currency->value,
                     'is_net' => $priceMap->is_net,
                 ];

@@ -13,7 +13,7 @@ interface MetadataServiceContract
 
     public function sync(Model $model, array $metadata): void;
 
-    public function returnModel(array $routeSegments): Model|null;
+    public function returnModel(array $routeSegments): ?Model;
 
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection;
 

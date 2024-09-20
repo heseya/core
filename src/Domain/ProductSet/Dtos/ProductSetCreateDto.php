@@ -54,9 +54,9 @@ final class ProductSetCreateDto extends Data
         public readonly array|Optional $metadata_private,
 
         #[Exists('product_sets', 'id')]
-        public readonly string|null $parent_id = null,
+        public readonly ?string $parent_id = null,
         #[Exists('media', 'id')]
-        public readonly string|null $cover_id = null,
+        public readonly ?string $cover_id = null,
         public readonly array $children_ids = [],
         public readonly array $attributes = [],
     ) {

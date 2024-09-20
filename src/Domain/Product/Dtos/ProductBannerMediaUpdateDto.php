@@ -20,7 +20,7 @@ final class ProductBannerMediaUpdateDto extends Data
      */
     public function __construct(
         #[Max(255)]
-        public readonly string|null $url,
+        public readonly ?string $url,
         #[Rule(new Translations(['title', 'subtitle']))]
         public readonly array|Optional $translations,
         #[DataCollectionOf(ProductBannerResponsiveMediaDto::class)]

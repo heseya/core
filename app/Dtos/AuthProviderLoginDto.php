@@ -12,8 +12,8 @@ use Illuminate\Support\Str;
 class AuthProviderLoginDto extends Dto implements InstantiateFromRequest
 {
     private string $return_url;
-    private string|null $ip;
-    private string|null $user_agent;
+    private ?string $ip;
+    private ?string $user_agent;
     private array $params;
 
     public static function instantiateFromRequest(AuthProviderLoginRequest|FormRequest $request): self

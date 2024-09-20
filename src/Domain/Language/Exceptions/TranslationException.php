@@ -17,7 +17,7 @@ final class TranslationException extends StoreException
         string $message = 'No content in selected language',
         ?Throwable $previous = null,
         bool $simpleLogs = false,
-        protected Model|null $model = null,
+        protected ?Model $model = null,
     ) {
         parent::__construct($message, $previous);
         $this->simpleLogs = $simpleLogs;

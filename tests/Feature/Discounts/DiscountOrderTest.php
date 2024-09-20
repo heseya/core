@@ -917,11 +917,13 @@ class DiscountOrderTest extends TestCase
         $schema = $this->schemaCrudService->store(
             FakeDto::schemaDto([
                 'hidden' => false,
+                'required' => false,
                 'product_id' => $product->getKey(),
                 'options' => [
                     [
                         'name' => 'Default',
                         'prices' => [PriceDto::from(Money::of(20, $this->currency->value))],
+                        'default' => false,
                     ]
                 ]
             ])

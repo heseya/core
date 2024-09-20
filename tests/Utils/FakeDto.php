@@ -186,7 +186,20 @@ final readonly class FakeDto
             }
 
             if ($data['required'] && !$has_default) {
-                $data['options'][0]['default'] = true;
+                if ($addDefaultOption) {
+                    $data['options'][] = [
+                        'name' => 'Fallback default',
+                        'prices' => self::generatePricesInAllCurrencies([PriceDto::from(Money::of(0, Currency::DEFAULT->toCurrencyInstance()))])->toArray(),
+                        'default' => true,
+                        'translations' => [
+                            $langId => [
+                                'name' =>  'Fallback default'
+                            ],
+                        ],
+                    ];
+                } else {
+                    $data['options'][0]['default'] = true;
+                }
             }
         }
 
