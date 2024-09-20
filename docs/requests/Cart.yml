@@ -10,20 +10,20 @@ CartProcess:
         properties:
           currency:
             type: string
-            example: 'PLN'
+            example: "PLN"
           sales_channel_id:
             type: string
             format: uuid
           items:
-            description: 'List of products in cart'
+            description: "List of products in cart"
             type: array
             items:
-              $ref: '#/CartItem'
+              $ref: "#/CartItem"
           coupons:
             type: array
             items:
               type: string
-              example: 'BLWEEK22'
+              example: "BLWEEK22"
           shipping_method_id:
             type: string
             format: uuid
@@ -41,7 +41,7 @@ CartItem:
     cartitem_id:
       description: Id for product identification on the front-end, any string
       type: string
-      example: '1'
+      example: "1"
     product_id:
       type: string
       format: uuid
@@ -54,6 +54,8 @@ CartItem:
         119c0a63-1ea1-4769-8d5f-169f68de5598:
           type: string
           example: 123459fb-39a4-4dd0-8240-14793aa1f73b
+          format: uuid
         02b97693-857c-4fb9-9999-47400ac5fbef:
           type: string
-          example: 'HE + YA'
+          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
+          format: uuid

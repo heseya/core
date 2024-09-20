@@ -3,41 +3,36 @@ Cart:
   properties:
     currency:
       type: string
-      example: 'PLN'
+      example: "PLN"
     cart_total_initial:
-      type: string
-      example: '380.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     cart_total:
-      type: string
-      example: '180.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price_initial:
-      type: string
-      example: '38.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price:
-      type: string
-      example: '18.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_time:
       type: integer
       example: 5
     shipping_date:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     summary:
-      type: string
-      example: '189.4'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     items:
       type: array
       items:
-        $ref: '#/CartItemResponse'
+        $ref: "#/CartItemResponse"
     coupons:
       type: array
       items:
-        $ref: '#/CouponShortResource'
+        $ref: "#/CouponShortResource"
     sales:
       type: array
       items:
-        $ref: '#/SalesShortResource'
+        $ref: "#/SalesShortResource"
 
 CartItemResponse:
   type: object
@@ -46,14 +41,15 @@ CartItemResponse:
       type: string
       example: 1
     price:
-      type: string
-      example: '380.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     price_discounted:
-      type: string
-      example: '180.7'
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     quantity:
       type: number
       example: 1
+    currency:
+      type: string
+      example: "PLN"
 
 SalesShortResource:
   type: object
@@ -63,16 +59,19 @@ SalesShortResource:
       format: uuid,
     name:
       type: string
-      example: 'Black Week'
+      example: "Black Week"
     value:
       type: string
-      example: '50.0'
+      example: "50.0"
+    currency:
+      type: string
+      example: "PLN"
 
 CouponShortResource:
   type: object
   allOf:
-    - $ref: '#/SalesShortResource'
+    - $ref: "#/SalesShortResource"
     - properties:
         code:
           type: string
-          example: 'BLWEEK22'
+          example: "BLWEEK22"

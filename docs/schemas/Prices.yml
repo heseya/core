@@ -4,26 +4,49 @@ ProductPrice:
     id:
       type: string
       format: uuid
-    prices_min:
-      description: 'Min prices after applied all sales'
-      type: array
-      items:
-        $ref: ./Prices.yml#/PriceResource
-    prices_max:
-      description: 'Max prices after applied all sales'
-      type: array
-      items:
-        $ref: ./Prices.yml#/PriceResource
+    price:
+      type: object
+      $ref: "#/PriceResourceWithSalesChannel"
+
+AmountResource:
+  type: object
+  properties:
+    value:
+      type: string
+      example: "19.99"
+    currency:
+      type: string
+      example: "PLN"
+    is_net:
+      type: boolean
 
 PriceResource:
   type: object
   properties:
     net:
       type: string
-      example: '19.99'
+      example: "19.99"
     gross:
       type: string
-      example: '23.99'
+      example: "23.99"
     currency:
       type: string
-      example: 'PLN'
+      example: "PLN"
+
+PriceResourceWithSalesChannel:
+  type: object
+  allOf:
+    - $ref: "#/PriceResource"
+    - properties:
+        sales_channel_id:
+          type: string
+          format: uuid
+
+PriceResourceWithVatRate:
+  type: object
+  allOf:
+    - $ref: "#/PriceResource"
+    - properties:
+        vat_rate:
+          type: string
+          example: "0.23"

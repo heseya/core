@@ -19,60 +19,18 @@ Order:
       type: string
       example: "asap plz"
     cart_total_initial:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     cart_total:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price_initial:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     summary:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     summary_paid:
       description: "Summary amount of paid."
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     paid:
       type: boolean
     status:
@@ -112,6 +70,8 @@ Order:
       $ref: "./../schemas/PaymentMethods.yml#/PaymentMethod"
     organization:
       $ref: "./../schemas/Organizations.yml#/Organization"
+    vat_rate:
+      type: string
 
 OrderProduct:
   type: object
@@ -245,6 +205,8 @@ OrderView:
           type: array
           items:
             $ref: "#/OrderDiscount"
+        organization:
+          $ref: "./Organizations.yml#/Organization"
 
 OrderSummary:
   properties:
@@ -262,50 +224,15 @@ OrderSummary:
     payable:
       type: boolean
     cart_total_initial:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     cart_total:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price_initial:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_price:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     summary:
-      type: object
-      properties:
-        net:
-          type: string
-          example: "38.7"
-        gross:
-          type: string
-          example: "38.7"
+      $ref: "./Prices.yml#/PriceResourceWithVatRate"
     shipping_method:
       $ref: "#/OrderShippingMethod"
     digital_shipping_method:
@@ -323,6 +250,10 @@ OrderSummary:
     language:
       type: string
       example: pl
+    payment_method_type:
+      type: string
+    vat_rate:
+      type: string
   type: object
 
 OrderProductUrl:

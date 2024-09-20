@@ -8,7 +8,7 @@ PriceMapCreate:
           - currency
           - is_net
         allOf:
-          - $ref: "./../schemas/PriceMap.yml#/PriceMap"
+          - $ref: "./../schemas/PriceMaps.yml#/PriceMap"
 
 PriceMapUpdate:
   content:
@@ -16,4 +16,4 @@ PriceMapUpdate:
       schema:
         type: object
         allOf:
-          - $ref: "./../schemas/PriceMap.yml#/PriceMap"
+          - $ref: "./../schemas/PriceMaps.yml#/PriceMap"

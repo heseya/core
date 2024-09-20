@@ -72,6 +72,9 @@ OrderCreate:
           payment_method_id:
             type: string
             format: uuid
+          organization_id:
+            type: string
+            format: uuid
 
 OrderUpdate:
   content:
