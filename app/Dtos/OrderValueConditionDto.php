@@ -49,7 +49,7 @@ class OrderValueConditionDto extends ConditionDto
         return $this->min_values;
     }
 
-    public function getMinValueForCurrency(Currency|string $currency): PriceDto|null
+    public function getMinValueForCurrency(Currency|string $currency): ?PriceDto
     {
         if (is_string($currency)) {
             $currency = Currency::from($currency);
@@ -70,7 +70,7 @@ class OrderValueConditionDto extends ConditionDto
         return $this->max_values;
     }
 
-    public function getMaxValueForCurrency(Currency|string $currency): PriceDto|null
+    public function getMaxValueForCurrency(Currency|string $currency): ?PriceDto
     {
         if (is_string($currency)) {
             $currency = Currency::from($currency);

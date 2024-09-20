@@ -31,7 +31,7 @@ class ProviderService implements ProviderServiceContract
         private AuthService $authService,
     ) {}
 
-    public function getProvidersList(bool|null $active): JsonResource
+    public function getProvidersList(?bool $active): JsonResource
     {
         $query = AuthProvider::query();
 

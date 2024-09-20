@@ -24,7 +24,7 @@ final class BannerMediaUpdateDto extends Data
         #[Exists('banner_media', 'id')]
         public readonly Optional|string|null $id,
         #[Max(255)]
-        public readonly string|null $url,
+        public readonly ?string $url,
         #[Rule(new Translations(['title', 'subtitle']))]
         public readonly array|Optional $translations,
         #[DataCollectionOf(ResponsiveMediaDto::class)]

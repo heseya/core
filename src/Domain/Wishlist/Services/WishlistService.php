@@ -29,7 +29,7 @@ final class WishlistService
         return $query->paginate(Config::get('pagination.per_page'));
     }
 
-    public function show(App|User $user, Product $product): WishlistProduct|null
+    public function show(App|User $user, Product $product): ?WishlistProduct
     {
         $query = $user->hasPermissionTo('products.show_hidden') ?
             $user->wishlistProducts() :

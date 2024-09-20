@@ -112,7 +112,7 @@ final class ShippingMethodCreateDto extends Data
         public readonly bool $is_block_list_products = true,
 
         #[StringType, Nullable]
-        public readonly string|null $integration_key = null,
+        public readonly ?string $integration_key = null,
 
         #[BooleanType]
         public readonly bool $is_block_list_countries = false,

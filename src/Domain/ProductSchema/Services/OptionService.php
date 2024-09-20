@@ -64,7 +64,7 @@ final readonly class OptionService
             }
 
             if ($optionItem->prices instanceof DataCollection) {
-                $this->priceMapService->updateOptionPricesForDefaultMaps($option, $optionItem->prices);
+                $this->priceMapService->updateOptionPricesForDefaultMaps($option, $optionItem->prices, is_bool($optionItem->default) && $optionItem->default);
             }
 
             $keep[] = $option->getKey();

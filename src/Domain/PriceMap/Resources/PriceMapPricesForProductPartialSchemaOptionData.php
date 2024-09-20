@@ -15,9 +15,9 @@ final class PriceMapPricesForProductPartialSchemaOptionData extends DataWithGlob
     public function __construct(
         public string $schema_option_id,
         public string $schema_option_price,
-        public string|null $schema_id = null,
-        public string|null $schema_name = null,
-        public string|null $schema_option_name = null,
+        public ?string $schema_id = null,
+        public ?string $schema_name = null,
+        public ?string $schema_option_name = null,
     ) {}
 
     public static function fromModel(PriceMapSchemaOptionPrice $price): static

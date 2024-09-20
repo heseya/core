@@ -13,9 +13,9 @@ final class ShowResetPasswordFormDto extends Data
 {
     public function __construct(
         #[StringType, Nullable, FromRouteParameter('token')]
-        public string|null $token = null,
+        public ?string $token = null,
 
         #[StringType, Nullable, FromRouteParameter('email')]
-        public string|null $email = null,
+        public ?string $email = null,
     ) {}
 }

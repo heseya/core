@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Organizations;
+namespace Tests\Feature\PriceMap;
 
 use App\Models\Option;
 use App\Models\Product;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Organizations;
+namespace Tests\Feature\PriceMap;
 
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;

@@ -74,7 +74,7 @@ class Item extends Model implements SortableContract
         'unlimited_stock_shipping_date' => 'datetime',
     ];
 
-    public function getQuantity(string|null $day): float
+    public function getQuantity(?string $day): float
     {
         if ($day) {
             if (!Str::contains($day, ':')) {
