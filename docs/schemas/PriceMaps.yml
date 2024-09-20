@@ -1,0 +1,91 @@
+PriceMap:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+      description: "Name of the price map"
+    description:
+      type: string
+      description: "Description of the permission"
+    currency:
+      type: string
+      example: "PLN"
+    is_net:
+      type: boolean
+
+PriceMapPricesForProductData:
+  type: object
+  properties:
+    product_id:
+      type: string
+      format: uuid
+    product_price:
+      type: string
+      description: "Amount"
+      example: "19.99"
+    schema_options:
+      type: array
+      items:
+        $ref: "#/PriceMapPricesForProductPartialSchemaOptionData"
+
+PriceMapPricesForProductPartialSchemaOptionData:
+  type: object
+  properties:
+    schema_option_id:
+      type: string
+      format: uuid
+    schema_option_price:
+      type: string
+      description: "Amount"
+      example: "19.99"
+    schema_id:
+      type: string
+      format: uuid
+    schema_name:
+      type: string
+    schema_option_name:
+      type: string
+
+PriceMapProductPriceData:
+  type: object
+  properties:
+    price_map_id:
+      type: string
+      format: uuid
+    price_map_name:
+      type: string
+    is_net:
+      type: boolean
+    currency:
+      type: string
+      example: "PLN"
+    price:
+      type: string
+      example: "19.99"
+
+PriceMapSchemaPricesData:
+  type: object
+  properties:
+    price_map_id:
+      type: string
+      format: uuid
+    price_map_name:
+      type: string
+    is_net:
+      type: boolean
+    currency:
+      type: string
+      example: "PLN"
+    options:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          price:
+            type: string

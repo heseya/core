@@ -15,7 +15,7 @@ PriceMaps:
                 data:
                   type: array
                   items:
-                    $ref: "./../schemas/PriceMap.yml#/PriceMap"
+                    $ref: "./../schemas/PriceMaps.yml#/PriceMap"
               type: object
   post:
     tags:
@@ -23,7 +23,7 @@ PriceMaps:
     security:
       - BearerAuth: [price-maps.add]
     requestBody:
-      $ref: "./../requests/PriceMap.yml#/PriceMapCreate"
+      $ref: "./../requests/PriceMaps.yml#/PriceMapCreate"
     responses:
       201:
         description: Created
@@ -32,7 +32,7 @@ PriceMaps:
             schema:
               properties:
                 data:
-                  $ref: "./../schemas/PriceMap.yml#/PriceMap"
+                  $ref: "./../schemas/PriceMaps.yml#/PriceMap"
               type: object
 
 PriceMapsParams:
@@ -42,7 +42,7 @@ PriceMapsParams:
     security:
       - BearerAuth: [price-maps.edit]
     requestBody:
-      $ref: "./../requests/PriceMap.yml#/PriceMapUpdate"
+      $ref: "./../requests/PriceMaps.yml#/PriceMapUpdate"
     parameters:
       - name: id
         in: path
@@ -58,7 +58,7 @@ PriceMapsParams:
             schema:
               properties:
                 data:
-                  $ref: "./../schemas/PriceMap.yml#/PriceMap"
+                  $ref: "./../schemas/PriceMaps.yml#/PriceMap"
               type: object
   delete:
     tags:
@@ -75,3 +75,387 @@ PriceMapsParams:
     responses:
       204:
         description: Success
+
+PriceMapsPrices:
+  get:
+    tags:
+      - PriceMaps
+    summary: "price map prices"
+    security:
+      - BearerAuth: [price-maps.show]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: search
+        in: query
+        description: "Full text search"
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: "Name search"
+        schema:
+          type: string
+      - name: slug
+        in: query
+        description: "Slug search"
+        schema:
+          type: string
+      - name: public
+        in: query
+        description: "Is public search"
+        schema:
+          type: boolean
+      - name: full
+        in: query
+        description: "Returns details resource"
+        schema:
+          type: boolean
+      - name: "sets[]"
+        in: query
+        description: "Product set array slug search"
+        schema:
+          type: string
+        example: "sets[]=category-teapots&sets[]=category-mugs"
+      - name: "sets_not[]"
+        in: query
+        description: "Product set array slug search negation"
+        schema:
+          type: string
+        example: "sets_not[]=category-teapots&sets_not[]=category-mugs"
+      - name: sort
+        in: query
+        description: "Sorting string"
+        schema:
+          type: string
+          example: "price:asc,created_at:desc,name"
+      - name: "tags[]"
+        in: query
+        description: "Tag array id search"
+        schema:
+          type: string
+        example: "tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
+      - name: "tags_not[]"
+        in: query
+        description: "Tag array id search negation"
+        schema:
+          type: string
+        example: "tags_not[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags_not[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
+      - name: available
+        in: query
+        description: "Is available search"
+        schema:
+          type: boolean
+      - name: price.min
+        in: query
+        schema:
+          type: number
+      - name: price.max
+        in: query
+        schema:
+          type: number
+      - name: price.currency
+        in: query
+        description: "Currency code, required with price.min and price.max"
+        schema:
+          type: string
+        example: "PLN"
+      - name: has_cover
+        in: query
+        description: "Product has cover"
+        schema:
+          type: boolean
+      - name: has_items
+        in: query
+        description: "Product has  items"
+        schema:
+          type: boolean
+      - name: has_schemas
+        in: query
+        description: "Product has schemas"
+        schema:
+          type: boolean
+      - name: shipping_digital
+        in: query
+        description: "Product has digital shipping"
+        schema:
+          type: boolean
+      - name: attribute
+        in: query
+        description: "search by attributes"
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            autor:
+              type: string
+            ilosc-stron:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+      - name: attribute_not
+        in: query
+        description: "search by attributes negation"
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            autor:
+              type: string
+            ilosc-stron:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+      - name: metadata
+        in: query
+        description: "search by metadata"
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
+      - name: metadata_private
+        in: query
+        description: "search by metadata private"
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
+      - name: "ids[]"
+        in: query
+        example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+      - name: lang_fallback
+        in: query
+        description: "Determines what data will be returned if it does not occur in the selected language. The default option is 'none'. If 'none' then items that do not have the given translation will not be returned. If 'default', missing translations will be replaced in the default API language. 'Any' means that missing translations will be replaced with the first available translation for the item."
+        required: false
+        schema:
+          type: string
+          enum: ["none", "any", "default"]
+      - name: with_translations
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: attribute_slug
+        in: query
+        required: false
+        schema:
+          type: string
+        description: "Returns only attribute and attribute options with given slug; if empty, all product attributes will be returned"
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: "./../schemas/PriceMaps.yml#/PriceMapPricesForProductData"
+              type: object
+  patch:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.edit]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              products:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: "Product uuid"
+                    value:
+                      type: number
+              schema_options:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: "Option uuid"
+                    value:
+                      type: number
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/PriceMaps.yml#/PriceMapPricesForProductData"
+              type: object
+
+ProductPrices:
+  get:
+    tags:
+      - PriceMaps
+    summary: "product prices in price maps"
+    security:
+      - BearerAuth: [price-maps.show]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: "./../schemas/PriceMaps.yml#/PriceMapProductPriceData"
+              type: object
+  patch:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.edit]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price_map_id:
+                      type: string
+                      format: uuid
+                    price:
+                      type: number
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/PriceMaps.yml#/PriceMapProductPriceData"
+              type: object
+
+OptionPrices:
+  get:
+    tags:
+      - PriceMaps
+    summary: "option prices in price maps"
+    security:
+      - BearerAuth: [price-maps.show]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: "./../schemas/PriceMaps.yml#/PriceMapSchemaPricesData"
+              type: object
+  patch:
+    tags:
+      - PriceMaps
+    security:
+      - BearerAuth: [price-maps.edit]
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              prices:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    price_map_id:
+                      type: string
+                      format: uuid
+                    options:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          price:
+                            type: number
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: "./../schemas/PriceMaps.yml#/PriceMapSchemaPricesData"
+              type: object

@@ -16,45 +16,48 @@ AttributeCreate:
             format: uuid
           translations:
             type: array
-            description: 'Translation table for languages. Array key is language UUID'
+            description: "Translation table for languages. Array key is language UUID"
             items:
               type: object
               properties:
                 name:
-                  description: 'Name of attribute'
+                  description: "Name of attribute"
                   type: string
-                  example: 'Screen size'
+                  example: "Screen size"
                 description:
-                  description: 'Description of attribute'
+                  description: "Description of attribute"
                   type: string
-                  example: 'Presented number is size of screen monitor'
+                  example: "Presented number is size of screen monitor"
           slug:
-            description: 'Slug of name attribute'
+            description: "Slug of name attribute"
             type: string
-            example: 'screen-size'
+            example: "screen-size"
           type:
-            description: 'Type of attribute'
+            description: "Type of attribute"
             type: string
-            enum: [ 'single-option', 'multi-choice-option', 'number', 'date' ]
+            enum: ["single-option", "multi-choice-option", "number", "date"]
           global:
-            description: 'Possibility to use attribute in search'
+            description: "Possibility to use attribute in search"
             type: boolean
           sortable:
-            description: 'Parameter for storefront'
+            description: "Parameter for storefront"
             type: boolean
           include_in_text_search:
-            description: 'Include attribute values in text search, works only for single/multiselect attribute types'
+            description: "Include attribute values in text search, works only for single/multiselect attribute types"
+            type: boolean
+          match_any:
+            description: "Match any word in attribute value instead of matching all when using text search"
             type: boolean
           metadata:
-            $ref: './../schemas/Metadata.yml#/Metadata'
+            $ref: "./../schemas/Metadata.yml#/Metadata"
           metadata_private:
-            $ref: './../schemas/Metadata.yml#/Metadata'
+            $ref: "./../schemas/Metadata.yml#/Metadata"
           published:
             type: array
             items:
               type: string
               format: uuid
-              example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b'
+              example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b"
 
 AttributeUpdate:
   content:
@@ -62,42 +65,42 @@ AttributeUpdate:
       schema:
         type: object
         properties:
-          id:
-            type: string
-            format: uuid
           translations:
             type: array
-            description: 'Translation table for languages. Array key is language UUID'
+            description: "Translation table for languages. Array key is language UUID"
             items:
               type: object
               properties:
                 name:
-                  description: 'Name of attribute'
+                  description: "Name of attribute"
                   type: string
-                  example: 'Screen size'
+                  example: "Screen size"
                 description:
-                  description: 'Description of attribute'
+                  description: "Description of attribute"
                   type: string
-                  example: 'Presented number is size of screen monitor'
+                  example: "Presented number is size of screen monitor"
           slug:
-            description: 'Slug of name attribute'
+            description: "Slug of name attribute"
             type: string
-            example: 'screen-size'
+            example: "screen-size"
           global:
-            description: 'Possibility to use attribute in search'
+            description: "Possibility to use attribute in search"
             type: boolean
           sortable:
-            description: 'Parameter for storefront'
+            description: "Parameter for storefront"
             type: boolean
           include_in_text_search:
-            description: 'Include attribute values in text search, works only for single/multiselect attribute types'
+            description: "Include attribute values in text search, works only for single/multiselect attribute types"
+            type: boolean
+          match_any:
+            description: "Match any word in attribute value instead of matching all when using text search"
             type: boolean
           published:
             type: array
             items:
               type: string
               format: uuid
-              example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b'
+              example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b"
 
 AttributeOption:
   content:
@@ -110,24 +113,24 @@ AttributeOption:
             format: uuid
           translations:
             type: array
-            description: 'Translation table for languages. Array key is language UUID'
+            description: "Translation table for languages. Array key is language UUID"
             items:
               type: object
               properties:
                 name:
-                  description: 'Name of attribute option'
+                  description: "Name of attribute option"
                   type: string
-                  example: 'Screen size'
+                  example: "Screen size"
           value_number:
-            description: 'Number value attribute option'
+            description: "Number value attribute option"
             type: number
-            example: '27'
+            example: "27"
           value_date:
-            description: 'Date value attribute option'
+            description: "Date value attribute option"
             type: string
             format: date
-            example: '2022-02-22'
+            example: "2022-02-22"
           metadata:
-            $ref: './../schemas/Metadata.yml#/Metadata'
+            $ref: "./../schemas/Metadata.yml#/Metadata"
           metadata_private:
-            $ref: './../schemas/Metadata.yml#/Metadata'
+            $ref: "./../schemas/Metadata.yml#/Metadata"

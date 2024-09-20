@@ -5,7 +5,7 @@ Attributes:
     parameters:
       - name: search
         in: query
-        description: 'Full text search'
+        description: "Full text search"
         schema:
           type: string
       - name: global
@@ -21,7 +21,7 @@ Attributes:
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
       - name: metadata_private
         in: query
         description: search by metadata private
@@ -29,15 +29,10 @@ Attributes:
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
-      - name: name
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
+      - name: "ids[]"
         in: query
-        description: 'Name search'
-        schema:
-          type: string
-      - name: 'ids[]'
-        in: query
-        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
         schema:
           type: array
           items:
@@ -49,7 +44,7 @@ Attributes:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -61,7 +56,7 @@ Attributes:
         description: search by global flag
         schema:
           type: boolean
-    summary: 'list attributes'
+    summary: "list attributes"
     responses:
       200:
         description: Success
@@ -72,17 +67,17 @@ Attributes:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+                    $ref: "./../schemas/Attributes.yml#/AttributeMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   post:
     tags:
       - Attributes
-    summary: 'add new attribute'
+    summary: "add new attribute"
     requestBody:
-      $ref: './../requests/Attributes.yml#/AttributeCreate'
+      $ref: "./../requests/Attributes.yml#/AttributeCreate"
     responses:
       201:
         description: Created
@@ -91,16 +86,16 @@ Attributes:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+                  $ref: "./../schemas/Attributes.yml#/AttributeMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 AttributesParams:
   get:
     tags:
       - Attributes
-    summary: 'get attribute'
+    summary: "get attribute"
     parameters:
       - name: id
         in: path
@@ -113,7 +108,7 @@ AttributesParams:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -127,14 +122,14 @@ AttributesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+                  $ref: "./../schemas/Attributes.yml#/AttributeMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
   delete:
     tags:
       - Attributes
-    summary: 'delete attribute'
+    summary: "delete attribute"
     parameters:
       - name: id
         in: path
@@ -145,12 +140,12 @@ AttributesParams:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   patch:
     tags:
       - Attributes
-    summary: 'update attribute'
+    summary: "update attribute"
     parameters:
       - name: id
         in: path
@@ -158,7 +153,7 @@ AttributesParams:
         schema:
           type: integer
     requestBody:
-      $ref: './../requests/Attributes.yml#/AttributeUpdate'
+      $ref: "./../requests/Attributes.yml#/AttributeUpdate"
     responses:
       200:
         description: Success
@@ -167,16 +162,16 @@ AttributesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
+                  $ref: "./../schemas/Attributes.yml#/AttributeMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 AttributeOption:
   get:
     tags:
       - Attributes
-    summary: 'get list of all options attribute'
+    summary: "get list of all options attribute"
     parameters:
       - name: id
         in: path
@@ -196,9 +191,19 @@ AttributeOption:
               type: string
             czerwony:
               type: string
-      - name: 'ids[]'
+      - name: search
         in: query
-        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        required: false
+        schema:
+          type: string
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: "ids[]"
+        in: query
+        example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
         schema:
           type: array
           items:
@@ -210,7 +215,7 @@ AttributeOption:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -221,13 +226,13 @@ AttributeOption:
         required: false
         schema:
           type: string
-          example: 'parent-set'
+          example: "parent-set"
       - name: sort
         in: query
         required: false
         schema:
           type: string
-          enum: [ 'asc', 'desc' ]
+          enum: ["asc", "desc"]
     responses:
       200:
         description: Success
@@ -239,14 +244,14 @@ AttributeOption:
                 type: object
                 properties:
                   data:
-                    $ref: './../schemas/Attributes.yml#/AttributeOption'
+                    $ref: "./../schemas/Attributes.yml#/AttributeOption"
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   post:
     tags:
       - Attributes
-    summary: 'add new option to attribute'
+    summary: "add new option to attribute"
     parameters:
       - name: id
         in: path
@@ -254,7 +259,7 @@ AttributeOption:
         schema:
           type: integer
     requestBody:
-      $ref: './../requests/Attributes.yml#/AttributeOption'
+      $ref: "./../requests/Attributes.yml#/AttributeOption"
     responses:
       201:
         description: Created
@@ -263,16 +268,16 @@ AttributeOption:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
+                  $ref: "./../schemas/Attributes.yml#/AttributeOptionMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 AttributeOptionParams:
   patch:
     tags:
       - Attributes
-    summary: 'update option'
+    summary: "update option"
     parameters:
       - name: attribute_id
         in: path
@@ -285,7 +290,7 @@ AttributeOptionParams:
         schema:
           type: string
     requestBody:
-      $ref: './../requests/Attributes.yml#/AttributeOption'
+      $ref: "./../requests/Attributes.yml#/AttributeOption"
     responses:
       200:
         description: Success
@@ -294,15 +299,15 @@ AttributeOptionParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
+                  $ref: "./../schemas/Attributes.yml#/AttributeOptionMetadata"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   delete:
     tags:
       - Attributes
-    summary: 'delete option'
+    summary: "delete option"
     parameters:
       - name: attribute_id
         in: path
@@ -318,26 +323,26 @@ AttributeOptionParams:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 AttributesReorder:
   post:
     tags:
       - Attributes
-    summary: 'reorder attribute'
+    summary: "reorder attribute"
     requestBody:
-      $ref: './../requests/Reorder.yml#/Reorder'
+      $ref: "./../requests/Reorder.yml#/Reorder"
     responses:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 AttributeOptionReorder:
   post:
     tags:
       - Attributes
-    summary: 'reorder attribute options'
+    summary: "reorder attribute options"
     parameters:
       - name: id
         in: path
@@ -345,9 +350,9 @@ AttributeOptionReorder:
         schema:
           type: integer
     requestBody:
-      $ref: './../requests/Reorder.yml#/Reorder'
+      $ref: "./../requests/Reorder.yml#/Reorder"
     responses:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []

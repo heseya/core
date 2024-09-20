@@ -5,21 +5,21 @@ Consent:
       format: uuid
     name:
       type: string
-      example: 'Consent One'
+      example: "Consent One"
     description_html:
       type: string
-      example: '<h1>Lorem ipsum dolor sit amet</h1>'
+      example: "<h1>Lorem ipsum dolor sit amet</h1>"
       maxLength: 16000
     required:
       type: boolean
     created_at:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     updated_at:
       type: string
       format: date-time
-      example: '2021-09-13T11:11'
+      example: "2021-09-13T11:11"
     translations:
       type: array
       items:
@@ -27,31 +27,38 @@ Consent:
         properties:
           name:
             type: string
-            example: 'Consent One'
+            example: "Consent One"
           description_html:
             type: string
-            example: '<h1>Lorem ipsum dolor sit amet</h1>'
+            example: "<h1>Lorem ipsum dolor sit amet</h1>"
     published:
       type: array
       items:
         type: string
         format: uuid
     type:
-      description: 'Type of consent'
+      description: "Type of consent"
       type: string
-      enum: [ 'user', 'organization' ]
+      enum: ["user", "organization"]
   type: object
 
 ConsentUser:
   properties:
     name:
       type: string
-      example: 'Consent One'
+      example: "Consent One"
     description_html:
       type: string
-      example: '<h1>Lorem ipsum dolor sit amet</h1>'
+      example: "<h1>Lorem ipsum dolor sit amet</h1>"
     required:
       type: boolean
+    published:
+      type: array
+      items:
+        type: string
+        format: uuid
+    type:
+      type: string
     value:
       type: boolean
   type: object
@@ -60,10 +67,10 @@ ConsentOrganization:
   properties:
     name:
       type: string
-      example: 'Consent One'
+      example: "Consent One"
     description_html:
       type: string
-      example: '<h1>Lorem ipsum dolor sit amet</h1>'
+      example: "<h1>Lorem ipsum dolor sit amet</h1>"
     required:
       type: boolean
     value:

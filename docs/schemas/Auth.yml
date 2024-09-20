@@ -4,15 +4,15 @@ ProfileView:
       type: string
       format: uuid
     name:
-      description: 'Users name'
+      description: "Users name"
       type: string
       example: terms-and-conditions
     avatar:
-      description: 'Name displayed as a page header'
+      description: "Name displayed as a page header"
       type: string
-      example: 'Terms & Conditions'
+      example: "Terms & Conditions"
     permissions:
-      description: 'Permission names'
+      description: "Permission names"
       type: array
       items:
         type: string
@@ -37,7 +37,7 @@ TFASetupApp:
       example: 3DCURGX7GN7KDOUJDI
     qr_code_url:
       type: string
-      example: 'https://qr-code.example/sampleurl'
+      example: "https://qr-code.example/sampleurl"
 
 Preferences:
   type: object
@@ -49,4 +49,6 @@ Preferences:
     new_localization_login_alert:
       type: boolean
     recovery_code_changed_alert:
+      type: boolean
+    new_organization_alert:
       type: boolean

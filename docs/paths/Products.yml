@@ -2,66 +2,66 @@ Products:
   get:
     tags:
       - Products
-    summary: 'list products'
+    summary: "list products"
     parameters:
       - name: search
         in: query
-        description: 'Full text search'
+        description: "Full text search"
         schema:
           type: string
       - name: name
         in: query
-        description: 'Name search'
+        description: "Name search"
         schema:
           type: string
       - name: slug
         in: query
-        description: 'Slug search'
+        description: "Slug search"
         schema:
           type: string
       - name: public
         in: query
-        description: 'Is public search'
+        description: "Is public search"
         schema:
           type: boolean
       - name: full
         in: query
-        description: 'Returns details resource'
+        description: "Returns details resource"
         schema:
           type: boolean
-      - name: 'sets[]'
+      - name: "sets[]"
         in: query
-        description: 'Product set array slug search'
+        description: "Product set array slug search"
         schema:
           type: string
-        example: 'sets[]=category-teapots&sets[]=category-mugs'
-      - name: 'sets_not[]'
+        example: "sets[]=category-teapots&sets[]=category-mugs"
+      - name: "sets_not[]"
         in: query
-        description: 'Product set array slug search negation'
+        description: "Product set array slug search negation"
         schema:
           type: string
-        example: 'sets_not[]=category-teapots&sets_not[]=category-mugs'
+        example: "sets_not[]=category-teapots&sets_not[]=category-mugs"
       - name: sort
         in: query
-        description: 'Sorting string'
+        description: "Sorting string"
         schema:
           type: string
-          example: 'price:asc,created_at:desc,name'
-      - name: 'tags[]'
+          example: "price:asc,created_at:desc,name"
+      - name: "tags[]"
         in: query
-        description: 'Tag array id search'
+        description: "Tag array id search"
         schema:
           type: string
-        example: 'tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
-      - name: 'tags_not[]'
+        example: "tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
+      - name: "tags_not[]"
         in: query
-        description: 'Tag array id search negation'
+        description: "Tag array id search negation"
         schema:
           type: string
-        example: 'tags_not[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags_not[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: "tags_not[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags_not[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
       - name: available
         in: query
-        description: 'Is available search'
+        description: "Is available search"
         schema:
           type: boolean
       - name: price.min
@@ -74,33 +74,33 @@ Products:
           type: number
       - name: price.currency
         in: query
-        description: 'Currency code, required with price.min and price.max'
+        description: "Currency code, required with price.min and price.max"
         schema:
           type: string
         example: "PLN"
       - name: has_cover
         in: query
-        description: 'Product has cover'
+        description: "Product has cover"
         schema:
           type: boolean
       - name: has_items
         in: query
-        description: 'Product has  items'
+        description: "Product has  items"
         schema:
           type: boolean
       - name: has_schemas
         in: query
-        description: 'Product has schemas'
+        description: "Product has schemas"
         schema:
           type: boolean
       - name: shipping_digital
         in: query
-        description: 'Product has digital shipping'
+        description: "Product has digital shipping"
         schema:
           type: boolean
       - name: attribute
         in: query
-        description: 'search by attributes'
+        description: "search by attributes"
         style: deepObject
         explode: true
         required: false
@@ -118,7 +118,7 @@ Products:
                   type: number
       - name: attribute_not
         in: query
-        description: 'search by attributes negation'
+        description: "search by attributes negation"
         style: deepObject
         explode: true
         required: false
@@ -136,23 +136,23 @@ Products:
                   type: number
       - name: metadata
         in: query
-        description: 'search by metadata'
+        description: "search by metadata"
         style: deepObject
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
       - name: metadata_private
         in: query
-        description: 'search by metadata private'
+        description: "search by metadata private"
         style: deepObject
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
-      - name: 'ids[]'
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
+      - name: "ids[]"
         in: query
-        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
         schema:
           type: array
           items:
@@ -164,7 +164,7 @@ Products:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -186,7 +186,7 @@ Products:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Products.yml#/ProductIndex'
+                    $ref: "./../schemas/Products.yml#/ProductIndex"
               type: object
     x-codeSamples:
       - lang: JavaScript
@@ -194,9 +194,9 @@ Products:
   post:
     tags:
       - Products
-    summary: 'create product'
+    summary: "create product"
     requestBody:
-      $ref: './../requests/Products.yml#/ProductStore'
+      $ref: "./../requests/Products.yml#/ProductStore"
     responses:
       201:
         description: Created
@@ -205,16 +205,16 @@ Products:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductView'
+                  $ref: "./../schemas/Products.yml#/ProductView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 ProductsSlug:
   get:
     tags:
       - Products
-    summary: 'single product view'
+    summary: "single product view"
     parameters:
       - name: slug
         in: path
@@ -227,7 +227,7 @@ ProductsSlug:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -247,7 +247,7 @@ ProductsSlug:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductWithoutSalesView'
+                  $ref: "./../schemas/Products.yml#/ProductWithoutSalesView"
               type: object
 
 ProductsParams:
@@ -267,7 +267,7 @@ ProductsParams:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -281,15 +281,15 @@ ProductsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductWithoutSalesView'
+                  $ref: "./../schemas/Products.yml#/ProductWithoutSalesView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   delete:
     tags:
       - Products
-    summary: 'delete product'
+    summary: "delete product"
     parameters:
       - name: id
         in: path
@@ -300,12 +300,12 @@ ProductsParams:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   patch:
     tags:
       - Products
-    summary: 'update product'
+    summary: "update product"
     parameters:
       - name: id
         in: path
@@ -313,7 +313,7 @@ ProductsParams:
         schema:
           type: string
     requestBody:
-      $ref: './../requests/Products.yml#/ProductUpdate'
+      $ref: "./../requests/Products.yml#/ProductUpdate"
     responses:
       200:
         description: Success
@@ -322,18 +322,18 @@ ProductsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#/ProductView'
+                  $ref: "./../schemas/Products.yml#/ProductView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 ProductsAttachments:
   post:
     tags:
       - Products
-    summary: 'create product media attachment'
+    summary: "create product media attachment"
     requestBody:
-      $ref: './../requests/MediaAttachments.yml#/MediaAttachmentStore'
+      $ref: "./../requests/MediaAttachments.yml#/MediaAttachmentStore"
     responses:
       201:
         description: Created
@@ -342,16 +342,16 @@ ProductsAttachments:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
+                  $ref: "./../schemas/MediaAttachments.yml#/MediaAttachment"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 ProductsAttachmentsParams:
   delete:
     tags:
       - Products
-    summary: 'delete product attachment'
+    summary: "delete product attachment"
     parameters:
       - name: id
         in: path
@@ -362,12 +362,12 @@ ProductsAttachmentsParams:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
   patch:
     tags:
       - Products
-    summary: 'update product attachment'
+    summary: "update product attachment"
     parameters:
       - name: id
         in: path
@@ -375,7 +375,7 @@ ProductsAttachmentsParams:
         schema:
           type: string
     requestBody:
-      $ref: './../requests/MediaAttachments.yml#/MediaAttachmentUpdate'
+      $ref: "./../requests/MediaAttachments.yml#/MediaAttachmentUpdate"
     responses:
       200:
         description: Success
@@ -384,10 +384,10 @@ ProductsAttachmentsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/MediaAttachments.yml#/MediaAttachment'
+                  $ref: "./../schemas/MediaAttachments.yml#/MediaAttachment"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 ProductSales:
   get:
@@ -406,7 +406,7 @@ ProductSales:
         required: false
         schema:
           type: string
-          enum: [ 'none', 'any', 'default' ]
+          enum: ["none", "any", "default"]
       - name: with_translations
         in: query
         required: false
@@ -422,7 +422,7 @@ ProductSales:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Sales.yml#/Sale'
+                    $ref: "./../schemas/Sales.yml#/Sale"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []

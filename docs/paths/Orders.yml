@@ -2,48 +2,56 @@ Orders:
   get:
     tags:
       - Orders
-    summary: 'orders list'
+    summary: "orders list"
     parameters:
       - name: search
         in: query
-        description: 'Full text search.'
+        description: "Full text search."
         schema:
           type: string
       - name: sort
         in: query
-        description: 'Sorting string.'
+        description: "Sorting string."
         schema:
           type: string
-          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+          example: "code:asc,created_at:desc,id:asc,email:desc,summary:desc"
       - name: status_id
         in: query
-        description: 'Status UUID'
+        description: "Status UUID"
         schema:
           type: string
       - name: shipping_method_id
         in: query
-        description: 'Shipping Method UUID'
+        description: "Shipping Method UUID"
         schema:
           type: string
+          format: uuid
       - name: digital_shipping_method_id
         in: query
-        description: 'Digital Shipping Method UUID'
+        description: "Digital Shipping Method UUID"
         schema:
           type: string
+          format: uuid
+      - name: sales_channel_id
+        in: query
+        description: "Sales Channel UUID"
+        schema:
+          type: string
+          format: uuid
       - name: paid
         in: query
-        description: 'Is order paid'
+        description: "Is order paid"
         schema:
           type: boolean
       - name: from
         in: query
-        description: 'Date datetime from'
+        description: "Date datetime from"
         schema:
           type: string
           format: date-time
       - name: to
         in: query
-        description: 'Date datetime to'
+        description: "Date datetime to"
         schema:
           type: string
           format: date-time
@@ -54,7 +62,7 @@ Orders:
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
       - name: metadata_private
         in: query
         description: search by metadata private
@@ -62,10 +70,10 @@ Orders:
         explode: true
         required: false
         schema:
-          $ref: '../schemas/Metadata.yml#/MetadataQuery'
-      - name: 'ids[]'
+          $ref: "../schemas/Metadata.yml#/MetadataQuery"
+      - name: "ids[]"
         in: query
-        example: '5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: "5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&ids[]=33e37b2a-44e9-4d35-88db-d9a79a61e557"
         schema:
           type: array
           items:
@@ -73,9 +81,10 @@ Orders:
             format: uuid
       - name: payment_method_id
         in: query
-        description: 'Payment method id'
+        description: "Payment method id"
         schema:
           type: string
+          format: uuid
     responses:
       200:
         description: Success
@@ -86,17 +95,17 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: "./../schemas/Orders.yml#/Order"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
   post:
     tags:
       - Orders
     security:
-      - BearerAuth: [ orders.add ]
+      - BearerAuth: [orders.add]
     requestBody:
-      $ref: './../requests/Orders.yml#/OrderCreate'
+      $ref: "./../requests/Orders.yml#/OrderCreate"
     responses:
       201:
         description: Created
@@ -105,14 +114,14 @@ Orders:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
 
 OrdersParams:
   get:
     tags:
       - Orders
-    summary: 'order view'
+    summary: "order view"
     parameters:
       - name: id
         in: path
@@ -128,14 +137,14 @@ OrdersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
   patch:
     tags:
       - Orders
-    summary: 'update order'
+    summary: "update order"
     parameters:
       - name: id
         in: path
@@ -144,7 +153,7 @@ OrdersParams:
           type: string
           format: uuid
     requestBody:
-      $ref: './../requests/Orders.yml#/OrderUpdate'
+      $ref: "./../requests/Orders.yml#/OrderUpdate"
     responses:
       200:
         description: Success
@@ -153,16 +162,16 @@ OrdersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersCode:
   get:
     tags:
       - Orders
-    summary: 'public order view'
+    summary: "public order view"
     parameters:
       - name: code
         in: path
@@ -178,14 +187,14 @@ OrdersCode:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderSummary'
+                  $ref: "./../schemas/Orders.yml#/OrderSummary"
               type: object
 
 OrdersStatus:
   patch:
     tags:
       - Orders
-    summary: 'change order status'
+    summary: "change order status"
     parameters:
       - name: id
         in: path
@@ -205,83 +214,70 @@ OrdersStatus:
       204:
         description: Success
     security:
-      - BearerAuth: [ ]
-
-OrdersShippingLists:
-  post:
-    tags:
-      - Orders
-    summary: 'create shipping list webhook'
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    requestBody:
-      content:
-        application/json:
-          schema:
-            properties:
-              package_template_id:
-                type: string
-                format: uuid
-            type: object
-    responses:
-      200:
-        description: Success
-        content:
-          application/json:
-            schema:
-              properties:
-                data:
-                  type: array
-                  items:
-                    $ref: './../schemas/Orders.yml#/Order'
-              type: object
-    security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMy:
   get:
     tags:
       - Orders
-    summary: 'user orders list'
+    summary: "user orders list"
     parameters:
       - name: search
         in: query
-        description: 'Full text search.'
+        description: "Full text search."
         schema:
           type: string
       - name: sort
         in: query
-        description: 'Sorting string.'
+        description: "Sorting string."
         schema:
           type: string
-          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+          example: "code:asc,created_at:desc,id:asc,email:desc,summary:desc"
       - name: status_id
         in: query
-        description: 'Status UUID'
+        description: "Status UUID"
         schema:
           type: string
       - name: shipping_method_id
         in: query
-        description: 'Shipping Method UUID'
+        description: "Shipping Method UUID"
         schema:
           type: string
+          format: uuid
+      - name: digital_shipping_method_id
+        in: query
+        description: "Digital Shipping Method UUID"
+        schema:
+          type: string
+          format: uuid
+      - name: sales_channel_id
+        in: query
+        description: "Sales Channel UUID"
+        schema:
+          type: string
+          format: uuid
+      - name: payment_method_id
+        in: query
+        description: "Payment method UUID"
+        schema:
+          type: string
+          format: uuid
       - name: from
         in: query
-        description: 'Date datetime from'
+        description: "Date datetime from"
         schema:
           type: string
           format: date-time
       - name: to
         in: query
-        description: 'Date datetime to'
+        description: "Date datetime to"
         schema:
           type: string
           format: date-time
+      - name: paid
+        in: query
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
@@ -292,16 +288,16 @@ OrdersMy:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: "./../schemas/Orders.yml#/Order"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMySingle:
   get:
     tags:
       - Orders
-    summary: 'user order view'
+    summary: "user order view"
     parameters:
       - name: code
         in: path
@@ -317,50 +313,73 @@ OrdersMySingle:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMyOrganization:
   get:
     tags:
       - Orders
-    summary: 'organization orders list'
+    summary: "organization orders list"
     parameters:
       - name: search
         in: query
-        description: 'Full text search.'
+        description: "Full text search."
         schema:
           type: string
       - name: sort
         in: query
-        description: 'Sorting string.'
+        description: "Sorting string."
         schema:
           type: string
-          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+          example: "code:asc,created_at:desc,id:asc,email:desc,summary:desc"
       - name: status_id
         in: query
-        description: 'Status UUID'
+        description: "Status UUID"
         schema:
           type: string
       - name: shipping_method_id
         in: query
-        description: 'Shipping Method UUID'
+        description: "Shipping Method UUID"
         schema:
           type: string
+          format: uuid
+      - name: digital_shipping_method_id
+        in: query
+        description: "Digital Shipping Method UUID"
+        schema:
+          type: string
+          format: uuid
+      - name: sales_channel_id
+        in: query
+        description: "Sales Channel UUID"
+        schema:
+          type: string
+          format: uuid
+      - name: payment_method_id
+        in: query
+        description: "Payment method UUID"
+        schema:
+          type: string
+          format: uuid
       - name: from
         in: query
-        description: 'Date datetime from'
+        description: "Date datetime from"
         schema:
           type: string
           format: date-time
       - name: to
         in: query
-        description: 'Date datetime to'
+        description: "Date datetime to"
         schema:
           type: string
           format: date-time
+      - name: paid
+        in: query
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
@@ -371,16 +390,16 @@ OrdersMyOrganization:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: "./../schemas/Orders.yml#/Order"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMyOrganizationSingle:
   get:
     tags:
       - Orders
-    summary: 'organization order view'
+    summary: "organization order view"
     parameters:
       - name: code
         in: path
@@ -396,48 +415,48 @@ OrdersMyOrganizationSingle:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMyDeprecated:
   get:
     tags:
       - Orders
-    summary: 'user orders list'
+    summary: "user orders list"
     deprecated: true
     parameters:
       - name: search
         in: query
-        description: 'Full text search.'
+        description: "Full text search."
         schema:
           type: string
       - name: sort
         in: query
-        description: 'Sorting string.'
+        description: "Sorting string."
         schema:
           type: string
-          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+          example: "code:asc,created_at:desc,id:asc,email:desc,summary:desc"
       - name: status_id
         in: query
-        description: 'Status UUID'
+        description: "Status UUID"
         schema:
           type: string
       - name: shipping_method_id
         in: query
-        description: 'Shipping Method UUID'
+        description: "Shipping Method UUID"
         schema:
           type: string
       - name: from
         in: query
-        description: 'Date datetime from'
+        description: "Date datetime from"
         schema:
           type: string
           format: date-time
       - name: to
         in: query
-        description: 'Date datetime to'
+        description: "Date datetime to"
         schema:
           type: string
           format: date-time
@@ -451,16 +470,16 @@ OrdersMyDeprecated:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: "./../schemas/Orders.yml#/Order"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersMySingleDeprecated:
   get:
     tags:
       - Orders
-    summary: 'user order view'
+    summary: "user order view"
     deprecated: true
     parameters:
       - name: code
@@ -477,16 +496,16 @@ OrdersMySingleDeprecated:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/OrderView'
+                  $ref: "./../schemas/Orders.yml#/OrderView"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersCodePay:
   post:
     tags:
       - Orders
-    summary: 'redirect to payment'
+    summary: "redirect to payment"
     parameters:
       - name: code
         in: path
@@ -504,7 +523,7 @@ OrdersCodePay:
           schema:
             properties:
               continue_url:
-                description: 'URL that the buyer will be redirected to, after making payment'
+                description: "URL that the buyer will be redirected to, after making payment"
                 type: string
             type: object
     responses:
@@ -515,14 +534,14 @@ OrdersCodePay:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Payments.yml#/Payment'
+                  $ref: "./../schemas/Payments.yml#/Payment"
               type: object
 
 OrdersCodePayOffline:
   post:
     tags:
       - Orders
-    summary: 'manualy create fulfilled order payment'
+    summary: "manualy create fulfilled order payment"
     parameters:
       - name: code
         in: path
@@ -537,14 +556,14 @@ OrdersCodePayOffline:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Payments.yml#/Payment'
+                  $ref: "./../schemas/Payments.yml#/Payment"
               type: object
 
 OrderAddDocument:
   post:
     tags:
       - Orders
-    summary: 'add document'
+    summary: "add document"
     parameters:
       - name: id
         in: path
@@ -574,14 +593,14 @@ OrderAddDocument:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Documents.yml#/Document'
+                  $ref: "./../schemas/Documents.yml#/Document"
               type: object
 
 OrderDeleteDocument:
   delete:
     tags:
       - Orders
-    summary: 'delete document'
+    summary: "delete document"
     parameters:
       - name: order_id
         in: path
@@ -599,13 +618,13 @@ OrderDeleteDocument:
       204:
         description: No content
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrderDownloadDocument:
   get:
     tags:
       - Orders
-    summary: 'downloads document'
+    summary: "downloads document"
     parameters:
       - name: order_id
         in: path
@@ -629,13 +648,13 @@ OrderDownloadDocument:
               type: string
               format: binary
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersDocumentsSend:
   post:
     tags:
       - Orders
-    summary: 'send documents'
+    summary: "send documents"
     parameters:
       - name: id
         in: path
@@ -662,9 +681,9 @@ CartProcess:
     tags:
       - Orders
     security:
-      - BearerAuth: [ cart.verify ]
+      - BearerAuth: [cart.verify]
     requestBody:
-      $ref: './../requests/Cart.yml#/CartProcess'
+      $ref: "./../requests/Cart.yml#/CartProcess"
     responses:
       201:
         description: Created
@@ -673,7 +692,7 @@ CartProcess:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Cart.yml#/Cart'
+                  $ref: "./../schemas/Cart.yml#/Cart"
               type: object
 
 OrderProductUrls:
@@ -693,9 +712,9 @@ OrderProductUrls:
           format: uuid
     tags:
       - Orders
-    summary: 'Add links to order products'
+    summary: "Add links to order products"
     requestBody:
-      $ref: './../requests/OrderProducts.yml#/OrderProductUrls'
+      $ref: "./../requests/OrderProducts.yml#/OrderProductUrls"
     responses:
       204:
         description: No content
@@ -710,7 +729,7 @@ MyOrderProducts:
         required: false
         schema:
           type: boolean
-    summary: 'User ordered products list'
+    summary: "User ordered products list"
     responses:
       200:
         description: Success
@@ -721,10 +740,10 @@ MyOrderProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+                    $ref: "./../schemas/Orders.yml#/OrderProductPublic"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 MyOrganizationOrderProducts:
   get:
@@ -736,7 +755,7 @@ MyOrganizationOrderProducts:
         required: false
         schema:
           type: boolean
-    summary: 'Organization ordered products list'
+    summary: "Organization ordered products list"
     responses:
       200:
         description: Success
@@ -747,10 +766,10 @@ MyOrganizationOrderProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+                    $ref: "./../schemas/Orders.yml#/OrderProductPublic"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 MyOrderProductsDeprecated:
   get:
@@ -762,7 +781,7 @@ MyOrderProductsDeprecated:
         required: false
         schema:
           type: boolean
-    summary: 'User ordered products list'
+    summary: "User ordered products list"
     deprecated: true
     responses:
       200:
@@ -774,10 +793,10 @@ MyOrderProductsDeprecated:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+                    $ref: "./../schemas/Orders.yml#/OrderProductPublic"
               type: object
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
 
 OrdersSendUrls:
   post:
@@ -790,9 +809,9 @@ OrdersSendUrls:
         schema:
           type: string
           format: uuid
-    summary: 'Send email with order products urls'
+    summary: "Send email with order products urls"
     responses:
       200:
         description: Success
     security:
-      - BearerAuth: [ ]
+      - BearerAuth: []
