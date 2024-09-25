@@ -228,6 +228,10 @@ class DiscountTest extends TestCase
                 'min_value' => 1,
                 'max_value' => 10,
             ],
+            [
+                'type' => ConditionType::ON_SALE,
+                'on_sale' => true,
+            ],
         ];
 
         $this->expectedStructure = [

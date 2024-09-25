@@ -97,6 +97,9 @@ class ConditionValidationForType implements DataAwareRule, ValidationRule, Valid
                         'weekday' => ['required', 'array', 'min:7', 'max:7'],
                         'weekday.*' => ['required', 'boolean'],
                     ],
+                    ConditionType::ON_SALE->value => [
+                        'on_sale' => ['required', 'boolean'],
+                    ],
                     default => [],
                 },
             ],

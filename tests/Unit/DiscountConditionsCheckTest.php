@@ -4,6 +4,7 @@ namespace Unit;
 
 use App\Dtos\CartDto;
 use App\Enums\ConditionType;
+use App\Enums\DiscountTargetType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\DiscountCondition;
@@ -1652,6 +1653,86 @@ class DiscountConditionsCheckTest extends TestCase
                 Money::zero($this->currency->value),
                 $cart
             ) === $result
+        );
+    }
+
+    public function testCheckConditionOnSalePass(): void
+    {
+        $product = $this->productService->create(FakeDto::productCreateDto());
+
+        /** @var Discount $sale */
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS,
+        ]);
+
+        $sale->products()->attach($product->getKey());
+
+        $cart = CartDto::fromArray([
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => true,
+            ],
+        ]);
+
+        $this->assertEmpty($cart->getCoupons());
+        $this->assertTrue(
+            $this->discountService->checkCondition(
+                $discountCondition,
+                Money::zero($this->currency->value),
+                $cart
+            )
+        );
+    }
+
+    public function testCheckConditionOnSaleFail(): void
+    {
+        $product = $this->productService->create(FakeDto::productCreateDto());
+
+        $cart = CartDto::fromArray([
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => false,
+            ],
+        ]);
+
+        $this->assertEmpty($cart->getCoupons());
+        $this->assertFalse(
+            $this->discountService->checkCondition(
+                $discountCondition,
+                Money::zero($this->currency->value),
+                $cart
+            )
         );
     }
 

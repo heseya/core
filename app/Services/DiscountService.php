@@ -14,6 +14,7 @@ use App\Dtos\CouponsCountConditionDto;
 use App\Dtos\DateBetweenConditionDto;
 use App\Dtos\MaxUsesConditionDto;
 use App\Dtos\MaxUsesPerUserConditionDto;
+use App\Dtos\OnSaleConditionDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderProductDto;
 use App\Dtos\OrderValueConditionDto;
@@ -900,6 +901,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+            ConditionType::ON_SALE => $this->checkConditionOnSale($condition, $dto?->getProductIds() ?? []),
         };
     }
 
@@ -1757,6 +1759,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::CART_LENGTH => false,
             // For product price cache assume no promo codes used
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
+            ConditionType::ON_SALE => false,
         };
     }
 
@@ -2039,6 +2042,20 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         return false;
+    }
+
+    private function checkConditionOnSale(DiscountCondition $condition, array $productIds): bool
+    {
+        $conditionDto = OnSaleConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->where(fn (Builder $q) => $q
+                ->whereHas('sales', fn (Builder $q) => $q->where('target_is_allow_list', '=', true))
+                ->orWhereDoesntHave('sales', fn (Builder $q) => $q->where('target_is_allow_list', '=', false)),
+            )->count();
+
+        return ($products >= 0 && $conditionDto->getOnSale()) || ($products === 0 && !$conditionDto->getOnSale());
     }
 
     private function addDiscountToCartResource(
