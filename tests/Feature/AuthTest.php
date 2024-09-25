@@ -1447,6 +1447,31 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testUpdateProfileBirthday(): void
+    {
+        $user = User::factory()->create([
+            'birthday_date' => '1990-01-01',
+        ]);
+        $user->preferences()->associate(UserPreference::create());
+        $user->save();
+
+        $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'birthday_date' => '1990-01-02',
+            'phone' => '+48123456789',
+            'preferences' => [
+                'successful_login_attempt_alert' => true,
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PROFILEBIRTHDAYDATEUPDATE->value,
+                'message' => Exceptions::CLIENT_PROFILE_BIRTHDAY_UPDATE->value,
+            ]);
+    }
+
     public function testUpdateProfileRemovePhone(): void
     {
         $user = User::factory()->create([

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\User\Dtos;
 
 use App\Rules\ConsentsExists;
+use App\Rules\ProfileBirthdayDateUpdate;
 use App\Rules\RequiredConsents;
 use App\Traits\DtoHasPhone;
 use Spatie\LaravelData\Attributes\Computed;
@@ -13,6 +14,7 @@ use Spatie\LaravelData\Attributes\Validation\BeforeOrEqual;
 use Spatie\LaravelData\Attributes\Validation\Date;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Nullable;
+use Spatie\LaravelData\Attributes\Validation\Rule;
 use Spatie\LaravelData\Attributes\Validation\StringType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -37,7 +39,7 @@ final class ProfileUpdateDto extends Data
         #[Nullable, StringType, Max(255)]
         public Optional|string $name,
 
-        #[Nullable, Date, BeforeOrEqual('today')]
+        #[Nullable, Date, BeforeOrEqual('today'), Rule(new ProfileBirthdayDateUpdate())]
         public Optional|string $birthday_date,
 
         #[StringType]
