@@ -337,15 +337,15 @@ final readonly class ProductService
             $product->relatedSets()->sync($dto->related_sets);
         }
 
+        if ($product->wasRecentlyCreated) {
+            $this->priceMapService->createProductPrices($product);
+        }
+
         if ($dto->prices_base instanceof DataCollection) {
             $this->priceMapService->updateProductPricesForDefaultMaps($product, $dto->prices_base);
         }
 
         $this->setBannerMedia($product, $dto);
-
-        if ($product->wasRecentlyCreated) {
-            $this->priceMapService->createProductPrices($product);
-        }
 
         $this->updateMinPrices($product);
 

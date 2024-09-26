@@ -259,9 +259,11 @@ final readonly class PriceMapService
 
     public function createProductPrices(Product $product): void
     {
-        $upsert = [];
-        foreach (PriceMap::all() as $priceMap) {
-            $upsert[] = [
+        $price_map_ids = $product->mapPrices()->pluck('price_map_id')->toArray();
+
+        $insert = [];
+        foreach (PriceMap::whereNotIn('id', $price_map_ids)->get() as $priceMap) {
+            $insert[] = [
                 'id' => Str::orderedUuid()->toString(),
                 'price_map_id' => $priceMap->getKey(),
                 'product_id' => $product->getKey(),
@@ -271,14 +273,7 @@ final readonly class PriceMapService
             ];
         }
 
-        PriceMapProductPrice::query()->upsert($upsert, [
-            'price_map_id',
-            'product_id',
-        ], [
-            'currency',
-            'value',
-            'is_net',
-        ]);
+        PriceMapProductPrice::insert($insert);
     }
 
     /**
@@ -358,26 +353,21 @@ final readonly class PriceMapService
 
     public function createOptionPrices(Option $option): void
     {
-        $upsert = [];
-        foreach (PriceMap::all() as $priceMap) {
-            $upsert[] = [
+        $price_map_ids = $option->mapPrices()->pluck('price_map_id')->toArray();
+
+        $insert = [];
+        foreach (PriceMap::whereNotIn('id', $price_map_ids)->get() as $priceMap) {
+            $insert[] = [
                 'id' => Str::orderedUuid()->toString(),
                 'price_map_id' => $priceMap->getKey(),
                 'option_id' => $option->getKey(),
                 'currency' => $priceMap->currency->value,
-                'is_net' => $priceMap->is_net,
                 'value' => 0,
+                'is_net' => $priceMap->is_net,
             ];
         }
 
-        PriceMapSchemaOptionPrice::query()->upsert($upsert, [
-            'price_map_id',
-            'option_id',
-        ], [
-            'currency',
-            'value',
-            'is_net',
-        ]);
+        PriceMapSchemaOptionPrice::insert($insert);
     }
 
     /**
