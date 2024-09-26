@@ -75,7 +75,7 @@ final readonly class PriceMapService
             ->select('id')
             ->chunkById(1000, function (Collection $products) use ($priceMap): void {
                 PriceMapProductPrice::insert(
-                    $products->pluck('id')->map(fn (string $uuid) => [
+                    $products->pluck('id')->map(fn(string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
                         'currency' => $priceMap->currency,
                         'is_net' => $priceMap->is_net,
@@ -91,7 +91,7 @@ final readonly class PriceMapService
             ->select('id')
             ->chunkById(1000, function (Collection $options) use ($priceMap): void {
                 PriceMapSchemaOptionPrice::insert(
-                    $options->pluck('id')->map(fn (string $uuid) => [
+                    $options->pluck('id')->map(fn(string $uuid) => [
                         'id' => Str::orderedUuid()->toString(),
                         'currency' => $priceMap->currency,
                         'is_net' => $priceMap->is_net,
@@ -142,7 +142,7 @@ final readonly class PriceMapService
      */
     public function listDefault(): Collection
     {
-        return Cache::driver('array')->rememberForever('default_price_maps', fn () => PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get());
+        return Cache::driver('array')->rememberForever('default_price_maps', fn() => PriceMap::query()->whereIn('id', Currency::defaultPriceMapIds())->get());
     }
 
     public function updatePrices(PriceMap $priceMap, PriceMapPricesUpdateDto $dto): PriceMapUpdatedPricesData
@@ -176,10 +176,10 @@ final readonly class PriceMapService
             }
         }
 
-        $product_ids = Arr::map($updated_products, fn (PriceMapProductPrice $product) => $product->product_id);
-        $option_ids = Arr::map($updated_options, fn (PriceMapSchemaOptionPrice $option) => $option->option_id);
+        $product_ids = Arr::map($updated_products, fn(PriceMapProductPrice $product) => $product->product_id);
+        $option_ids = Arr::map($updated_options, fn(PriceMapSchemaOptionPrice $option) => $option->option_id);
         if (!empty($option_ids)) {
-            $product_ids = array_merge($product_ids, Product::query()->whereHas('schemas', fn (Builder $query) => $query->whereHas('options', fn (Builder $subquery) => $subquery->whereIn('id', $option_ids)))->pluck('id')->toArray());
+            $product_ids = array_merge($product_ids, Product::query()->whereHas('schemas', fn(Builder $query) => $query->whereHas('options', fn(Builder $subquery) => $subquery->whereIn('id', $option_ids)))->pluck('id')->toArray());
         }
         $product_ids = array_unique($product_ids);
 
@@ -191,10 +191,10 @@ final readonly class PriceMapService
         $query = Product::query()
             ->whereIn('id', $product_ids)
             ->with([
-                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
+                'mapPrices' => fn(Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
                 'schemas',
                 'schemas.options',
-                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
+                'schemas.options.mapPrices' => fn(Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
             ]);
 
         return PriceMapUpdatedPricesData::from([
@@ -218,16 +218,16 @@ final readonly class PriceMapService
         /** @var Builder<Product> $query */
         $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
             ->with([
-                'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
+                'mapPrices' => fn(Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
                 'schemas',
                 'schemas.options',
-                'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
+                'schemas.options.mapPrices' => fn(Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
             ]);
 
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
                 $query->withMin([
-                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
+                    'pricesMin as price' => fn(Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -235,7 +235,7 @@ final readonly class PriceMapService
             }
             if ($dto->price_sort_direction === 'price:desc') {
                 $query->withMax([
-                    'pricesMin as price' => fn (Builder $subquery) => $subquery->where(
+                    'pricesMin as price' => fn(Builder $subquery) => $subquery->where(
                         'currency',
                         $dto->price_sort_currency ?? Currency::DEFAULT->value,
                     ),
@@ -325,7 +325,7 @@ final readonly class PriceMapService
 
         PriceMapProductPrice::query()->upsert($data, ['price_map_id', 'product_id'], ['value', 'currency', 'is_net']);
 
-        dispatch(new RefreshCachedPricesForProductAndPriceMaps($product instanceof Product ? $product->getKey() : $product, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
+        dispatch(new RefreshCachedPricesForProductAndPriceMaps($product instanceof Product ? $product->getKey() : $product, $priceDtos->toCollection()->map(fn(PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
     }
 
     public function updateSchemaPrices(Schema $schema, PriceMapSchemaPricesUpdateDto $dto): PriceMapSchemaPricesDataCollection
@@ -399,7 +399,7 @@ final readonly class PriceMapService
         PriceMapSchemaOptionPrice::query()->upsert($data, ['price_map_id', 'option_id'], ['value', 'currency', 'is_net']);
 
         if ($option->schema !== null && $option->schema->product_id !== null) {
-            dispatch(new RefreshCachedPricesForProductAndPriceMaps($option->schema->product_id, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
+            dispatch(new RefreshCachedPricesForProductAndPriceMaps($option->schema->product_id, $priceDtos->toCollection()->map(fn(PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
         }
     }
 
@@ -422,13 +422,22 @@ final readonly class PriceMapService
         try {
             $price = $mapPrices->firstOrFail();
         } catch (Exception $ex) {
-            $price = $model->mapPrices()->updateOrCreate([
+            /** @var PriceMapProductPrice|PriceMapSchemaOptionPrice $price */
+            $price = $model->mapPrices()->firstOrCreate([
                 'price_map_id' => $priceMap->getKey(),
             ], [
                 'value' => 0,
                 'currency' => $priceMap->currency->value,
                 'is_net' => $priceMap->is_net,
             ]);
+        }
+
+        $model->mapPrices()->where('price_map_id', '=', $priceMap->getKey())->where('id', '!=', $price->id)->delete();
+
+        if ($price->currency !== $priceMap->currency) {
+            // if Price for this Price map exists, but has wrong currency
+            $price->currency = $priceMap->currency;
+            $price->save();
         }
 
         return $price;
