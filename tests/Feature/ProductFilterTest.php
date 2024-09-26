@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\Product;
 use App\Services\ProductService;
 use Domain\Currency\Currency;
+use Domain\Organization\Models\Organization;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\SalesChannel\Enums\SalesChannelActivityType;
 use Domain\SalesChannel\Enums\SalesChannelStatus;
@@ -224,6 +225,58 @@ class ProductFilterTest extends TestCase
             ->assertJsonFragment([
                 'net' => '10.00',
                 'gross' => '10.00',
+            ]);
+    }
+
+    public function testProductMaxPriceWithVatHiddenChannelWithOrganization(): void
+    {
+        $this->user->givePermissionTo(['products.show']);
+
+        // Default from migration with vat_rate 0
+        $defaultChannel = SalesChannel::query()->where('default', '=', true)->first();
+
+        /**
+         * I'm not sure what result should this really return, how is user access to PRIVATE SalesChannel determined?
+         */
+        $saleChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE->value,
+            'vat_rate' => '25.0',
+            'status' => SalesChannelStatus::PRIVATE->value,
+            'price_map_id' => Currency::DEFAULT->getDefaultPriceMapId(),
+        ]);
+
+        /** @var Organization $organization */
+        $organization = Organization::factory()->create([
+            'sales_channel_id' => $saleChannel->getKey(),
+        ]);
+
+        $organization->users()->attach($this->user);
+
+        $product1 = $this->prepareProduct('10.00');
+        $product2 = $this->prepareProduct('8.00');
+
+        $this
+            ->actingAs($this->user)
+            ->json(
+                'GET',
+                '/products',
+                headers: ['X-Sales-Channel' => $saleChannel->getKey()],
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '8.00',
+                'gross' => '10.00',
+            ])
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+            ])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '12.50',
             ]);
     }
 
