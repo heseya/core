@@ -68,15 +68,15 @@ final readonly class SalesChannelCrudService
         }
 
         if ($salesChannel->status === SalesChannelStatus::PRIVATE) {
-            if (Gate::denies('sales_channels.show_hidden')) {
-                return false;
-            }
-
             /** @var App|User $user */
             $user = Auth::user();
 
             if ($salesChannel->hasOrganizationWithUser($user)) {
                 return true;
+            }
+
+            if (Gate::denies('sales_channels.show_hidden')) {
+                return false;
             }
         }
 
