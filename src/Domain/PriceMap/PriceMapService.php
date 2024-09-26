@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\PriceMap;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ServerException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
@@ -28,6 +30,7 @@ use Domain\PriceMap\Resources\PriceMapSchemaPricesDataCollection;
 use Domain\PriceMap\Resources\PriceMapUpdatedPricesData;
 use Domain\Product\Dtos\ProductSearchDto;
 use Domain\ProductSchema\Models\Schema;
+use Domain\SalesChannel\Models\SalesChannel;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -254,6 +257,30 @@ final readonly class PriceMapService
         return PriceMapPricesForProductData::collection($products);
     }
 
+    public function createProductPrices(Product $product): void
+    {
+        $upsert = [];
+        foreach (PriceMap::all() as $priceMap) {
+            $upsert[] = [
+                'id' => Str::orderedUuid()->toString(),
+                'price_map_id' => $priceMap->getKey(),
+                'product_id' => $product->getKey(),
+                'currency' => $priceMap->currency->value,
+                'value' => 0,
+                'is_net' => $priceMap->is_net,
+            ];
+        }
+
+        PriceMapProductPrice::query()->upsert($upsert, [
+            'price_map_id',
+            'product_id',
+        ], [
+            'currency',
+            'value',
+            'is_net',
+        ]);
+    }
+
     /**
      * @return DataCollection<int,PriceMapProductPriceData>
      */
@@ -329,6 +356,30 @@ final readonly class PriceMapService
         return PriceMapSchemaPricesDataCollection::fromSchema($schema);
     }
 
+    public function createOptionPrices(Option $option): void
+    {
+        $upsert = [];
+        foreach (PriceMap::all() as $priceMap) {
+            $upsert[] = [
+                'id' => Str::orderedUuid()->toString(),
+                'price_map_id' => $priceMap->getKey(),
+                'option_id' => $option->getKey(),
+                'currency' => $priceMap->currency->value,
+                'is_net' => $priceMap->is_net,
+                'value' => 0,
+            ];
+        }
+
+        PriceMapSchemaOptionPrice::query()->upsert($upsert, [
+            'price_map_id',
+            'option_id',
+        ], [
+            'currency',
+            'value',
+            'is_net',
+        ]);
+    }
+
     /**
      * @param DataCollection<int,PriceDto> $priceDtos
      */
@@ -360,5 +411,54 @@ final readonly class PriceMapService
         if ($option->schema !== null && $option->schema->product_id !== null) {
             dispatch(new RefreshCachedPricesForProductAndPriceMaps($option->schema->product_id, $priceDtos->toCollection()->map(fn (PriceDto $priceDto) => $priceDto->currency->getDefaultPriceMapId())->toArray()));
         }
+    }
+
+    /**
+     * @return ($model is Product ? PriceMapProductPrice : PriceMapSchemaOptionPrice)
+     */
+    public function getOrCreateMappedPriceForPriceMap(Option|Product $model, PriceMap|string $priceMap): PriceMapProductPrice|PriceMapSchemaOptionPrice
+    {
+        /** @var PriceMap $priceMap */
+        $priceMap = $priceMap instanceof PriceMap ? $priceMap : PriceMap::query()->whereKey($priceMap)->firstOrFail();
+
+        if ($model->relationLoaded('mapPrices')) {
+            /** @var Collection<int,PriceMapProductPrice> $mapPrices */
+            $mapPrices = $model->mapPrices->where('price_map_id', $priceMap->getKey())->where('currency', '=', $priceMap->currency);
+        } else {
+            /** @var Builder<PriceMapProductPrice> $mapPrices */
+            $mapPrices = $model->mapPrices()->ofPriceMap($priceMap);
+        }
+
+        try {
+            $price = $mapPrices->firstOrFail();
+        } catch (Exception $ex) {
+            $price = $model->mapPrices()->updateOrCreate([
+                'price_map_id' => $priceMap->getKey(),
+            ], [
+                'value' => 0,
+                'currency' => $priceMap->currency->value,
+                'is_net' => $priceMap->is_net,
+            ]);
+        }
+
+        return $price;
+    }
+
+    /**
+     * @return ($model is Product ? PriceMapProductPrice : PriceMapSchemaOptionPrice)
+     *
+     * @throws ServerException
+     */
+    public function getOrCreateMappedPriceForSalesChannel(Option|Product $model, SalesChannel|string $salesChannel): PriceMapProductPrice|PriceMapSchemaOptionPrice
+    {
+        $salesChannel = $salesChannel instanceof SalesChannel ? $salesChannel : SalesChannel::findOrFail($salesChannel);
+        assert($salesChannel instanceof SalesChannel);
+        $priceMap = $salesChannel->priceMap;
+
+        if ($priceMap === null) {
+            throw new ServerException(Exceptions::CLIENT_SALES_CHANNEL_PRICE_MAP);
+        }
+
+        return $this->getOrCreateMappedPriceForPriceMap($model, $priceMap);
     }
 }

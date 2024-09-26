@@ -7,17 +7,13 @@ use App\Traits\CustomHasTranslations;
 use App\Traits\HasMetadata;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
-use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
 use Domain\ProductSchema\Models\Schema;
-use Domain\SalesChannel\Models\SalesChannel;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Collection;
 
 /**
  * @mixin IdeHelperOption
@@ -74,6 +70,9 @@ class Option extends Model implements Translatable
         return $this->hasMany(PriceMapSchemaOptionPrice::class);
     }
 
+    /**
+     * @deprecated
+     */
     public function getMappedPriceForCurrency(Currency $currency): PriceMapSchemaOptionPrice
     {
         return $this->relationLoaded('mapPrices')
@@ -81,39 +80,11 @@ class Option extends Model implements Translatable
             : $this->mapPrices()->where('currency', $currency->value)->firstOrFail();
     }
 
+    /**
+     * @deprecated
+     */
     public function getPriceForCurrency(Currency $currency): Money
     {
         return $this->getMappedPriceForCurrency($currency)->value;
-    }
-
-    public function getMappedPriceForPriceMap(PriceMap|string $priceMap): PriceMapSchemaOptionPrice
-    {
-        if ($this->relationLoaded('mapPrices')) {
-            /** @var Collection<int,PriceMapSchemaOptionPrice> $price */
-            $price = $this->mapPrices->where('price_map_id', $priceMap instanceof PriceMap ? $priceMap->id : $priceMap);
-            if ($priceMap instanceof PriceMap) {
-                $price = $price->where('currency', '=', $priceMap->currency);
-            }
-        } else {
-            /** @var Builder<PriceMapSchemaOptionPrice> $price */
-            $price = $this->mapPrices()->ofPriceMap($priceMap);
-        }
-
-        return $price->firstOrFail();
-    }
-
-    public function getPriceForPriceMap(PriceMap|string $priceMap): Money
-    {
-        return $this->getMappedPriceForPriceMap($priceMap)->value;
-    }
-
-    public function getMappedPriceForSalesChannel(SalesChannel|string $salesChannel): PriceMapSchemaOptionPrice
-    {
-        $salesChannel = $salesChannel instanceof SalesChannel ? $salesChannel : SalesChannel::findOrFail($salesChannel);
-        assert($salesChannel instanceof SalesChannel);
-        $priceMap = $salesChannel->priceMap;
-        assert($priceMap instanceof PriceMap);
-
-        return $this->getMappedPriceForPriceMap($priceMap);
     }
 }

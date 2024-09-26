@@ -171,7 +171,7 @@ final readonly class ProductService
             $priceMap = $salesChannel->priceMap;
             assert($priceMap instanceof PriceMap);
 
-            $price = $product->mappedPriceForPriceMap($priceMap);
+            $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap);
 
             $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
 
@@ -208,13 +208,14 @@ final readonly class ProductService
             throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_PRICE_MAP);
         }
 
-        $price_initial = $product->mappedPriceForPriceMap($priceMap);
+        $price_initial = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap);
+        $price_minimal = $product->getCachedMinPriceForSalesChannel($salesChannel);
 
-        if (!empty($schemas)) {
+        if (!empty($schemas) || $price_minimal === null) {
             $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
             $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $schemas);
         } else {
-            $price = ProductCachedPriceDto::from($price_initial, $salesChannel);
+            $price = ProductCachedPriceDto::from($price_minimal, $salesChannel);
         }
 
         return ProductVariantPriceResource::from([
@@ -246,14 +247,14 @@ final readonly class ProductService
         }
 
         return [
-            $product->mappedPriceForPriceMap($filter)->value,
+            $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $filter)->value,
             $this->getMaxPriceForPriceMap($product, $filter),
         ];
     }
 
     public function getMaxPriceForPriceMap(Product $product, PriceMap $priceMap): Money
     {
-        $max = $product->mappedPriceForPriceMap($priceMap)->value;
+        $max = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value;
 
         /** @var Schema $schema */
         foreach ($product->schemas as $schema) {
@@ -261,7 +262,7 @@ final readonly class ProductService
             $most_valuable_option = null;
 
             foreach ($schema->options as $option) {
-                $option_price = $option->getPriceForPriceMap($priceMap);
+                $option_price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($option, $priceMap)->value;
                 $schema_max = Money::max($option_price, $schema_max);
                 if ($option_price->isEqualTo($schema_max)) {
                     $most_valuable_option = $option;
@@ -342,9 +343,11 @@ final readonly class ProductService
 
         $this->setBannerMedia($product, $dto);
 
-        if (!$product->wasRecentlyCreated) {
-            $this->updateMinPrices($product);
+        if ($product->wasRecentlyCreated) {
+            $this->priceMapService->createProductPrices($product);
         }
+
+        $this->updateMinPrices($product);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
         $product->quantity = $availability['quantity'];

@@ -42,12 +42,14 @@ final class PriceRepository
             foreach ($pricesCollection->prices as $price) {
                 $salesChannel = $salesChannels->firstOrFail('id', '=', $price->sales_channel_id);
 
+                $currency = $salesChannel->priceMap?->currency->value ?? $price->currency->value;
+
                 $rows[] = [
                     'id' => Uuid::uuid4(),
                     'model_id' => $product->getKey(),
                     'model_type' => $product->getMorphClass(),
                     'price_type' => $pricesCollection->type,
-                    'currency' => $salesChannel->priceMap?->currency ?? $price->currency,
+                    'currency' => $currency,
                     'sales_channel_id' => $salesChannel->id,
                     'price_map_id' => null,
                     'is_net' => $salesChannel->priceMap?->is_net ?? false,
@@ -58,7 +60,7 @@ final class PriceRepository
 
                 $salesChannelsToPreserve[$salesChannel->getKey()] = [
                     'sales_channel_id' => $salesChannel->getKey(),
-                    'currency' => $salesChannel->priceMap?->currency ?? $price->currency,
+                    'currency' => $currency,
                 ];
             }
         }
@@ -96,7 +98,7 @@ final class PriceRepository
                     'model_id' => $discountCondition->getKey(),
                     'model_type' => $discountCondition->getMorphClass(),
                     'price_type' => $pricesCollection->type,
-                    'currency' => $price->currency,
+                    'currency' => $price->currency->value,
                     'price_map_id' => $price->currency->getDefaultPriceMapId(), // required for unique index to work correctly
                     'sales_channel_id' => null,
                     'is_net' => $price->is_net,

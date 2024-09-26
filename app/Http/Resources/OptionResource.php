@@ -7,6 +7,7 @@ use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\ProductCachedPriceDto;
+use Domain\PriceMap\PriceMapService;
 use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\Request;
 
@@ -20,10 +21,11 @@ class OptionResource extends Resource
 
     public function base(Request $request): array
     {
+        $priceMapService = app(PriceMapService::class);
         $salesChannelService = app(SalesChannelService::class);
         $salesChannel = $salesChannelService->getCurrentRequestSalesChannel();
 
-        $price = ProductCachedPriceDto::from($this->resource->getMappedPriceForPriceMap($salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
+        $price = ProductCachedPriceDto::from($priceMapService->getOrCreateMappedPriceForPriceMap($this->resource, $salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
 
         $data = [
             'id' => $this->resource->getKey(),
