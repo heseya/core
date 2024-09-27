@@ -432,9 +432,9 @@ final readonly class PriceMapService
             ]);
         }
 
-        $model->mapPrices()->where('price_map_id', '=', $priceMap->getKey())->where('id', '!=', $price->id)->delete();
-
         if ($price->currency !== $priceMap->currency) {
+            $model->mapPrices()->where('price_map_id', '=', $priceMap->getKey())->where('id', '!=', $price->id)->delete();
+
             // if Price for this Price map exists, but has wrong currency
             $price->currency = $priceMap->currency;
             $price->save();

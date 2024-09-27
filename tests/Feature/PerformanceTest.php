@@ -31,6 +31,7 @@ use Domain\Metadata\Models\Metadata;
 use Domain\Page\Page;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
@@ -150,6 +151,9 @@ class PerformanceTest extends TestCase
         ]);
         $productAttribute3->options()->attach($options3);
 
+        $priceMap = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
+        app(PriceMapService::class)->createPricesForAllMissingProductsAndSchemas($priceMap);
+
         DB::flushQueryLog();
 
         $response = $this->actingAs($this->user)
@@ -173,7 +177,7 @@ class PerformanceTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertQueryCountLessThan(49);
+        $this->assertQueryCountLessThan(53);
     }
 
     public function testIndexPerformanceSchema500(): void
@@ -202,16 +206,16 @@ class PerformanceTest extends TestCase
 
         Option::factory()->count(500)->create([
             'schema_id' => $schema1->getKey(),
-            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
         Option::factory()->count(500)->create([
             'schema_id' => $schema2->getKey(),
-            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
         Option::factory()->count(500)->create([
             'schema_id' => $schema3->getKey(),
-            'prices' => [PriceDto::from(['value' => 0, 'currency' => Currency::DEFAULT->value])],
         ]);
+
+        $priceMap = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
+        app(PriceMapService::class)->createPricesForAllMissingProductsAndSchemas($priceMap);
 
         $this
             ->actingAs($this->user)
@@ -988,10 +992,8 @@ class PerformanceTest extends TestCase
 
         $items = Item::factory()->count(10)->create();
 
-        /** @var ProductService $productService */
-        $productService = App::make(ProductService::class);
 
-        $products->each(function (Product $product) use ($categories, $productService, $sales, $tags, $pages, $items) {
+        $products->each(function (Product $product) use ($categories, $sales, $tags, $pages, $items) {
             $this->prepareProductSchemas($product);
 
             for ($i = 0; $i < 5; ++$i) {
@@ -1011,7 +1013,14 @@ class PerformanceTest extends TestCase
 
             $product->save();
             $product->refresh();
+        });
 
+        $priceMap = PriceMap::find(Currency::DEFAULT->getDefaultPriceMapId());
+        app(PriceMapService::class)->createPricesForAllMissingProductsAndSchemas($priceMap);
+
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $products->each(function (Product $product) use ($productService) {
             $productService->updateMinPrices($product);
         });
     }
