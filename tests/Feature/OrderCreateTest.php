@@ -128,7 +128,7 @@ class OrderCreateTest extends TestCase
 
         $this->priceMapService->updateProductPricesForDefaultMaps($this->product, FakeDto::generatePricesInAllCurrencies(amount: 10));
 
-        $this->productPrice = $this->product->mappedPriceForPriceMap($this->currency->getDefaultPriceMapId())->value;
+        $this->productPrice = $this->priceMapService->getOrCreateMappedPriceForPriceMap($this->product, $this->currency->getDefaultPriceMapId())->value;
 
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);

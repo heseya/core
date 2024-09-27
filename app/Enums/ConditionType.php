@@ -22,7 +22,7 @@ enum ConditionType: string
     case PRODUCT_IN_SET = 'product-in-set';
     case TIME_BETWEEN = 'time-between';
     case USER_IN = 'user-in';
+    case USER_IN_ORGANIZATION = 'user-in-organization';
     case USER_IN_ROLE = 'user-in-role';
     case WEEKDAY_IN = 'weekday-in';
-    case USER_IN_ORGANIZATION = 'user-in-organization';
 }

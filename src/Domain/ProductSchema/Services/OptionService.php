@@ -70,6 +70,7 @@ final readonly class OptionService
             $keep[] = $option->getKey();
 
             if ($option->wasRecentlyCreated) {
+                $this->priceMapService->createOptionPrices($option);
                 OptionCreated::dispatch($option);
             }
         }

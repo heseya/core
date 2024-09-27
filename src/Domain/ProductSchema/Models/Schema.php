@@ -30,6 +30,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapSchemaOptionPrice;
+use Domain\PriceMap\PriceMapService;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -298,7 +299,7 @@ final class Schema extends Model implements SortableContract, Translatable
             /** @var Option $option */
             $option = $this->options()->findOrFail($value);
 
-            return $option->getPriceForPriceMap($priceMap);
+            return app(PriceMapService::class)->getOrCreateMappedPriceForPriceMap($option, $priceMap)->value;
         } catch (Throwable $th) {
             return Money::zero($priceMap->currency->value);
         }

@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\Product;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\ProductCachedPriceDto;
+use Domain\PriceMap\PriceMapService;
 use Domain\SalesChannel\SalesChannelService;
 use Illuminate\Http\Request;
 
@@ -15,6 +16,7 @@ class ProductShortResource extends Resource
 {
     public function base(Request $request): array
     {
+        $priceMapService = app(PriceMapService::class);
         $salesChannelService = app(SalesChannelService::class);
         $salesChannel = $salesChannelService->getCurrentRequestSalesChannel();
 
@@ -22,7 +24,7 @@ class ProductShortResource extends Resource
         $price = $this->resource->getCachedMinPriceForSalesChannel($salesChannel);
 
         if ($initial_price === null) {
-            $initial_price = ProductCachedPriceDto::from($this->resource->mappedPriceForPriceMap($salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
+            $initial_price = ProductCachedPriceDto::from($priceMapService->getOrCreateMappedPriceForPriceMap($this->resource, $salesChannel->priceMap ?? Currency::DEFAULT->getDefaultPriceMapId()), $salesChannel);
         } else {
             $initial_price = ProductCachedPriceDto::from($initial_price);
         }

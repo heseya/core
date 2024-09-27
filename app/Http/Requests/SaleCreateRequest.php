@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
-use App\Enums\DiscountType;
 use App\Rules\ConditionValidationForType;
 use App\Rules\Price;
 use App\Rules\PricesEveryCurrency;
@@ -41,9 +40,6 @@ class SaleCreateRequest extends FormRequest
             'target_type' => ['required', new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => ['required', 'boolean'],
             'active' => ['boolean'],
-
-            'type' => [new Enum(DiscountType::class)],
-            'value' => [Rule::when(DiscountType::tryFrom($this->input('type')) === DiscountType::PERCENTAGE, ['max:100'])],
 
             'condition_groups' => ['array'],
             'condition_groups.*.conditions' => ['required', 'array'],

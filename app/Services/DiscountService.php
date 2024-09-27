@@ -76,6 +76,7 @@ use Domain\Price\PriceRepository;
 use Domain\Price\PriceService;
 use Domain\Price\Resources\ProductCachedPriceData;
 use Domain\PriceMap\PriceMap;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -108,6 +109,7 @@ readonly class DiscountService
         private SeoMetadataService $seoMetadataService,
         private SettingsServiceContract $settingsService,
         private ShippingTimeDateServiceContract $shippingTimeDateService,
+        private PriceMapService $priceMapService,
     ) {}
 
     public function index(CouponIndexDto|SaleIndexDto $dto): LengthAwarePaginator
@@ -387,7 +389,7 @@ readonly class DiscountService
                 continue;
             }
 
-            $price = $product->mappedPriceForPriceMap($priceMap)->value;
+            $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value;
             if (!$priceMap->is_net) {
                 $price = $this->salesChannelService->removeVat($price, $vat_rate);
             }
@@ -559,7 +561,7 @@ readonly class DiscountService
         Discount $discount,
         Currency|PriceMap $priceMap,
     ): OrderProduct {
-        $price = $product->mappedPriceForPriceMap($priceMap instanceof Currency ? $priceMap->getDefaultPriceMapId() : $priceMap)->value;
+        $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap instanceof Currency ? $priceMap->getDefaultPriceMapId() : $priceMap)->value;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
             /** @var Schema $schema */
@@ -1109,7 +1111,7 @@ readonly class DiscountService
         $initialPrice = $initialPrices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect())->first();
 
         if ($initialPrice === null) {
-            $basePrice = $product->mappedPriceForPriceMap($priceMap);
+            $basePrice = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap);
             $net = $priceMap->is_net ? $basePrice->value : $this->salesChannelService->removeVat($basePrice->value, $this->salesChannelService->getVatRate($salesChannel));
         } else {
             $net = $initialPrice->net;

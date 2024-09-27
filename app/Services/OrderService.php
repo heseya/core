@@ -48,6 +48,7 @@ use Domain\Order\Resources\OrderResource;
 use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\PriceMap\PriceMap;
+use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
 use Domain\SalesChannel\Models\SalesChannel;
 use Domain\SalesChannel\SalesChannelService;
@@ -77,6 +78,7 @@ final readonly class OrderService implements OrderServiceContract
         private DepositServiceContract $depositService,
         private ProductRepository $productRepository,
         private SalesChannelService $salesChannelService,
+        private PriceMapService $priceMapService,
     ) {}
 
     /**
@@ -222,7 +224,7 @@ final readonly class OrderService implements OrderServiceContract
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
 
-                    $price = $product->mappedPriceForPriceMap($priceMap)->value;
+                    $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value;
                     if (!$priceMap->is_net) {
                         $price = $this->salesChannelService->removeVat($price, $vat_rate);
                     }
