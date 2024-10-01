@@ -9,6 +9,7 @@ use App\Exceptions\ServerException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Traits\GetPublishedLanguageFilter;
+use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\PriceMap\Dtos\PriceMapCreateDto;
@@ -215,14 +216,42 @@ final readonly class PriceMapService
                 : $scoutResults;
         }
 
+        $criteria = $dto->except('sort')->toArray();
+
+        /** @var Money|null $price_min */
+        $price_min = array_key_exists('price_min', $criteria) ? $criteria['price_min'] : null;
+        /** @var Money|null $price_max */
+        $price_max = array_key_exists('price_max', $criteria) ? $criteria['price_max'] : null;
+
+        unset($criteria['price_min'], $criteria['price_max']);
+
         /** @var Builder<Product> $query */
-        $query = Product::searchByCriteria($dto->except('sort')->toArray() + $this->getPublishedLanguageFilter('products'))
+        $query = Product::searchByCriteria($criteria + $this->getPublishedLanguageFilter('products'))
             ->with([
                 'mapPrices' => fn (Builder|HasMany $productsubquery) => $productsubquery->where('price_map_id', '=', $priceMap->id),
                 'schemas',
                 'schemas.options',
                 'schemas.options.mapPrices' => fn (Builder|HasMany $optionsubquery) => $optionsubquery->where('price_map_id', '=', $priceMap->id),
             ]);
+
+        if ($price_min) {
+            $query->whereHas(
+                'mapPrices',
+                fn (Builder $query) => $query
+                    ->where('value', '>=', $price_min->getMinorAmount())
+                    ->where('currency', $price_min->getCurrency()->getCurrencyCode())
+                    ->where('price_map_id', $priceMap->id),
+            );
+        }
+        if ($price_max) {
+            $query->whereHas(
+                'mapPrices',
+                fn (Builder $query) => $query
+                    ->where('value', '<=', $price_max->getMinorAmount())
+                    ->where('currency', $price_max->getCurrency()->getCurrencyCode())
+                    ->where('price_map_id', $priceMap->id),
+            );
+        }
 
         if (is_string($dto->price_sort_direction)) {
             if ($dto->price_sort_direction === 'price:asc') {
