@@ -228,6 +228,7 @@ class DiscountApplyTest extends TestCase
             'product_id' => $this->productToOrderProduct->getKey(),
             'quantity' => 1,
             'price' => Money::of(120.0, $this->currency->value),
+            'vat_rate' => $this->salesChannel->vat_rate,
         ]);
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
@@ -244,6 +245,7 @@ class DiscountApplyTest extends TestCase
             'shipping_price_initial' => Money::of(20.0, $this->currency->value),
             'shipping_price' => Money::of(20.0, $this->currency->value),
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'vat_rate' => $this->salesChannel->vat_rate,
         ]);
 
         $this->order->products()->create([
