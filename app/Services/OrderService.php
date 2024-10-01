@@ -225,9 +225,6 @@ final readonly class OrderService implements OrderServiceContract
                     $product = $products->firstWhere('id', $item->getProductId());
 
                     $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value;
-                    if (!$priceMap->is_net) {
-                        $price = $this->salesChannelService->removeVat($price, $vat_rate);
-                    }
 
                     $orderProduct = new OrderProduct([
                         'product_id' => $item->getProductId(),
@@ -252,9 +249,6 @@ final readonly class OrderService implements OrderServiceContract
                         $schema = $product->schemas()->findOrFail($schemaId);
 
                         $price = $schema->getPrice($value, $item->getSchemas(), $priceMap);
-                        if (!$priceMap->is_net) {
-                            $price = $this->salesChannelService->removeVat($price, $vat_rate);
-                        }
 
                         /** @var Option $option */
                         $option = $schema->options()->findOrFail($value);
@@ -289,7 +283,7 @@ final readonly class OrderService implements OrderServiceContract
                 $order->cart_total = $cartValueInitial;
 
                 // Apply discounts to order/products
-                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
+                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto, $priceMap);
 
                 $shippingPrice = Money::zero($currency->value);
                 if ($shippingMethod !== null) {
@@ -304,7 +298,7 @@ final readonly class OrderService implements OrderServiceContract
                 $order->shipping_price = $shippingPrice;
 
                 // Apply discounts to order
-                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
+                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto, $priceMap);
 
                 /** @var OrderProduct $orderProduct */
                 foreach ($order->products as $orderProduct) {
@@ -313,30 +307,34 @@ final readonly class OrderService implements OrderServiceContract
                         throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                     }
 
-                    $orderProduct->base_price_initial = $this->salesChannelService->addVat($orderProduct->base_price_initial, $vat_rate);
-                    $orderProduct->base_price = $this->salesChannelService->addVat($orderProduct->base_price, $vat_rate);
-                    $orderProduct->price_initial = $this->salesChannelService->addVat($orderProduct->price_initial, $vat_rate);
-                    $orderProduct->price = $this->salesChannelService->addVat($orderProduct->price, $vat_rate);
+                    if ($priceMap->is_net) {
+                        $orderProduct->base_price_initial = $this->salesChannelService->addVat($orderProduct->base_price_initial, $vat_rate);
+                        $orderProduct->base_price = $this->salesChannelService->addVat($orderProduct->base_price, $vat_rate);
+                        $orderProduct->price_initial = $this->salesChannelService->addVat($orderProduct->price_initial, $vat_rate);
+                        $orderProduct->price = $this->salesChannelService->addVat($orderProduct->price, $vat_rate);
 
+                        /** @var Discount $discount */
+                        foreach ($orderProduct->discounts as $discount) {
+                            if ($discount->order_discount?->applied !== null) {
+                                $discount->order_discount->applied = $this->salesChannelService->addVat($discount->order_discount->applied, $vat_rate);
+                                $discount->order_discount->save();
+                            }
+                        }
+                    }
+                }
+
+                if ($priceMap->is_net) {
                     /** @var Discount $discount */
-                    foreach ($orderProduct->discounts as $discount) {
+                    foreach ($order->discounts as $discount) {
                         if ($discount->order_discount?->applied !== null) {
                             $discount->order_discount->applied = $this->salesChannelService->addVat($discount->order_discount->applied, $vat_rate);
                             $discount->order_discount->save();
                         }
                     }
-                }
 
-                /** @var Discount $discount */
-                foreach ($order->discounts as $discount) {
-                    if ($discount->order_discount?->applied !== null) {
-                        $discount->order_discount->applied = $this->salesChannelService->addVat($discount->order_discount->applied, $vat_rate);
-                        $discount->order_discount->save();
-                    }
+                    $order->cart_total_initial = $this->salesChannelService->addVat($order->cart_total_initial, $vat_rate);
+                    $order->cart_total = $this->salesChannelService->addVat($order->cart_total, $vat_rate);
                 }
-
-                $order->cart_total_initial = $this->salesChannelService->addVat($order->cart_total_initial, $vat_rate);
-                $order->cart_total = $this->salesChannelService->addVat($order->cart_total, $vat_rate);
 
                 // shipping price magic 🙈
                 $order->summary = $order->shipping_price->plus($order->cart_total);
