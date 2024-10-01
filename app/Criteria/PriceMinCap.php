@@ -2,6 +2,7 @@
 
 namespace App\Criteria;
 
+use App\Models\Product;
 use Brick\Money\Money;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
@@ -11,6 +12,11 @@ use Illuminate\Support\Facades\App;
 
 class PriceMinCap extends Criterion
 {
+    /**
+     * @param Builder<Product> $query
+     *
+     * @return Builder<Product>
+     */
     public function query(Builder $query): Builder
     {
         if (!$this->value instanceof Money) {
