@@ -10,6 +10,7 @@ use App\Enums\SavedAddressType;
 use App\Events\OrganizationCreated;
 use App\Exceptions\ClientException;
 use App\Mail\OrganizationRegistered;
+use App\Models\SavedAddress;
 use App\Models\User;
 use Domain\Consent\Enums\ConsentType;
 use Domain\Consent\Models\Consent;
@@ -91,6 +92,24 @@ final readonly class OrganizationService
                 ->pluck('id', 'id')
                 ->map(fn () => true)
                 ->toArray();
+
+            if ($organization->address) {
+                SavedAddress::create([
+                    'name' => $organization->address->name,
+                    'user_id' => $user->getKey(),
+                    'address_id' => $organization->address->id,
+                    'type' => SavedAddressType::BILLING,
+                ]);
+            }
+
+            foreach ($organization->deliveryAddresses as $address) {
+                SavedAddress::create([
+                    'name' => $address->name,
+                    'user_id' => $user->getKey(),
+                    'address_id' => $address->address_id,
+                    'type' => SavedAddressType::SHIPPING,
+                ]);
+            }
         } else {
             $consents = $dto->consents;
         }
