@@ -24,3 +24,7 @@ OrganizationView:
           type: array
           items:
             $ref: './Consents.yml#/ConsentOrganization'
+        shipping_addresses:
+          type: array
+          items:
+            $ref: './OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'

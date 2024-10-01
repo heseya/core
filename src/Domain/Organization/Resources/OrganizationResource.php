@@ -32,6 +32,7 @@ final class OrganizationResource extends Resource
     {
         return [
             'consents' => ConsentOrganizationResource::collection($this->resource->consents),
+            'shipping_addresses' => OrganizationSavedAddressResource::collection($this->resource->deliveryAddresses),
         ];
     }
 }

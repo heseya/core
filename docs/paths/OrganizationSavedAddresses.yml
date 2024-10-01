@@ -125,7 +125,9 @@ MyOrganizationSavedAddresses:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+                  type: array
+                  items:
+                    $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
               type: object
 
 MyOrganizationSavedAddressesParams:
@@ -149,7 +151,9 @@ MyOrganizationSavedAddressesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
+                  type: array
+                  items:
+                    $ref: './../schemas/OrganizationSavedAddresses.yml#/OrganizationSavedAddressView'
               type: object
   delete:
     tags:
