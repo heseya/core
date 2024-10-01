@@ -680,15 +680,11 @@ readonly class DiscountService
             fn (CartItemResource $value) => $value->cartitem_id === $cartItem->getCartItemId(),
         )->first();
 
-        $result->price_discounted = OrderPriceDto::from(
-            $this->calcPrice(
-                $result->price_discounted,
-                $cartItem->getProductId(),
-                $discount,
-                $priceMap,
-            ),
-            $result->price_discounted->vat_rate,
-            $priceMap->is_net,
+        $result->price_discounted = $this->calcPrice(
+            $result->price_discounted,
+            $cartItem->getProductId(),
+            $discount,
+            $priceMap,
         );
 
         return $result;
