@@ -378,7 +378,8 @@ class OrganizationSavedAddressTest extends TestCase
                 'name' => 'Shipping address',
                 'address' => Address::factory()->definition(),
             ])
-            ->assertCreated()
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
                 'default' => true,
                 'name' => 'Shipping address'
@@ -415,6 +416,7 @@ class OrganizationSavedAddressTest extends TestCase
                 'address' => $this->addressData,
             ])
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $this->savedAddress->getKey(),
                 'name' => 'New name',

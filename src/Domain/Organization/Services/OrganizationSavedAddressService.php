@@ -13,6 +13,7 @@ use Domain\Organization\Dtos\OrganizationSavedAddressCreateDto;
 use Domain\Organization\Dtos\OrganizationSavedAddressUpdateDto;
 use Domain\Organization\Models\Organization;
 use Domain\Organization\Models\OrganizationSavedAddress;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -106,19 +107,25 @@ final class OrganizationSavedAddressService
     }
 
     /**
+     * @return Collection<int, OrganizationSavedAddress>
+     *
      * @throws ClientException
      */
-    public function storeAddressMy(OrganizationSavedAddressCreateDto $dto): OrganizationSavedAddress
+    public function storeAddressMy(OrganizationSavedAddressCreateDto $dto): Collection
     {
         $organization = $this->getCurrentUserOrganization();
 
-        return $this->storeAddress($dto, SavedAddressType::SHIPPING, $organization->getKey());
+        $this->storeAddress($dto, SavedAddressType::SHIPPING, $organization->getKey());
+
+        return $this->getAllMyAddresses($organization);
     }
 
     /**
+     * @return Collection<int, OrganizationSavedAddress>
+     *
      * @throws ClientException
      */
-    public function updateAddressMy(OrganizationSavedAddress $address, OrganizationSavedAddressUpdateDto $dto): OrganizationSavedAddress
+    public function updateAddressMy(OrganizationSavedAddress $address, OrganizationSavedAddressUpdateDto $dto): Collection
     {
         $organization = $this->getCurrentUserOrganization();
 
@@ -126,7 +133,9 @@ final class OrganizationSavedAddressService
             throw new ClientException(Exceptions::CLIENT_ORGANIZATION_INVALID_ADDRESS);
         }
 
-        return $this->updateAddress($address, $dto, SavedAddressType::SHIPPING);
+        $this->updateAddress($address, $dto, SavedAddressType::SHIPPING);
+
+        return $this->getAllMyAddresses($organization);
     }
 
     /**
@@ -141,6 +150,23 @@ final class OrganizationSavedAddressService
         }
 
         $this->delete($address);
+    }
+
+    /**
+     * @return Collection<int, OrganizationSavedAddress>
+     *
+     * @throws ClientException
+     */
+    private function getAllMyAddresses(Organization|null $organization = null): Collection
+    {
+        if (!$organization) {
+            $organization = $this->getCurrentUserOrganization();
+        }
+
+        return OrganizationSavedAddress::query()
+            ->where('organization_id', '=', $organization->getKey())
+            ->where('type', '=', SavedAddressType::SHIPPING)
+            ->get();
     }
 
     /**

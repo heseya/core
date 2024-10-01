@@ -51,12 +51,12 @@ final class OrganizationShippingAddressController extends Controller
 
     public function storeMy(OrganizationSavedAddressCreateDto $dto): JsonResource
     {
-        return OrganizationSavedAddressResource::make($this->organizationSavedAddressService->storeAddressMy($dto));
+        return OrganizationSavedAddressResource::collection($this->organizationSavedAddressService->storeAddressMy($dto));
     }
 
     public function updateMy(OrganizationSavedAddress $address, OrganizationSavedAddressUpdateDto $dto): JsonResource
     {
-        return OrganizationSavedAddressResource::make($this->organizationSavedAddressService->updateAddressMy($address, $dto));
+        return OrganizationSavedAddressResource::collection($this->organizationSavedAddressService->updateAddressMy($address, $dto));
     }
 
     public function deleteMy(OrganizationSavedAddress $address): HttpResponse
