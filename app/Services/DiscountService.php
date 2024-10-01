@@ -390,18 +390,12 @@ readonly class DiscountService
             }
 
             $price = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value;
-            // if (!$priceMap->is_net) {
-            //    $price = $this->salesChannelService->removeVat($price, $vat_rate);
-            // }
 
             foreach ($cartItem->getSchemas() as $schemaId => $value) {
                 /** @var Schema $schema */
                 $schema = $product->schemas()->findOrFail($schemaId);
 
                 $option_price = $schema->getPrice($value, $cartItem->getSchemas(), $priceMap);
-                // if (!$priceMap->is_net) {
-                //    $option_price = $this->salesChannelService->removeVat($option_price, $vat_rate);
-                // }
 
                 $price = $price->plus($option_price);
             }
