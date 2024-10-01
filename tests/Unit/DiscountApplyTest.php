@@ -26,6 +26,7 @@ use Domain\Order\Resources\CartResource;
 use Domain\Order\Resources\CouponShortResource;
 use Domain\Order\Resources\SalesShortResource;
 use Domain\Price\Dtos\PriceDto;
+use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\OptionService;
 use Domain\ProductSchema\Services\SchemaCrudService;
@@ -64,6 +65,7 @@ class DiscountApplyTest extends TestCase
     private OrderProduct $orderProduct;
 
     private SalesChannel $salesChannel;
+    private PriceMap $priceMap;
     private Currency $currency;
 
     public static function discountProductDataProvider(): array
@@ -138,12 +140,22 @@ class DiscountApplyTest extends TestCase
     {
         parent::setUp();
 
-        $this->currency = Currency::DEFAULT;
         $this->productService = App::make(ProductService::class);
         $this->schemaCrudService = App::make(SchemaCrudService::class);
         $this->optionService = App::make(OptionService::class);
         $this->discountRepository = App::make(DiscountRepository::class);
+
         $this->salesChannel = SalesChannel::query()->where('default', '=', 1)->first();
+        if ($this->salesChannel->priceMap === null) {
+            $this->priceMap = PriceMap::findOrFail(Currency::DEFAULT->getDefaultPriceMapId());
+            $this->salesChannel->update([
+                'price_map_id' => $this->priceMap->getKey()
+            ]);
+        } else {
+            $this->priceMap = $this->salesChannel->priceMap;
+        }
+
+        $this->currency = $this->priceMap->currency;
 
         $this->product = $this->productService->create(
             FakeDto::productCreateDto([
@@ -216,6 +228,7 @@ class DiscountApplyTest extends TestCase
             'product_id' => $this->productToOrderProduct->getKey(),
             'quantity' => 1,
             'price' => Money::of(120.0, $this->currency->value),
+            'vat_rate' => $this->salesChannel->vat_rate,
         ]);
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
@@ -232,6 +245,7 @@ class DiscountApplyTest extends TestCase
             'shipping_price_initial' => Money::of(20.0, $this->currency->value),
             'shipping_price' => Money::of(20.0, $this->currency->value),
             'shipping_method_id' => $this->shippingMethod->getKey(),
+            'vat_rate' => $this->salesChannel->vat_rate,
         ]);
 
         $this->order->products()->create([
@@ -398,7 +412,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertEquals(0.01, $cartItemResponse->price_discounted->net->getAmount()->toFloat());
     }
@@ -699,7 +713,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->productToOrderProduct);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
@@ -729,7 +743,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($product);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
@@ -753,7 +767,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
@@ -784,7 +798,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($set);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo($result));
     }
@@ -804,7 +818,7 @@ class DiscountApplyTest extends TestCase
             ] + $code,
         )->create();
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
@@ -826,7 +840,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->productToOrderProduct);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
@@ -848,7 +862,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
@@ -876,7 +890,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount);
+        $orderProduct = $this->discountService->applyDiscountOnOrderProduct($this->orderProduct, $discount, $this->priceMap);
 
         $this->assertTrue($orderProduct->price->isEqualTo(120.0));
     }
@@ -898,7 +912,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo($result));
     }
@@ -928,7 +942,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($product);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo($result));
     }
@@ -952,7 +966,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo($result));
     }
@@ -979,7 +993,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($set);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo($result));
     }
@@ -999,7 +1013,7 @@ class DiscountApplyTest extends TestCase
             ] + $code,
         )->create();
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo(120.0));
     }
@@ -1021,7 +1035,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo(120.0));
     }
@@ -1043,7 +1057,7 @@ class DiscountApplyTest extends TestCase
 
         $this->product->sets()->sync([$this->set->getKey()]);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo(120.0));
     }
@@ -1067,7 +1081,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->productSets()->attach($this->set);
 
-        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart);
+        $cartItemResponse = $this->discountService->applyDiscountOnCartItem($discount, $this->cartItemDto, $this->cart, $this->priceMap);
 
         $this->assertTrue($cartItemResponse->price_discounted->net->isEqualTo(120.0));
     }
@@ -1087,7 +1101,7 @@ class DiscountApplyTest extends TestCase
             ])
         ]);
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertEquals(310, $discountedOrder->cart_total->getAmount()->toInt()); // 360 - 50
     }
@@ -1100,7 +1114,7 @@ class DiscountApplyTest extends TestCase
             'target_is_allow_list' => true,
         ])->create();
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 360 * 50%
     }
@@ -1122,7 +1136,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertEquals(10, $discountedOrder->shipping_price->getAmount()->toInt()); // 20 - 10
     }
@@ -1143,7 +1157,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertEquals(20, $discountedOrder->shipping_price->getAmount()->toInt());
     }
@@ -1158,7 +1172,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertTrue($discountedOrder->shipping_price->isEqualTo(15.0)); // 20 * 75%
     }
@@ -1173,7 +1187,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->shippingMethods()->attach($this->shippingMethod->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertTrue($discountedOrder->shipping_price->isEqualTo(20.0));
     }
@@ -1195,7 +1209,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertEquals(210, $discountedOrder->cart_total->getAmount()->toInt()); // (120 - 50) * 3
     }
@@ -1216,7 +1230,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertEquals(360, $discountedOrder->cart_total->getAmount()->toInt()); // 120.0 * 3
     }
@@ -1231,7 +1245,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertTrue($discountedOrder->cart_total->isEqualTo(180.0)); // 120 * 50 % * 3
     }
@@ -1246,7 +1260,7 @@ class DiscountApplyTest extends TestCase
 
         $discount->products()->attach($this->product->getKey());
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $this->order, $this->priceMap);
 
         $this->assertTrue($discountedOrder->cart_total->isEqualTo(360.0)); // 120.0 * 3
     }
@@ -1312,7 +1326,7 @@ class DiscountApplyTest extends TestCase
             'currency' => $this->currency,
         ]);
 
-        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order);
+        $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order, $this->priceMap);
 
         $this->assertEquals(550, $discountedOrder->cart_total->getAmount()->toInt()); // 120.0 * 3 + (80 - 50) * 3
     }
