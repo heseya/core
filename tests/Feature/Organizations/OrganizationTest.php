@@ -249,6 +249,63 @@ class OrganizationTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateImport(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.add');
+
+        $address = Address::factory()->definition();
+        $address['vat'] = '987654321';
+        $shippingAddress = Address::factory()->definition();
+
+        Event::fake(OrganizationCreated::class);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/organizations', [
+                'client_id' => 'CLIENT_01',
+                'billing_email' => 'test@test.test',
+                'billing_address' => $address,
+                'shipping_addresses' => [
+                    [
+                        'default' => false,
+                        'name' => 'Shipping address',
+                        'address' => $shippingAddress,
+                    ],
+                ],
+                'consents' => [],
+                'import' => true,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'billing_email' => 'test@test.test',
+                'client_id' => 'CLIENT_01',
+            ])
+            ->assertJsonFragment($address);
+
+        Event::assertDispatched(OrganizationCreated::class);
+
+        $this->assertDatabaseHas('organizations', [
+            'billing_email' => 'test@test.test',
+            'client_id' => 'CLIENT_01',
+            'is_complete' => false,
+        ]);
+
+        $this->assertDatabaseHas('addresses', $address);
+        $this->assertDatabaseHas('addresses', $shippingAddress);
+
+        /** @var Organization $organization */
+        $organization = Organization::query()->where('id', '=', $response->getData()->data->id)->first();
+
+        $this->assertDatabaseHas('organization_saved_addresses', [
+            'organization_id' => $organization->getKey(),
+            'default' => true,
+            'name' => 'Shipping address',
+        ]);
+    }
+
     public function testCreateWithWebhook(): void
     {
         $this->user->givePermissionTo('organizations.add');
