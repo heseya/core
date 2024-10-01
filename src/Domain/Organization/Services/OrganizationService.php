@@ -99,16 +99,20 @@ final readonly class OrganizationService
                     'user_id' => $user->getKey(),
                     'address_id' => $organization->address->id,
                     'type' => SavedAddressType::BILLING,
+                    'default' => true,
                 ]);
             }
 
+            $first = true;
             foreach ($organization->deliveryAddresses as $address) {
                 SavedAddress::create([
                     'name' => $address->name,
                     'user_id' => $user->getKey(),
                     'address_id' => $address->address_id,
                     'type' => SavedAddressType::SHIPPING,
+                    'default' => $first,
                 ]);
+                $first = false;
             }
         } else {
             $consents = $dto->consents;
