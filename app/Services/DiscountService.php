@@ -315,9 +315,9 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order
+    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap): Order
     {
-        return $this->calcOrderDiscounts($order, $orderDto, [
+        return $this->calcOrderDiscounts($order, $orderDto, $priceMap, [
             DiscountTargetType::PRODUCTS,
             DiscountTargetType::CHEAPEST_PRODUCT,
             DiscountTargetType::ORDER_VALUE,
@@ -333,9 +333,9 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order
+    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap): Order
     {
-        return $this->calcOrderDiscounts($order, $orderDto, [
+        return $this->calcOrderDiscounts($order, $orderDto, $priceMap, [
             DiscountTargetType::SHIPPING_PRICE,
         ]);
     }
@@ -646,7 +646,7 @@ readonly class DiscountService
      * @throws MoneyMismatchException
      * @throws ServerException
      */
-    public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
+    public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount, PriceMap $priceMap): OrderProduct
     {
         $minimalProductPrice = Money::ofMinor(1, $orderProduct->currency->value);
         $price = $orderProduct->price;
@@ -655,7 +655,7 @@ readonly class DiscountService
             !$price->isEqualTo($minimalProductPrice)
             && $this->checkIsProductInDiscount($orderProduct->product_id, $discount)
         ) {
-            $this->calcOrderProductDiscount($orderProduct, $discount);
+            $this->calcOrderProductDiscount($orderProduct, $discount, $priceMap);
         }
 
         return $orderProduct;
@@ -698,7 +698,7 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    public function applyDiscountOnOrder(Discount $discount, Order $order): Order
+    public function applyDiscountOnOrder(Discount $discount, Order $order, PriceMap $priceMap): Order
     {
         $refreshedOrder = $order->fresh();
         if (
@@ -709,9 +709,9 @@ readonly class DiscountService
         }
 
         return match ($discount->target_type) {
-            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnOrderCheapestProduct($order, $discount),
-            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
-            DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
+            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnOrderCheapestProduct($order, $discount, $priceMap),
+            DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount, $priceMap),
+            DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount, $priceMap),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
         };
     }
@@ -1205,7 +1205,7 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
+    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap, array $targetTypes = []): Order
     {
         $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
         $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
@@ -1214,7 +1214,7 @@ readonly class DiscountService
         /** @var Discount $discount */
         foreach ($discounts as $discount) {
             if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
-                $order = $this->applyDiscountOnOrder($discount, $order);
+                $order = $this->applyDiscountOnOrder($discount, $order, $priceMap);
             } elseif (
                 ($discount->code === null && in_array($discount->getKey(), $sales))
                 || $discount->code !== null
@@ -1279,12 +1279,29 @@ readonly class DiscountService
     private function calcOrderProductDiscount(
         OrderProduct $orderProduct,
         Discount $discount,
+        PriceMap $priceMap,
     ): void {
+        $vat_rate = BigDecimal::of($orderProduct->vat_rate);
+
+        if ($vat_rate->isGreaterThan(BigDecimal::one())) {
+            $vat_rate = $vat_rate->dividedBy(100, 4, RoundingMode::HALF_UP);
+        }
+
+        $price = $orderProduct->price;
+
+        if (!$priceMap->is_net) {
+            $price = $this->salesChannelService->removeVat($price, $vat_rate);
+        }
+
         $appliedDiscount = $this->calcAppliedDiscount(
-            $orderProduct->price,
-            $this->calc($orderProduct->price, $discount),
+            $price,
+            $this->calc($price, $discount),
             'minimal_product_price',
         );
+
+        if (!$priceMap->is_net) {
+            $appliedDiscount = $this->salesChannelService->addVat($appliedDiscount, $vat_rate);
+        }
 
         $orderProduct->price = $orderProduct->price->minus($appliedDiscount);
 
@@ -1346,13 +1363,13 @@ readonly class DiscountService
      * @throws MoneyMismatchException
      * @throws ServerException
      */
-    private function applyDiscountOnOrderProducts(Order $order, Discount $discount): Order
+    private function applyDiscountOnOrderProducts(Order $order, Discount $discount, PriceMap $priceMap): Order
     {
         $cartValue = Money::zero($order->currency->value);
 
         /** @var OrderProduct $product */
         foreach ($order->products as $product) {
-            $product = $this->applyDiscountOnOrderProduct($product, $discount);
+            $product = $this->applyDiscountOnOrderProduct($product, $discount, $priceMap);
             $cartValue = $cartValue->plus($product->price->multipliedBy($product->quantity));
         }
 
@@ -1369,7 +1386,7 @@ readonly class DiscountService
      * @throws NumberFormatException
      * @throws ServerException
      */
-    private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
+    private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount, PriceMap $priceMap): Order
     {
         /** @var OrderProduct $product */
         $product = $order->products->sortBy([
@@ -1417,7 +1434,7 @@ readonly class DiscountService
             $price = $product->price;
 
             if (!$price->isEqualTo($minimalProductPrice)) {
-                $this->calcOrderProductDiscount($product, $discount);
+                $this->calcOrderProductDiscount($product, $discount, $priceMap);
                 $product->save();
             }
 
@@ -1434,12 +1451,14 @@ readonly class DiscountService
         return match ($discount->target_type) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart, $priceMap),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart, $priceMap),
-            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart, $priceMap),
+            DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cart, $priceMap),
         };
     }
 
     /**
+     * Shipping price is always gross price, so shipping discounts are gross prices too.
+     *
      * @throws RoundingNecessaryException
      * @throws MathException
      * @throws UnknownCurrencyException
@@ -1451,7 +1470,6 @@ readonly class DiscountService
         Discount $discount,
         CartDto $cartDto,
         CartResource $cartResource,
-        PriceMap $priceMap,
     ): CartResource {
         if (
             in_array(
@@ -1460,22 +1478,15 @@ readonly class DiscountService
             ) === $discount->target_is_allow_list
         ) {
             $appliedDiscount = $this->calcAppliedDiscount(
-                $cartResource->shipping_price->net,
-                $this->calc($cartResource->shipping_price->net, $discount),
+                $cartResource->shipping_price->gross,
+                $this->calc($cartResource->shipping_price->gross, $discount),
                 'minimal_shipping_price',
             );
 
-            if ($priceMap->is_net) {
-                $newShippingPrice = $cartResource->shipping_price->net->minus($appliedDiscount);
-            } else {
-                $appliedDiscount = $this->salesChannelService->addVat($appliedDiscount, $cartResource->shipping_price->vat_rate);
-                $newShippingPrice = $cartResource->shipping_price->gross->minus($appliedDiscount);
-            }
-
             $cartResource->shipping_price = OrderPriceDto::from(
-                $newShippingPrice,
+                $cartResource->shipping_price->gross->minus($appliedDiscount),
                 $cartResource->shipping_price->vat_rate,
-                $priceMap->is_net,
+                false,
             );
         }
 
@@ -1632,21 +1643,39 @@ readonly class DiscountService
      * @throws MoneyMismatchException
      * @throws ServerException
      */
-    private function applyDiscountOnOrderValue(Order $order, Discount $discount): Order
+    private function applyDiscountOnOrderValue(Order $order, Discount $discount, PriceMap $priceMap): Order
     {
+        $vat_rate = BigDecimal::of($order->vat_rate);
+
+        if ($vat_rate->isGreaterThan(BigDecimal::one())) {
+            $vat_rate = $vat_rate->dividedBy(100, 4, RoundingMode::HALF_UP);
+        }
+
+        $price = $order->cart_total;
+        if (!$priceMap->is_net) {
+            $price = $this->salesChannelService->removeVat($price, $vat_rate);
+        }
+
         $appliedDiscount = $this->calcAppliedDiscount(
-            $order->cart_total,
-            $this->calc($order->cart_total, $discount),
+            $price,
+            $this->calc($price, $discount),
             'minimal_order_price',
         );
 
+        if (!$priceMap->is_net) {
+            $appliedDiscount = $this->salesChannelService->addVat($appliedDiscount, $vat_rate);
+        }
+
         $order->cart_total = $order->cart_total->minus($appliedDiscount);
+
         $this->attachDiscount($order, $discount, $appliedDiscount);
 
         return $order;
     }
 
     /**
+     * Shipping price is always gross price, so shipping discounts are gross prices too.
+     *
      * @throws RoundingNecessaryException
      * @throws MathException
      * @throws UnknownCurrencyException
