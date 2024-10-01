@@ -589,7 +589,7 @@ readonly class DiscountService
             $price = $price->plus($schema->getPrice($value, $orderProductDto->getSchemas(), $priceMap));
         }
 
-        $calculatedPrice = $this->calcPrice(OrderPriceDto::from($price, 0, $priceMap->is_net), $product->getKey(), $discount, $priceMap);
+        $calculatedPrice = $this->calcPrice(OrderPriceDto::from($price, 0.0, $priceMap->is_net), $product->getKey(), $discount, $priceMap);
 
         return new OrderProduct([
             'product_id' => $product->getKey(),
