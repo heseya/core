@@ -119,6 +119,10 @@ final class Schema extends Model implements SortableContract, Translatable
      */
     public function validate(mixed $value): void
     {
+        if ($this->options->count() === 0) {
+            return;
+        }
+
         $validation = new Collection();
 
         if ($this->required) {

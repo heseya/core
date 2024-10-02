@@ -18,6 +18,7 @@ class SchemaOption implements ValidationRule
             if (!$product) {
                 $fail(Exceptions::PRODUCT_NOT_FOUND->value);
             }
+
             /** @var Product $product */
             $schemas = $product->schemas->pluck('id');
 
@@ -26,7 +27,12 @@ class SchemaOption implements ValidationRule
             if (count($invalidSchemas) > 0) {
                 $fail(Exceptions::CLIENT_SCHEMA_INVALID->value . ': ' . implode(', ', $invalidSchemas));
             }
-            $schemasOptions = $product->schemas()->where('type', '=', SchemaType::SELECT)->get()->pluck('options', 'id');
+
+            $schemasOptions = $product->schemas()
+                ->where('type', '=', SchemaType::SELECT)
+                ->whereHas('options')
+                ->get()
+                ->pluck('options', 'id');
 
             $invalidOptions = [];
             foreach ($schemasOptions as $schema => $options) {

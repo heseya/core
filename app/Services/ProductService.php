@@ -208,20 +208,23 @@ final readonly class ProductService
             throw new ClientException(Exceptions::CLIENT_SALES_CHANNEL_PRICE_MAP);
         }
 
-        $price_initial = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap);
+        $price_base = ProductCachedPriceDto::from($this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap), $salesChannel);
         $price_minimal = $product->getCachedMinPriceForSalesChannel($salesChannel);
 
         if (!empty($schemas) || $price_minimal === null) {
             $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
             $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $schemas);
+            $price_initial = $this->discountService->calcAllDiscountsOnProductVariant($product, collect(), $salesChannel, $schemas);
         } else {
             $price = ProductCachedPriceDto::from($price_minimal, $salesChannel);
+            $price_initial = $price_base;
         }
 
         return ProductVariantPriceResource::from([
-            'product_id' => $product->id,
-            'price_initial' => ProductCachedPriceDto::from($price_initial, $salesChannel),
+            'price_base' => $price_base,
+            'price_initial' => $price_initial,
             'price' => $price,
+            'product_id' => $product->id,
         ]);
     }
 

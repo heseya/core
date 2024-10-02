@@ -1129,9 +1129,15 @@ readonly class DiscountService
         SalesChannel $salesChannel,
         array $schemas = [],
     ): ProductCachedPriceDto {
+        $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
+
         $priceMap = $salesChannel->priceMap;
         assert($priceMap instanceof PriceMap);
         $minimalProductPrice = Money::ofMinor(1, $priceMap->currency->value);
+
+        if (!$priceMap->is_net) {
+            $minimalProductPrice = $this->salesChannelService->addVat($minimalProductPrice, $vat_rate);
+        }
 
         $initialPrices = $this->priceService->getCachedProductPrices(
             $product,
@@ -1141,35 +1147,30 @@ readonly class DiscountService
         );
         $initialPrice = $initialPrices->get(ProductPriceType::PRICE_MIN_INITIAL->value, collect())->first();
 
-        if ($initialPrice === null) {
-            $basePrice = $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap);
-            $net = $priceMap->is_net ? $basePrice->value : $this->salesChannelService->removeVat($basePrice->value, $this->salesChannelService->getVatRate($salesChannel));
-        } else {
-            $net = $initialPrice->net;
-        }
+        $price = match (true) {
+            $initialPrice === null => $this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap)->value,
+            $priceMap->is_net => $initialPrice->net,
+            !$priceMap->is_net => $initialPrice->gross,
+        };
 
         foreach ($schemas as $schemaId => $optionId) {
             /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
             $schema_price = $schema->getPrice($optionId, $schemas, $priceMap);
-            if (!$priceMap->is_net) {
-                $schema_price = $this->salesChannelService->removeVat($schema_price, $this->salesChannelService->getVatRate($salesChannel));
-            }
 
-            $net = $net->plus($schema_price);
+            $price = $price->plus($schema_price);
         }
 
-        $minPrice = $net;
         foreach ($sales as $sale) {
-            if ($minPrice->isGreaterThan($minimalProductPrice)) {
-                $minPrice = $this->calcProductPriceDiscount($sale, $minPrice, $minimalProductPrice);
+            if ($price->isGreaterThan($minimalProductPrice)) {
+                $price = $this->calcProductPriceDiscount($sale, $price, $minimalProductPrice, $vat_rate, $priceMap);
             }
         }
 
         return ProductCachedPriceDto::from([
-            'net' => $minPrice,
-            'gross' => $this->salesChannelService->addVat($minPrice, $this->salesChannelService->getVatRate($salesChannel)),
+            'net' => $priceMap->is_net ? $price : $this->salesChannelService->removeVat($price, $vat_rate),
+            'gross' => $priceMap->is_net ? $this->salesChannelService->addVat($price, $vat_rate) : $price,
             'currency' => $priceMap->currency,
             'sales_channel_id' => $salesChannel->id,
         ]);
@@ -1261,9 +1262,17 @@ readonly class DiscountService
      * @throws MoneyMismatchException
      * @throws ServerException
      */
-    private function calcProductPriceDiscount(Discount $discount, Money $price, Money $minimalProductPrice): Money
+    private function calcProductPriceDiscount(Discount $discount, Money $price, Money $minimalProductPrice, BigDecimal $vat_rate, PriceMap $priceMap): Money
     {
-        $price = $price->minus($this->calc($price, $discount));
+        $net = $priceMap->is_net ? $price : $this->salesChannelService->removeVat($price, $vat_rate);
+
+        $amount = $this->calc($net, $discount);
+
+        if (!$priceMap->is_net) {
+            $amount = $this->salesChannelService->addVat($amount, $vat_rate);
+        }
+
+        $price = $price->minus($amount);
 
         return Money::max($price, $minimalProductPrice);
     }

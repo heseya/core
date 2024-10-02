@@ -174,7 +174,7 @@ class ItemService implements ItemServiceContract
 
                 $schema->validate($value);
 
-                if ($value === null) {
+                if ($value === null || $schema->options->count() === 0) {
                     continue;
                 }
 
