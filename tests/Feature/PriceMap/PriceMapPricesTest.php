@@ -296,9 +296,17 @@ class PriceMapPricesTest extends TestCase
 
         $response->assertOk()
             ->assertJsonFragment([
-                'price_initial' => [
+                'price_base' => [
                     'net' => '101.00',
                     'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ])
+            ->assertJsonFragment([
+                'price_initial' => [
+                    'net' => '224.00',
+                    'gross' => '224.00',
                     'currency' => 'PLN',
                     'sales_channel_id' => $salesChannel->getKey(),
                 ]
@@ -348,9 +356,15 @@ class PriceMapPricesTest extends TestCase
         $response->assertOk()
             ->assertJsonFragment([
                 'product_id' => $this->product1->getKey(),
-                'price_initial' => [
+                'price_base' => [
                     'net' => '101.00',
                     'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ],
+                'price_initial' => [
+                    'net' => '224.00',
+                    'gross' => '224.00',
                     'currency' => 'PLN',
                     'sales_channel_id' => $salesChannel->getKey(),
                 ],
@@ -363,9 +377,15 @@ class PriceMapPricesTest extends TestCase
             ])
             ->assertJsonFragment([
                 'product_id' => $this->product2->getKey(),
-                'price_initial' => [
+                'price_base' => [
                     'net' => '102.00',
                     'gross' => '102.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ],
+                'price_initial' => [
+                    'net' => '225.00',
+                    'gross' => '225.00',
                     'currency' => 'PLN',
                     'sales_channel_id' => $salesChannel->getKey(),
                 ],

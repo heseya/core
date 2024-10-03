@@ -3,8 +3,12 @@
 namespace App\Http\Resources;
 
 use App\Traits\ModifyLangFallback;
+use Domain\ProductSchema\Models\Schema;
 use Illuminate\Http\Request;
 
+/**
+ * @property Schema $resource
+ */
 class ProductSchemaResource extends SchemaResource
 {
     use ModifyLangFallback;
