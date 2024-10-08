@@ -116,6 +116,7 @@ final readonly class OrderService implements OrderServiceContract
         $currency = $priceMap->currency;
 
         $vat_rate = $this->salesChannelService->getVatRate($salesChannel);
+        $vat_rate_as_percent = $vat_rate->toFloat() * 100;
 
         DB::beginTransaction();
 
@@ -209,7 +210,7 @@ final readonly class OrderService implements OrderServiceContract
                     'shipping_place' => $shippingPlace,
                     'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
                     'payment_method_type' => $paymentMethod->type,
-                    'vat_rate' => $vat_rate,
+                    'vat_rate' => $vat_rate_as_percent,
                 ] + $dto->toArray(),
             );
 
@@ -235,7 +236,7 @@ final readonly class OrderService implements OrderServiceContract
                         'base_price_initial' => $price,
                         'base_price' => $price,
                         'name' => $product->getTranslation('name', $language),
-                        'vat_rate' => $vat_rate->multipliedBy(100)->toFloat(),
+                        'vat_rate' => $vat_rate_as_percent,
                         'shipping_digital' => $product->shipping_digital,
                     ]);
 
