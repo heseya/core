@@ -9,6 +9,7 @@ class OrderProductDto extends Dto
     private string $product_id;
     private float $quantity;
     private array $schemas;
+    private array $discounts;
 
     public static function fromArray(array $array): self
     {
@@ -23,6 +24,7 @@ class OrderProductDto extends Dto
             product_id: $array['product_id'],
             quantity: $array['quantity'],
             schemas: $schemas,
+            discounts: [],
         );
     }
 
@@ -39,5 +41,15 @@ class OrderProductDto extends Dto
     public function getSchemas(): array
     {
         return $this->schemas;
+    }
+
+    public function getDiscounts(): array
+    {
+        return $this->discounts;
+    }
+
+    public function addDiscount(string $id): void
+    {
+        $this->discounts[] = $id;
     }
 }

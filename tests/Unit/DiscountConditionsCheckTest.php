@@ -1683,6 +1683,8 @@ class DiscountConditionsCheckTest extends TestCase
             'shipping_method_id' => $this->shippingMethod->getKey(),
         ]);
 
+        $cart->getItems()[0]->addDiscount($sale->getKey());
+
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::ON_SALE,
             'value' => [
@@ -1722,7 +1724,7 @@ class DiscountConditionsCheckTest extends TestCase
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::ON_SALE,
             'value' => [
-                'on_sale' => false,
+                'on_sale' => true,
             ],
         ]);
 

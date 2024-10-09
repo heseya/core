@@ -3282,6 +3282,340 @@ class CartTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponOnSale(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => true,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon',
+                'name' => 'Testowy kupon',
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => true,
+                'percentage' => null,
+                'code' => null,
+            ]
+        );
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [
+                    $coupon->code,
+                ],
+            ],
+        )
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment(
+                [
+                    'id' => $coupon->getKey(),
+                    'name' => $coupon->name,
+                    'value' => '900.00',
+                ]
+            )
+            ->assertJsonFragment(
+                [
+                    'id' => $sale->getKey(),
+                    'name' => $sale->name,
+                    'value' => '200.00',
+                ]
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponOnSaleNoSale(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => true,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon',
+                'name' => 'Testowy kupon',
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => false,
+                'percentage' => null,
+                'code' => null,
+            ]
+        );
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [
+                    $coupon->code,
+                ],
+            ],
+        )
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonMissing(
+                [
+                    'id' => $coupon->getKey(),
+                    'name' => $coupon->name,
+                ]
+            )
+            ->assertJsonMissing(
+                [
+                    'id' => $sale->getKey(),
+                    'name' => $sale->name,
+                ]
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponWithoutSale(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => false,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon',
+                'name' => 'Testowy kupon',
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => false,
+                'percentage' => null,
+                'code' => null,
+            ]
+        );
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [
+                    $coupon->code,
+                ],
+            ],
+        )
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonFragment(
+                [
+                    'id' => $coupon->getKey(),
+                    'name' => $coupon->name,
+                ]
+            )
+            ->assertJsonMissing(
+                [
+                    'id' => $sale->getKey(),
+                    'name' => $sale->name,
+                ]
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponWithoutSaleFail(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => false,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon',
+                'name' => 'Testowy kupon',
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => true,
+                'percentage' => null,
+                'code' => null,
+            ]
+        );
+
+        $this->discountRepository->setDiscountAmounts($sale->getKey(), [
+            PriceDto::from([
+                'value' => '100.00',
+                'currency' => $this->currency,
+            ])
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [
+                    $coupon->code,
+                ],
+            ],
+        )
+            ->assertValid()
+            ->assertOk()
+            ->assertJsonMissing(
+                [
+                    'id' => $coupon->getKey(),
+                    'name' => $coupon->name,
+                ]
+            )
+            ->assertJsonFragment(
+                [
+                    'id' => $sale->getKey(),
+                    'name' => $sale->name,
+                ]
+            );
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];

@@ -12,6 +12,7 @@ use Domain\Currency\Currency;
 use Domain\Language\LanguageService;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 
 class OrderDto extends CartOrderDto implements InstantiateFromRequest
@@ -130,6 +131,21 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         /** @var OrderProductDto $item */
         foreach ($this->items as $item) {
             $result[] = $item->getProductId();
+        }
+
+        return $result;
+    }
+
+    public function getProductIdsWithDiscounts(): Collection
+    {
+        if ($this->items instanceof Missing) {
+            return Collection::make();
+        }
+
+        $result = Collection::make();
+        /** @var OrderProductDto $item */
+        foreach ($this->items as $item) {
+            $result->push(['id' => $item->getProductId(), 'discounts' => $item->getDiscounts()]);
         }
 
         return $result;
