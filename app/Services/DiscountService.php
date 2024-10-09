@@ -881,6 +881,7 @@ readonly class DiscountService implements DiscountServiceContract
         DiscountCondition $condition,
         Money $cartValue,
         ?CartOrderDto $dto = null,
+        ?Order $order = null,
     ): bool {
         return match ($condition->type) {
             ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
@@ -901,7 +902,7 @@ readonly class DiscountService implements DiscountServiceContract
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-            ConditionType::ON_SALE => $this->checkConditionOnSale($condition, $dto?->getProductIds() ?? []),
+            ConditionType::ON_SALE => $this->checkConditionOnSale($condition, $order ? $order->getOrderProductWithDiscounts() : ($dto?->getProductIdsWithDiscounts() ?? Collection::make())),
         };
     }
 
@@ -909,9 +910,10 @@ readonly class DiscountService implements DiscountServiceContract
         ConditionGroup $group,
         CartOrderDto $dto,
         Money $cartValue,
+        ?Order $order = null,
     ): bool {
         foreach ($group->conditions as $condition) {
-            if (!$this->checkCondition($condition, $cartValue, $dto)) {
+            if (!$this->checkCondition($condition, $cartValue, $dto, $order)) {
                 return false;
             }
         }
@@ -923,6 +925,7 @@ readonly class DiscountService implements DiscountServiceContract
         Discount $discount,
         CartOrderDto $dto,
         Money $cartValue,
+        Order|null $order = null,
     ): bool {
         if (!$discount->active) {
             return false;
@@ -933,7 +936,7 @@ readonly class DiscountService implements DiscountServiceContract
         }
 
         foreach ($discount->conditionGroups as $conditionGroup) {
-            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
+            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue, $order)) {
                 return true;
             }
         }
@@ -1139,7 +1142,7 @@ readonly class DiscountService implements DiscountServiceContract
 
         /** @var Discount $discount */
         foreach ($discounts as $discount) {
-            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
+            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total, $order)) {
                 $order = $this->applyDiscountOnOrder($discount, $order);
             } elseif (
                 ($discount->code === null && in_array($discount->getKey(), $sales))
@@ -1447,6 +1450,7 @@ readonly class DiscountService implements DiscountServiceContract
             }
 
             $cartItem = $this->applyDiscountOnCartItem($discount, $item, $cart);
+            $item->addDiscount($discount->getKey());
 
             $cartItems[] = $cartItem;
 
@@ -2044,18 +2048,11 @@ readonly class DiscountService implements DiscountServiceContract
         return false;
     }
 
-    private function checkConditionOnSale(DiscountCondition $condition, array $productIds): bool
+    private function checkConditionOnSale(DiscountCondition $condition, Collection $productIdsWithDiscounts): bool
     {
         $conditionDto = OnSaleConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        $products = Product::query()
-            ->whereIn('id', $productIds)
-            ->where(fn (Builder $q) => $q
-                ->whereHas('sales', fn (Builder $q) => $q->where('target_is_allow_list', '=', true))
-                ->orWhereDoesntHave('sales', fn (Builder $q) => $q->where('target_is_allow_list', '=', false)),
-            )->count();
-
-        return ($products >= 0 && $conditionDto->getOnSale()) || ($products === 0 && !$conditionDto->getOnSale());
+        return $productIdsWithDiscounts->first(fn ($product) => ($conditionDto->getOnSale() && !empty($product['discounts'])) || (!$conditionDto->getOnSale() && empty($product['discounts']))) !== null;
     }
 
     private function addDiscountToCartResource(

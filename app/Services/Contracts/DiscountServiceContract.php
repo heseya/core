@@ -42,11 +42,12 @@ interface DiscountServiceContract
         DiscountCondition $condition,
         Money $cartValue,
         ?CartOrderDto $dto = null,
+        ?Order $order = null,
     ): bool;
 
-    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, Money $cartValue): bool;
+    public function checkConditionGroup(ConditionGroup $group, CartOrderDto $dto, Money $cartValue, ?Order $order = null): bool;
 
-    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, Money $cartValue): bool;
+    public function checkConditionGroups(Discount $discount, CartOrderDto $dto, Money $cartValue, ?Order $order = null): bool;
 
     public function applyDiscountOnProduct(
         Product $product,

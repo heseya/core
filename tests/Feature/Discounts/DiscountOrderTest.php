@@ -1201,4 +1201,218 @@ class DiscountOrderTest extends TestCase
             'shipping_price' => $shippingPriceNonDiscounted * 100 . '',
         ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderConditionsOnSale($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => '15',
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => true,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create([
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'percentage' => '15',
+            'code' => null,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
+            'billing_address' => $this->address,
+            'delivery_address' => $this->address,
+            'items' => $this->items,
+            'coupons' => [
+                $coupon->code,
+            ],
+            'sale_ids' => [
+                $sale->getKey(),
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'discount_id' => $coupon->getKey(),
+                'name' => $coupon->name,
+                'code' => $coupon->code,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderConditionsOnSaleFail($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => '15',
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => true,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create([
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'percentage' => '15',
+            'code' => null,
+            'target_is_allow_list' => false,
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
+            'billing_address' => $this->address,
+            'delivery_address' => $this->address,
+            'items' => $this->items,
+            'coupons' => [
+                $coupon->code,
+            ],
+            'sale_ids' => [
+                $sale->getKey(),
+            ],
+        ])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderConditionsNotOnSale($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => '15',
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => false,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create([
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'percentage' => '15',
+            'code' => null,
+            'target_is_allow_list' => false,
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
+            'billing_address' => $this->address,
+            'delivery_address' => $this->address,
+            'items' => $this->items,
+            'coupons' => [
+                $coupon->code,
+            ],
+            'sale_ids' => [
+                $sale->getKey(),
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'discount_id' => $coupon->getKey(),
+                'name' => $coupon->name,
+                'code' => $coupon->code,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderConditionsNotOnSaleFail($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => '15',
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::ON_SALE,
+            'value' => [
+                'on_sale' => false,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $sale = Discount::factory()->create([
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'percentage' => '15',
+            'code' => null,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($this->product->getKey());
+
+        $this->actingAs($this->{$user})->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
+            'billing_address' => $this->address,
+            'delivery_address' => $this->address,
+            'items' => $this->items,
+            'coupons' => [
+                $coupon->code,
+            ],
+            'sale_ids' => [
+                $sale->getKey(),
+            ],
+        ])
+            ->assertUnprocessable();
+    }
 }

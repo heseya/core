@@ -100,6 +100,17 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         return $result;
     }
 
+    public function getProductIdsWithDiscounts(): Collection
+    {
+        $result = Collection::make();
+        /** @var CartItemDto $item */
+        foreach ($this->items as $item) {
+            $result->push(['id' => $item->getProductId(), 'discounts' => $item->getDiscounts()]);
+        }
+
+        return $result;
+    }
+
     public function getCartLength(): float|int
     {
         $length = 0;

@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Collection;
 
 /**
  * @property Money $summary
@@ -220,5 +221,15 @@ final class Order extends Model implements SortableContract
     public function getLocaleAttribute(): string
     {
         return explode('-', $this->language)[0];
+    }
+
+    public function getOrderProductWithDiscounts(): Collection
+    {
+        return $this->products->map(function (OrderProduct $orderProduct) {
+            return [
+                'id' => $orderProduct->product_id,
+                'discounts' => $orderProduct->discounts->pluck('id')->toArray(),
+            ];
+        });
     }
 }

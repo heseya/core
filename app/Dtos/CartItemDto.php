@@ -10,6 +10,7 @@ final class CartItemDto extends Dto
     private string $product_id;
     private float $quantity;
     private array $schemas;
+    private array $discounts;
 
     public static function fromArray(array $array): self
     {
@@ -18,6 +19,7 @@ final class CartItemDto extends Dto
             product_id: $array['product_id'],
             quantity: $array['quantity'],
             schemas: array_key_exists('schemas', $array) ? $array['schemas'] : [],
+            discounts: [],
         );
     }
 
@@ -44,5 +46,15 @@ final class CartItemDto extends Dto
     public function getSchemas(): array
     {
         return $this->schemas;
+    }
+
+    public function getDiscounts(): array
+    {
+        return $this->discounts;
+    }
+
+    public function addDiscount(string $id): void
+    {
+        $this->discounts[] = $id;
     }
 }
