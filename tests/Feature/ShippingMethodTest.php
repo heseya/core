@@ -477,6 +477,51 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testIndexBySalesChannelAndItems($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        /** @var SalesChannel $salesChannel */
+        $salesChannel = SalesChannel::factory()->create([
+            'activity' => SalesChannelActivityType::ACTIVE,
+            'status' => SalesChannelStatus::PUBLIC,
+        ]);
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'is_block_list_countries' => true,
+        ]);
+
+        $shippingMethodWithBlockList = ShippingMethod::factory()->create([
+            'public' => true,
+            'is_block_list_countries' => true,
+            'is_block_list_products' => true,
+        ]);
+
+        $salesChannel->shippingMethods()->attach($shippingMethod->getKey());
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $shippingMethod2 = ShippingMethod::factory()->create([
+            'public' => true,
+            'is_block_list_countries' => false,
+        ]);
+
+        $response = $this->actingAs($this->{$user})
+            ->json('GET', '/shipping-methods', ['sales_channel_id' => $salesChannel->getKey(), 'items' => [$product->getKey()]]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $shippingMethod->getKey()])
+            ->assertJsonMissing(['id' => $shippingMethodWithBlockList->getKey()])
+            ->assertJsonMissing(['id' => $this->shipping_method->getKey()])
+            ->assertJsonMissing(['id' => $shippingMethod2->getKey()]);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero.
      *
      * @dataProvider authProvider

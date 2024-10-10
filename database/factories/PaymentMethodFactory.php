@@ -33,7 +33,7 @@ class PaymentMethodFactory extends Factory
             'icon' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
             'url' => $this->faker->url,
             'type' => $this->faker->randomElement(PaymentMethodType::cases())->value,
-            'creates_default_payment' => $this->faker->boolean,
+            'creates_default_payment' => false,
         ];
     }
 

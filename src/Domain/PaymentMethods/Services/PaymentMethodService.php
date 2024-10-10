@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\PaymentMethods\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\User;
@@ -36,6 +37,11 @@ final class PaymentMethodService
      */
     public function index(PaymentMethodIndexDto $dto): Collection
     {
+        // TODO This is a reminder in case more payments meeting this condition are added in the future,
+        // as currently, there is only one such method, and the front displays transfer information for it based on this condition.
+        if (PaymentMethod::query()->where('creates_default_payment', '=', true)->where('type', '=', 'prepaid')->count() > 1) {
+            throw new ClientException(Exceptions::CLIENT_PAYMENT_METHOD_PREPAID_AND_DEFAULT_PAYMENT);
+        }
         $criteria = $dto->toArray();
 
         /** @var User|App $user */
