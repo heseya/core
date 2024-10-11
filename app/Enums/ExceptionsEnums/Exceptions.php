@@ -170,6 +170,8 @@ enum Exceptions: string
     public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = self::CLIENT_NO_ACCESS;
     public const CLIENT_PROVIDER_HAS_NO_CONFIG = self::CLIENT_PROVIDER_IS_NOT_ACTIVE;
 
+    public const CLIENT_PAYMENT_METHOD_PREPAID_AND_DEFAULT_PAYMENT = 'There is more than one prepaid payment method that creates default payments';
+
     public function getCode(): int
     {
         return match ($this) {
