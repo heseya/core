@@ -11,5 +11,7 @@ final class OrganizationIndexDto extends Data
 {
     public function __construct(
         public readonly bool|Optional $is_complete,
+        public readonly Optional|string $search,
+        public readonly Optional|string $sort,
     ) {}
 }
