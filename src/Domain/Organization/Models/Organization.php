@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Organization\Models;
 
+use App\Criteria\OrganizationSearch;
 use App\Enums\SavedAddressType;
 use App\Models\Address;
+use App\Models\Contracts\SortableContract;
 use App\Models\Model;
 use App\Models\User;
 use App\Traits\HasDiscountConditions;
+use App\Traits\Sortable;
 use Domain\Consent\Models\Consent;
 use Domain\Consent\Models\ConsentOrganization;
 use Domain\SalesChannel\Models\SalesChannel;
@@ -21,11 +24,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @mixin IdeHelperOrganization
  */
-final class Organization extends Model
+final class Organization extends Model implements SortableContract
 {
     use HasCriteria;
     use HasDiscountConditions;
     use HasFactory;
+    use Sortable;
 
     protected $fillable = [
         'id',
@@ -48,6 +52,15 @@ final class Organization extends Model
     /** @var string[] */
     protected array $criteria = [
         'is_complete',
+        'search' => OrganizationSearch::class,
+    ];
+
+    /** @var string[]  */
+    protected array $sortable = [
+        'id',
+        'created_at',
+        'billing_email',
+        'client_id',
     ];
 
     /**

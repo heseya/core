@@ -16,6 +16,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserPreference;
 use App\Models\WebHook;
+use Carbon\Carbon;
 use Domain\Consent\Enums\ConsentType;
 use Domain\Consent\Models\Consent;
 use Domain\Organization\Models\Organization;
@@ -90,6 +91,34 @@ class OrganizationTest extends TestCase
             ])
             ->assertJsonMissing([
                 'id' => $incompleteOrganization->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexIsSearch(string $user): void
+    {
+        $this->{$user}->givePermissionTo('organizations.show');
+
+        $searchedOrganization = Organization::factory()->create([
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'client_id' => 'SEARCHED_01',
+        ]);
+
+        $organization = Organization::factory()->create([
+            'client_id' => 'TEST_01',
+        ]);
+
+        $this->actingAs($this->{$user})
+            ->json('GET', '/organizations', ['search' => 'SEARCHED_01'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $searchedOrganization->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $organization->getKey(),
             ]);
     }
 

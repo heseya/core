@@ -32,7 +32,7 @@ final readonly class OrganizationRepository
      */
     public function index(OrganizationIndexDto $dto): LengthAwarePaginator
     {
-        return Organization::searchByCriteria($dto->toArray())->paginate(Config::get('pagination.per_page'));
+        return Organization::searchByCriteria($dto->toArray())->sort($dto->sort instanceof Optional ? 'created_at:desc' : $dto->sort)->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(OrganizationCreateDto $dto): Organization
