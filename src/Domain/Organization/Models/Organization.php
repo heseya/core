@@ -55,7 +55,7 @@ final class Organization extends Model implements SortableContract
         'search' => OrganizationSearch::class,
     ];
 
-    /** @var string[]  */
+    /** @var string[] */
     protected array $sortable = [
         'id',
         'created_at',
