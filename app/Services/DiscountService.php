@@ -315,13 +315,13 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap): Order
+    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap, BigDecimal $vatRate): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, $priceMap, [
             DiscountTargetType::PRODUCTS,
             DiscountTargetType::CHEAPEST_PRODUCT,
             DiscountTargetType::ORDER_VALUE,
-        ]);
+        ], $vatRate);
     }
 
     /**
@@ -333,11 +333,11 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap): Order
+    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap, BigDecimal $vatRate): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, $priceMap, [
             DiscountTargetType::SHIPPING_PRICE,
-        ]);
+        ], $vatRate);
     }
 
     /**
@@ -437,7 +437,7 @@ readonly class DiscountService
         foreach ($discounts as $discount) {
             if (
                 $this->checkDiscountTarget($discount, $cart)
-                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net, $vat_rate)
             ) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource, $priceMap);
                 if ($priceMap->is_net) {
@@ -478,7 +478,7 @@ readonly class DiscountService
         foreach ($discounts->filter(fn ($discount) => $discount->target_type === DiscountTargetType::SHIPPING_PRICE) as $discount) {
             if (
                 $this->checkShippingPriceTarget($discount, $cart)
-                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net)
+                && $this->checkConditionGroups($discount, $cart, $cartResource->cart_total->net, $vat_rate)
             ) {
                 $oldShipping = $cartResource->shipping_price;
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource, $priceMap);
@@ -928,6 +928,7 @@ readonly class DiscountService
         DiscountCondition $condition,
         Money $cartValue,
         ?CartOrderDto $dto = null,
+        ?BigDecimal $vatRate = null,
     ): bool {
         return match ($condition->type) {
             ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength() ?? 0),
@@ -938,7 +939,7 @@ readonly class DiscountService
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
-            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
+            ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue, $vatRate),
             ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
             ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
                 $condition,
@@ -956,9 +957,10 @@ readonly class DiscountService
         ConditionGroup $group,
         CartOrderDto $dto,
         Money $cartValue,
+        ?BigDecimal $vatRate = null,
     ): bool {
         foreach ($group->conditions as $condition) {
-            if (!$this->checkCondition($condition, $cartValue, $dto)) {
+            if (!$this->checkCondition($condition, $cartValue, $dto, $vatRate)) {
                 return false;
             }
         }
@@ -970,6 +972,7 @@ readonly class DiscountService
         Discount $discount,
         CartOrderDto $dto,
         Money $cartValue,
+        ?BigDecimal $vatRate = null,
     ): bool {
         if (!$discount->active) {
             return false;
@@ -980,7 +983,7 @@ readonly class DiscountService
         }
 
         foreach ($discount->conditionGroups as $conditionGroup) {
-            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue)) {
+            if ($this->checkConditionGroup($conditionGroup, $dto, $cartValue, $vatRate)) {
                 return true;
             }
         }
@@ -1206,7 +1209,7 @@ readonly class DiscountService
      * @throws UnknownCurrencyException
      * @throws ServerException
      */
-    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap, array $targetTypes = []): Order
+    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, PriceMap $priceMap, array $targetTypes = [], ?BigDecimal $vatRate = null): Order
     {
         $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
         $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
@@ -1214,7 +1217,7 @@ readonly class DiscountService
 
         /** @var Discount $discount */
         foreach ($discounts as $discount) {
-            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
+            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total, $vatRate)) {
                 $order = $this->applyDiscountOnOrder($discount, $order, $priceMap);
             } elseif (
                 ($discount->code === null && in_array($discount->getKey(), $sales))
@@ -1979,14 +1982,16 @@ readonly class DiscountService
      * @throws MathException
      * @throws MoneyMismatchException
      */
-    private function checkConditionOrderValue(DiscountCondition $condition, Money $cartValue): bool
+    private function checkConditionOrderValue(DiscountCondition $condition, Money $cartValue, ?BigDecimal $vatRate): bool
     {
         $conditionDto = OrderValueConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        // TODO uwzględnić przy sprawdzaniu podatki $conditionDto->isIncludeTaxes()
-
         $minValue = $conditionDto->getMinValueForCurrency($cartValue->getCurrency()->getCurrencyCode());
         $maxValue = $conditionDto->getMaxValueForCurrency($cartValue->getCurrency()->getCurrencyCode());
+
+        if ($conditionDto->isIncludeTaxes()) {
+            $cartValue = $this->salesChannelService->addVat($cartValue, $vatRate ?? BigDecimal::zero());
+        }
 
         if ($minValue !== null && $maxValue !== null) {
             return ($cartValue->isGreaterThanOrEqualTo($minValue->value) && $cartValue->isLessThanOrEqualTo(
