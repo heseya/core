@@ -1990,7 +1990,7 @@ readonly class DiscountService
         $maxValue = $conditionDto->getMaxValueForCurrency($cartValue->getCurrency()->getCurrencyCode());
 
         if ($conditionDto->isIncludeTaxes()) {
-            $cartValue = $this->salesChannelService->addVat($cartValue, $vatRate);
+            $cartValue = $this->salesChannelService->addVat($cartValue, $vatRate ?? BigDecimal::zero());
         }
 
         if ($minValue !== null && $maxValue !== null) {
