@@ -18,6 +18,7 @@ use App\Models\ConditionGroup;
 use App\Models\Country;
 use App\Models\Deposit;
 use App\Models\Discount;
+use App\Models\DiscountCondition;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
@@ -41,6 +42,7 @@ use Domain\Organization\Models\Organization;
 use Domain\PaymentMethods\Enums\PaymentMethodType;
 use Domain\PaymentMethods\Models\PaymentMethod;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Services\SchemaCrudService;
@@ -1413,6 +1415,194 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithCouponOrderValueNoVat($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'percentage' => '10',
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => true,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $saleChannel = SalesChannel::query()->where('default', '=', true)->first();
+        $saleChannel->update([
+            'vat_rate' => '20.0',
+        ]);
+
+        /** @var DiscountCondition $condition */
+        $condition = $conditionGroup->conditions()->create([
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "11.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "13.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'is_in_range' => true,
+                'include_taxes' => false,
+            ],
+        ]);
+
+        $condition->pricesMin()->create([
+            'value' => 1100,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'value' => 1300,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
+
+        $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $coupon->code,
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE->value,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithCouponOrderValueVat($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'percentage' => '10',
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => true,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $saleChannel = SalesChannel::query()->where('default', '=', true)->first();
+        $saleChannel->update([
+            'vat_rate' => '20.0',
+        ]);
+
+        /** @var DiscountCondition $condition */
+        $condition = $conditionGroup->conditions()->create([
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "11.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "13.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'is_in_range' => true,
+                'include_taxes' => true,
+            ],
+        ]);
+
+        $condition->pricesMin()->create([
+            'value' => 1100,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'value' => 1300,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero(Currency::DEFAULT->value),
+            'value' => Money::zero(Currency::DEFAULT->value),
+        ]);
+        $shippingMethod->priceRanges()->save($lowRange);
+
+        $this->actingAs($this->{$user})->json('POST', '/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $coupon->code,
+            ],
+            'payment_method_id' => $this->paymentMethod->getKey(),
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'discount_id' => $coupon->getKey(),
+                'code' => $coupon->code,
+                'applied_discount' => '1.20',
+            ]);
     }
 
     /**
