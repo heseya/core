@@ -12,8 +12,10 @@ use App\Http\Resources\Resource;
 use App\Traits\MetadataResource;
 use Brick\Money\Money;
 use Domain\PaymentMethods\Resources\PaymentMethodResource;
+use Domain\SalesChannel\SalesChannelService;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 /**
  * @property ShippingMethod $resource
@@ -27,12 +29,17 @@ final class ShippingMethodResource extends Resource
      */
     public function base(Request $request): array
     {
+        /** @var SalesChannelService $salesChannelService */
+        $salesChannelService = App::make(SalesChannelService::class);
+        $salesChannel = $salesChannelService->getCurrentRequestSalesChannel();
+        $varRate = $salesChannelService->getVatRate($salesChannel);
+
         return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'prices' => array_map(
                 fn (Money $price) => [
-                    'net' => $price->getAmount(),
+                    'net' => $salesChannelService->removeVat($price, $varRate)->getAmount(),
                     'gross' => $price->getAmount(),
                     'currency' => $price->getCurrency()->getCurrencyCode(),
                 ],
