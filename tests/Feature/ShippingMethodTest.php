@@ -453,11 +453,21 @@ class ShippingMethodTest extends TestCase
         $salesChannel = SalesChannel::factory()->create([
             'activity' => SalesChannelActivityType::ACTIVE,
             'status' => SalesChannelStatus::PUBLIC,
+            'vat_rate' => '25.0',
         ]);
+        /** @var ShippingMethod $shippingMethod */
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
             'is_block_list_countries' => true,
         ]);
+
+        $currency = Currency::DEFAULT->value;
+        $lowRange = PriceRange::query()->create([
+            'start' => Money::zero($currency),
+            'value' => Money::of('12.5', $currency),
+        ]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange]);
 
         $salesChannel->shippingMethods()->attach($shippingMethod->getKey());
 
@@ -466,12 +476,16 @@ class ShippingMethodTest extends TestCase
             'is_block_list_countries' => false,
         ]);
 
-        $response = $this->actingAs($this->{$user})
-            ->json('GET', '/shipping-methods', ['sales_channel_id' => $salesChannel->getKey()]);
-        $response
+        $this->actingAs($this->{$user})
+            ->json('GET', '/shipping-methods', ['sales_channel_id' => $salesChannel->getKey()], ['X-Sales-Channel' => $salesChannel->getKey()])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $shippingMethod->getKey()])
+            ->assertJsonFragment([
+                'net' => '10.00',
+                'gross' => '12.50',
+                'currency' => 'PLN',
+            ])
             ->assertJsonMissing(['id' => $this->shipping_method->getKey()])
             ->assertJsonMissing(['id' => $shippingMethod2->getKey()]);
     }
