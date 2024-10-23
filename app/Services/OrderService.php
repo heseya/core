@@ -284,7 +284,7 @@ final readonly class OrderService implements OrderServiceContract
                 $order->cart_total = $cartValueInitial;
 
                 // Apply discounts to order/products
-                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto, $priceMap);
+                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto, $priceMap, $vat_rate);
 
                 $shippingPrice = Money::zero($currency->value);
                 if ($shippingMethod !== null) {
@@ -299,7 +299,7 @@ final readonly class OrderService implements OrderServiceContract
                 $order->shipping_price = $shippingPrice;
 
                 // Apply discounts to order
-                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto, $priceMap);
+                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto, $priceMap, $vat_rate);
 
                 /** @var OrderProduct $orderProduct */
                 foreach ($order->products as $orderProduct) {

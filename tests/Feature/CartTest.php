@@ -10,6 +10,7 @@ use App\Enums\ValidationError;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
+use App\Models\DiscountCondition;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
@@ -25,10 +26,16 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
+use Domain\Price\Enums\DiscountConditionPriceType;
+use Domain\PriceMap\PriceMap;
 use Domain\ProductSchema\Models\Schema;
 use Domain\ProductSchema\Services\SchemaCrudService;
 use Domain\ProductSet\ProductSet;
+use Domain\SalesChannel\Dtos\SalesChannelCreateDto;
+use Domain\SalesChannel\Enums\SalesChannelActivityType;
+use Domain\SalesChannel\Enums\SalesChannelStatus;
 use Domain\SalesChannel\Models\SalesChannel;
+use Domain\SalesChannel\SalesChannelCrudService;
 use Domain\Setting\Models\Setting;
 use Domain\ShippingMethod\Models\ShippingMethod;
 use Heseya\Dto\DtoException;
@@ -4498,6 +4505,180 @@ class CartTest extends TestCase
                     'vat_rate' => '0.00',
                     'currency' => 'PLN',
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponWithOrderValueVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        /** @var Discount $coupon */
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+                'active' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $saleChannel = SalesChannel::query()->where('default', '=', true)->first();
+        $saleChannel->update([
+            'vat_rate' => '10.0',
+        ]);
+
+        /** @var DiscountCondition $condition */
+        $condition = $conditionGroup->conditions()->create([
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "4700.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "5100.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'is_in_range' => true,
+                'include_taxes' => true,
+            ],
+        ]);
+
+        $condition->pricesMin()->create([
+            'value' => 470000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'value' => 510000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => $saleChannel->getKey(),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [$coupon->code],
+            ]
+        )
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $coupon->name,
+                'value' => '460.00',
+                'code' => $coupon->code,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessCouponWithOrderValueNoVat(string $user): void
+    {
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        /** @var Discount $coupon */
+        $coupon = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'percentage' => '10.0',
+                'target_type' => DiscountTargetType::ORDER_VALUE,
+                'target_is_allow_list' => true,
+                'active' => true,
+            ]
+        );
+
+        $conditionGroup = ConditionGroup::create();
+
+        $saleChannel = SalesChannel::query()->where('default', '=', true)->first();
+        $saleChannel->update([
+            'vat_rate' => '10.0',
+        ]);
+
+        /** @var DiscountCondition $condition */
+        $condition = $conditionGroup->conditions()->create([
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "4700.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'max_values' => [
+                    [
+                        'currency' => $this->currency->value,
+                        'value' => "5100.00",
+                        'is_net' => true,
+                    ],
+                ],
+                'is_in_range' => true,
+                'include_taxes' => false,
+            ],
+        ]);
+
+        $condition->pricesMin()->create([
+            'value' => 470000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MIN->value,
+        ]);
+        $condition->pricesMax()->create([
+            'value' => 510000,
+            'currency' => Currency::PLN->value,
+            'price_type' => DiscountConditionPriceType::PRICE_MAX->value,
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $this->actingAs($this->{$user})->postJson(
+            '/cart/process',
+            [
+                'currency' => $this->currency,
+                'sales_channel_id' => $saleChannel->getKey(),
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                        'schemas' => [],
+                    ],
+                ],
+                'coupons' => [$coupon->code],
+            ]
+        )
+            ->assertOk()
+            ->assertJsonMissing([
+                'name' => $coupon->name,
+                'value' => '460.00',
+                'code' => $coupon->code,
             ]);
     }
 
