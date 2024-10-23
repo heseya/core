@@ -9,6 +9,7 @@ use Domain\Metadata\Enums\MetadataType;
 use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Ramsey\Uuid\Uuid;
 use Tests\TestCase;
@@ -1172,6 +1173,170 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testAddOptionExistingValueNumber(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::NUMBER,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => 10,
+            'name' => '10',
+            'index' => 1,
+            'value_date' => null,
+        ]);
+
+        $newOption = [
+            'translations' => [
+                $this->lang => [
+                    'name' => '10',
+                ],
+            ],
+            'published' => [
+                $this->lang,
+            ],
+            'value_number' => 10,
+            'value_date' => null,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $newOption)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $existingOption->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionExistingValueDate(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::DATE,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_date' => '2024-10-23',
+            'name' => '2024-10-23',
+            'index' => 1,
+            'value_number' => null,
+        ]);
+
+        $newOption = [
+            'translations' => [
+                $this->lang => [
+                    'name' => '10',
+                ],
+            ],
+            'published' => [
+                $this->lang,
+            ],
+            'value_number' => null,
+            'value_date' => '2024-10-23',
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $newOption)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $existingOption->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionExistingValueSingleOption(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_date' => null,
+            'name' => 'Test opcji',
+            'index' => 1,
+            'value_number' => null,
+        ]);
+
+        $newOption = [
+            'translations' => [
+                $this->lang => [
+                    'name' => '  Test   opcji   ',
+                ],
+            ],
+            'published' => [
+                $this->lang,
+            ],
+            'value_number' => null,
+            'value_date' => null,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $newOption)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $existingOption->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionExistingValueMultiOption(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::MULTI_CHOICE_OPTION,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_date' => null,
+            'name' => 'Test opcji',
+            'index' => 1,
+            'value_number' => null,
+        ]);
+
+        $newOption = [
+            'translations' => [
+                $this->lang => [
+                    'name' => '  Test   opcji  ',
+                ],
+            ],
+            'published' => [
+                $this->lang,
+            ],
+            'value_number' => null,
+            'value_date' => null,
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $newOption)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $existingOption->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateOption(string $user): void
     {
         $this->{$user}->givePermissionTo('attributes.edit');
@@ -1183,6 +1348,13 @@ class AttributeTest extends TestCase
             'attribute_id' => $this->option->attribute_id,
         ];
 
+        $en = Language::firstOrCreate([
+            'iso' => 'en',
+        ], [
+            'name' => 'English',
+            'default' => false,
+        ]);
+
         $this
             ->actingAs($this->{$user})
             ->json(
@@ -1190,8 +1362,8 @@ class AttributeTest extends TestCase
                 '/attributes/id:' . $this->attribute->getKey() . '/options/id:' . $this->option->getKey(),
                 array_merge([
                     'translations' => [
-                        $this->lang => [
-                            'name' => 'Test ' . $this->option->name,
+                        $en->getKey() => [
+                            'name' => 'TEST en',
                         ],
                     ],
                     'published' => [
@@ -1201,6 +1373,236 @@ class AttributeTest extends TestCase
             )
             ->assertOk()
             ->assertJsonFragment($optionUpdate);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionValueNumberName(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::NUMBER,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => 10,
+            'name' => '10',
+            'index' => 1,
+            'value_date' => null,
+        ]);
+
+        $optionUpdate = [
+            'id' => $existingOption->getKey(),
+            'value_number' => $existingOption->value_number,
+            'attribute_id' => $attribute->getKey(),
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $existingOption->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Option updated',
+                        ],
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertOk()
+            ->assertJsonFragment($optionUpdate);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionValueNumberNewValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::NUMBER,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => 10,
+            'name' => '10',
+            'index' => 1,
+            'value_date' => null,
+        ]);
+
+        $optionUpdate = [
+            'id' => $existingOption->getKey(),
+            'value_number' => $existingOption->value_number + 1,
+            'attribute_id' => $attribute->getKey(),
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $existingOption->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Option updated',
+                        ],
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertCreated()
+            ->assertJsonFragment(Arr::except($optionUpdate, ['id']))
+            ->assertJsonMissing(['id' => $existingOption->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionValueNumberAnotherOptionValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::NUMBER,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => 10,
+            'name' => '10',
+            'index' => 1,
+            'value_date' => null,
+        ]);
+
+        $anotherOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => 20,
+            'name' => '20',
+            'index' => 2,
+            'value_date' => null,
+        ]);
+
+        $optionUpdate = [
+            'id' => $existingOption->getKey(),
+            'value_number' => 20,
+            'attribute_id' => $attribute->getKey(),
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $existingOption->getKey(),
+                array_merge($optionUpdate)
+            )
+            ->assertOk()
+            ->assertJsonMissing([
+                'id' => $existingOption->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $anotherOption->getKey(),
+                'value_number' => 20,
+                'attribute_id' => $attribute->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionValueDateNewValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::DATE,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => null,
+            'name' => '2024-10-23',
+            'index' => 1,
+            'value_date' => '2024-10-23',
+        ]);
+
+        $optionUpdate = [
+            'id' => $existingOption->getKey(),
+            'value_date' => '2024-10-12',
+            'attribute_id' => $attribute->getKey(),
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $existingOption->getKey(),
+                array_merge([
+                    'translations' => [
+                        $this->lang => [
+                            'name' => 'Option updated',
+                        ],
+                    ],
+                ], $optionUpdate)
+            )
+            ->assertCreated()
+            ->assertJsonFragment(Arr::except($optionUpdate, ['id']))
+            ->assertJsonMissing(['id' => $existingOption->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionValueDateAnotherOptionValue(string $user): void
+    {
+        $this->{$user}->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::DATE,
+        ]);
+
+        $existingOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => null,
+            'name' => '2024-10-23',
+            'index' => 1,
+            'value_date' => '2024-10-23',
+        ]);
+
+        $anotherOption = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'value_number' => null,
+            'name' => '2024-10-12',
+            'index' => 2,
+            'value_date' => '2024-10-12',
+        ]);
+
+        $optionUpdate = [
+            'id' => $existingOption->getKey(),
+            'value_date' => '2024-10-12',
+            'attribute_id' => $attribute->getKey(),
+        ];
+
+        $this
+            ->actingAs($this->{$user})
+            ->json(
+                'PATCH',
+                '/attributes/id:' . $attribute->getKey() . '/options/id:' . $existingOption->getKey(),
+                array_merge($optionUpdate)
+            )
+            ->assertOk()
+            ->assertJsonMissing([
+                'id' => $existingOption->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $anotherOption->getKey(),
+                'value_date' => '2024-10-12',
+                'attribute_id' => $attribute->getKey(),
+            ]);
     }
 
     /**
