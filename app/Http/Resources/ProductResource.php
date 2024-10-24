@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 /**
  * @property Product $resource
@@ -27,7 +26,6 @@ class ProductResource extends ProductWithoutSalesResource
 
     public function index(Request $request): array
     {
-        Log::debug($this->resource->toArray());
         return [
             'attributes' => ($request->filled('attribute_slug') || $this->resource->relationLoaded('productAttributes'))
                 ? ProductAttributeShortResource::collection(

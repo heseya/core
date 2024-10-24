@@ -30,7 +30,6 @@ use Heseya\Dto\DtoException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -53,11 +52,6 @@ final class ProductController extends Controller
         $products = $this->productService->search(
             ProductSearchDto::from($request),
         );
-
-        foreach ($products as $product) {
-            Log::debug($product->getKey());
-            Log::debug($product->title_words_relevancy);
-        }
 
         /** @var ResourceCollection $products */
         $products = ProductResource::collection($products);
