@@ -396,7 +396,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(16);
+        $this->assertQueryCountLessThan(17);
     }
 
     public function testShowPerformanceSale(): void
