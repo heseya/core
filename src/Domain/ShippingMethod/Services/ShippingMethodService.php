@@ -37,6 +37,7 @@ final readonly class ShippingMethodService implements ShippingMethodServiceContr
             'ids',
             'items',
             'sales_channel_id',
+            'search',
         )->toArray();
 
         $query = ShippingMethod::query()

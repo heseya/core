@@ -7,6 +7,7 @@ namespace Domain\ShippingMethod\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ShippingMethodItems;
+use App\Criteria\WhereHasNameLike;
 use App\Criteria\WhereHasSalesChannel;
 use App\Criteria\WhereInIds;
 use App\Enums\ShippingType;
@@ -85,6 +86,7 @@ final class ShippingMethod extends Model
         'ids' => WhereInIds::class,
         'items' => ShippingMethodItems::class,
         'sales_channel_id' => WhereHasSalesChannel::class,
+        'search' => WhereHasNameLike::class,
     ];
 
     /**

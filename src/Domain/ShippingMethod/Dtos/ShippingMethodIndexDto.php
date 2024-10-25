@@ -37,6 +37,7 @@ final class ShippingMethodIndexDto extends Data
         public array|Optional $metadata_private,
         #[Uuid, Exists('sales_channels', 'id')]
         public Optional|string $sales_channel_id,
+        public Optional|string $search,
         #[ArrayType]
         public array $items = [],
     ) {}

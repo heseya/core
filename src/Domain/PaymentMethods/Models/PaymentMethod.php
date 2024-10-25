@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\PaymentMethods\Models;
 
+use App\Criteria\WhereHasNameLike;
 use App\Criteria\WhereHasOrderWithCode;
 use App\Criteria\WhereHasSalesChannel;
 use App\Criteria\WhereHasShippingMethod;
@@ -56,6 +57,7 @@ final class PaymentMethod extends Model
         'alias',
         'ids' => WhereInIds::class,
         'sales_channel_id' => WhereHasSalesChannel::class,
+        'search' => WhereHasNameLike::class,
     ];
 
     /**

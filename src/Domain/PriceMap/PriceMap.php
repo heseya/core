@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\PriceMap;
 
+use App\Criteria\WhereHasNameLike;
 use App\Models\Model;
 use Domain\Currency\Currency;
 use Domain\PriceMap\Resources\PriceMapData;
 use Domain\SalesChannel\Models\SalesChannel;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\LaravelData\WithData;
@@ -17,6 +19,7 @@ use Spatie\LaravelData\WithData;
  */
 final class PriceMap extends Model
 {
+    use HasCriteria;
     use HasFactory;
     /**
      * @use WithData<PriceMapData>
@@ -36,6 +39,11 @@ final class PriceMap extends Model
         'currency' => Currency::class,
         'is_net' => 'bool',
         'prices_generated' => 'bool',
+    ];
+
+    /** @var string[] */
+    protected array $criteria = [
+        'search' => WhereHasNameLike::class,
     ];
 
     /**

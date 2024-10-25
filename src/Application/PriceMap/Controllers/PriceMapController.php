@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Application\PriceMap\Requests\PriceMapListPricesRequest;
 use Domain\PriceMap\Dtos\PriceMapCreateDto;
+use Domain\PriceMap\Dtos\PriceMapIndexDto;
 use Domain\PriceMap\Dtos\PriceMapPricesUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapProductPricesUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapSchemaPricesUpdateDto;
@@ -28,9 +29,9 @@ final class PriceMapController extends Controller
         private PriceMapService $priceMapService,
     ) {}
 
-    public function index(Request $request): HttpResponse
+    public function index(Request $request, PriceMapIndexDto $dto): HttpResponse
     {
-        return $this->priceMapService->list()->toResponse($request);
+        return $this->priceMapService->list($dto)->toResponse($request);
     }
 
     public function store(Request $request, PriceMapCreateDto $dto): HttpResponse

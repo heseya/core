@@ -60,6 +60,20 @@ class PaymentMethodTest extends TestCase
     {
         $this->{$user}->givePermissionTo('payment_methods.show');
 
+        $response = $this->actingAs($this->{$user})->json('GET', '/payment-methods', ['search' => $this->payment_method->name]);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $this->payment_method->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
+    {
+        $this->{$user}->givePermissionTo('payment_methods.show');
+
         $response = $this->actingAs($this->{$user})->getJson('/payment-methods');
         $response
             ->assertOk()
