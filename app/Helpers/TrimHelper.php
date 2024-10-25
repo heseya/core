@@ -16,14 +16,14 @@ class TrimHelper
     }
 
     /**
-     * @param array<int|string, string> $array
+     * @param array<int|string, string|null> $array
      *
-     * @return array<int|string, string>
+     * @return array<int|string, string|null>
      */
     public static function trimArrayValues(array $array, ?string $charlist = null): array
     {
         foreach ($array as $key => $value) {
-            $array[$key] = self::trim($value, $charlist);
+            $array[$key] = $value ? self::trim($value, $charlist) : $value;
         }
 
         return $array;
