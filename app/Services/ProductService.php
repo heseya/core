@@ -211,12 +211,12 @@ final readonly class ProductService
         $price_base = ProductCachedPriceDto::from($this->priceMapService->getOrCreateMappedPriceForPriceMap($product, $priceMap), $salesChannel);
         $price_minimal = $product->getCachedMinPriceForSalesChannel($salesChannel);
 
+        $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
         if (!empty($schemas) || $price_minimal === null) {
-            $sales = $this->discountService->getAllAplicableSalesForProduct($product, $this->discountService->getSalesWithBlockList(), $calculateForCurrentUser);
             $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel, $schemas);
             $price_initial = $this->discountService->calcAllDiscountsOnProductVariant($product, collect(), $salesChannel, $schemas);
         } else {
-            $price = ProductCachedPriceDto::from($price_minimal, $salesChannel);
+            $price = $this->discountService->calcAllDiscountsOnProductVariant($product, $sales, $salesChannel);
             $price_initial = $price_base;
         }
 

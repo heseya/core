@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\PriceMap;
 
+use App\Enums\DiscountTargetType;
+use App\Models\Discount;
 use App\Models\Option;
 use App\Models\Product;
 use App\Services\ProductService;
@@ -11,6 +13,7 @@ use Domain\PriceMap\PriceMap;
 use Domain\PriceMap\PriceMapProductPrice;
 use Domain\PriceMap\PriceMapService;
 use Domain\ProductSchema\Models\Schema;
+use Domain\ProductSet\ProductSet;
 use Domain\SalesChannel\Dtos\SalesChannelUpdateDto;
 use Domain\SalesChannel\SalesChannelRepository;
 use Illuminate\Support\Facades\App;
@@ -315,6 +318,63 @@ class PriceMapPricesTest extends TestCase
                 'price' => [
                     'net' => '224.00', // 101 + 123
                     'gross' => '224.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProcessSingleWithSale(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+        $this->{$user}->givePermissionTo('cart.verify');
+
+        $salesChannel = app(SalesChannelRepository::class)->getDefault();
+
+        $this->priceMapService->updateOptionPricesForDefaultMaps($this->option1a, FakeDto::generatePricesInAllCurrencies([], 123));
+
+        /** @var Discount $sale */
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'percentage' => '10.00',
+        ]);
+
+        $setWithoutSale = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $sale->productSets()->attach($setWithoutSale->getKey());
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products/id:' . $this->product1->getKey() . '/process');
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'price_base' => [
+                    'net' => '101.00',
+                    'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ])
+            ->assertJsonFragment([
+                'price_initial' => [
+                    'net' => '101.00',
+                    'gross' => '101.00',
+                    'currency' => 'PLN',
+                    'sales_channel_id' => $salesChannel->getKey(),
+                ]
+            ])
+            ->assertJsonFragment([
+                'price' => [
+                    'net' => '90.90',
+                    'gross' => '90.90',
                     'currency' => 'PLN',
                     'sales_channel_id' => $salesChannel->getKey(),
                 ]
