@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\ProductAttribute\Repositories;
 
+use App\Helpers\TrimHelper;
 use Domain\Language\LanguageService;
 use Domain\ProductAttribute\Dtos\AttributeOptionDto;
 use Domain\ProductAttribute\Enums\AttributeType;
@@ -34,8 +35,9 @@ final readonly class AttributeOptionRepository
             /** @var string $defaultLanguage */
             $defaultLanguage = App::make(LanguageService::class)->defaultLanguage()->getKey();
 
-            if (array_key_exists($defaultLanguage, $dto->translations) && isset($dto->translations[$defaultLanguage]['name'])) {
-                $value = '%"' . $defaultLanguage . '":"' . preg_replace('/\s+/', ' ', $dto->translations[$defaultLanguage]['name']) . '"%';
+            $name = Arr::get($dto->translations, $defaultLanguage . '.name');
+            if ($name) {
+                $value = '%"' . $defaultLanguage . '":"' . TrimHelper::trim($name) . '"%';
                 $query->where('name', 'like', $value);
             }
         }
@@ -60,7 +62,7 @@ final readonly class AttributeOptionRepository
 
         if ($dto->translations) {
             foreach ($dto->translations as $lang => $translation) {
-                $attributeOption->setLocale($lang)->fill($this->trimSpaces($translation));
+                $attributeOption->setLocale($lang)->fill(TrimHelper::trimArrayValues($translation));
             }
         }
 
@@ -73,7 +75,7 @@ final readonly class AttributeOptionRepository
     {
         if ($dto->translations) {
             foreach ($dto->translations as $lang => $translation) {
-                $attributeOption->setLocale($lang)->fill($this->trimSpaces($translation));
+                $attributeOption->setLocale($lang)->fill(TrimHelper::trimArrayValues($translation));
             }
         }
 
@@ -81,19 +83,5 @@ final readonly class AttributeOptionRepository
         $attributeOption->save();
 
         return $attributeOption;
-    }
-
-    /**
-     * @param array<string, string> $translation
-     *
-     * @return array<string, string>
-     */
-    private function trimSpaces(array $translation): array
-    {
-        foreach ($translation as $key => $value) {
-            $translation[$key] = preg_replace('/\s+/', ' ', $value) ?? '';
-        }
-
-        return $translation;
     }
 }

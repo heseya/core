@@ -13,6 +13,7 @@ use Domain\ProductAttribute\Enums\AttributeType;
 use Domain\ProductAttribute\Models\Attribute;
 use Domain\ProductAttribute\Models\AttributeOption;
 use Domain\ProductAttribute\Repositories\AttributeOptionRepository;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Spatie\LaravelData\Optional;
 
@@ -105,10 +106,6 @@ final readonly class AttributeOptionService
         /** @var string $defaultLanguage */
         $defaultLanguage = App::make(LanguageService::class)->defaultLanguage()->getKey();
 
-        if ($translations && array_key_exists($defaultLanguage, $translations)) {
-            return isset($translations[$defaultLanguage]['name']) && $name !== $translations[$defaultLanguage]['name'];
-        }
-
-        return false;
+        return Arr::get($translations ?? [], $defaultLanguage . '.name', $name) !== $name;
     }
 }
