@@ -65,7 +65,7 @@ final class AttributeOptionController extends Controller
             $dto->id = $option->getKey();
         }
 
-        $attributeOption = $this->attributeOptionService->updateOrCreate($dto);
+        $attributeOption = $this->attributeOptionService->updateOrCreate($dto, $attribute, $option);
 
         return AttributeOptionResource::make($attributeOption);
     }
