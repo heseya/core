@@ -141,6 +141,26 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearch($user): void
+    {
+        $this->{$user}->givePermissionTo('shipping_methods.show');
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'name' => 'Searched value',
+        ]);
+
+        $this->actingAs($this->{$user})->json('GET', '/shipping-methods', ['search' => 'Searched value'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $shippingMethod->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexBlocklistProductsAndSets($user): void
     {
         $this->{$user}->givePermissionTo('shipping_methods.show');

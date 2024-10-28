@@ -34,6 +34,18 @@ class PriceMapTest extends TestCase
         $response->assertOk()->assertJsonCount(1 + count(Currency::cases()), 'data');
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch(string $user): void
+    {
+        $this->{$user}->givePermissionTo('price-maps.show');
+
+        $response = $this->actingAs($this->{$user})->json('GET', '/price-maps', ['search' => $this->priceMap->name]);
+
+        $response->assertOk()->assertJsonCount(1, 'data');
+    }
+
     public function testCreateUnauthorized(): void
     {
         $this

@@ -13,6 +13,7 @@ use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Price\Dtos\PriceDto;
 use Domain\PriceMap\Dtos\PriceMapCreateDto;
+use Domain\PriceMap\Dtos\PriceMapIndexDto;
 use Domain\PriceMap\Dtos\PriceMapPricesUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapPriceUpdateDto;
 use Domain\PriceMap\Dtos\PriceMapProductPricesUpdateDto;
@@ -53,9 +54,9 @@ final readonly class PriceMapService
     /**
      * @return PaginatedDataCollection<int|string,PriceMapData>
      */
-    public function list(): PaginatedDataCollection
+    public function list(PriceMapIndexDto $dto): PaginatedDataCollection
     {
-        return PriceMapData::collection(PriceMap::query()->paginate(Config::get('pagination.per_page')));
+        return PriceMapData::collection(PriceMap::searchByCriteria($dto->toArray())->paginate(Config::get('pagination.per_page')));
     }
 
     public function create(PriceMapCreateDto $dto): PriceMap
