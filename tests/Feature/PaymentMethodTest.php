@@ -60,6 +60,10 @@ class PaymentMethodTest extends TestCase
     {
         $this->{$user}->givePermissionTo('payment_methods.show');
 
+        $this->payment_method->update([
+            'name' => 'Searched value',
+        ]);
+
         $response = $this->actingAs($this->{$user})->json('GET', '/payment-methods', ['search' => $this->payment_method->name]);
         $response
             ->assertOk()
