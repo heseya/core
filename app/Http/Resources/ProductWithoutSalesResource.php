@@ -61,6 +61,7 @@ class ProductWithoutSalesResource extends Resource
             'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
             'description_html' => $this->when($request->boolean('with_description'), $this->resource->description_html),
             'gallery' => $this->when($request->boolean('with_gallery'), MediaResource::collection($this->resource->media)),
+            'published' => $this->resource->published,
         ];
 
         return array_merge(

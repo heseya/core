@@ -238,6 +238,9 @@ class ProductTest extends TestCase
             'metadata' => [
                 $metadata->name => $metadata->value,
             ],
+            'published' => [
+                $this->lang,
+            ],
         ]);
 
         $this->saleProduct = Product::factory()->create([

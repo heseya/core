@@ -10,13 +10,6 @@ use Illuminate\Http\Request;
  */
 class ProductResource extends ProductWithoutSalesResource
 {
-    public function base(Request $request): array
-    {
-        return array_merge(parent::base($request), [
-            'published' => $this->resource->published,
-        ]);
-    }
-
     public function view(Request $request): array
     {
         return array_merge(parent::view($request), [
