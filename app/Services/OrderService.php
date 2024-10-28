@@ -179,7 +179,7 @@ final readonly class OrderService implements OrderServiceContract
             /** @var Order $order */
             $order = Order::query()->create(
                 [
-                    'code' => $this->nameService->generate(),
+                    'code' => $this->generateUniqueOrderCode(),
                     'currency' => $currency->value,
                     'shipping_price_initial' => Money::zero($currency->value),
                     'shipping_price' => Money::zero($currency->value),
@@ -691,5 +691,14 @@ final readonly class OrderService implements OrderServiceContract
             ShippingType::POINT_EXTERNAL => $shippingPlace,
             default => null,
         };
+    }
+
+    private function generateUniqueOrderCode(): string
+    {
+        do {
+            $code = $this->nameService->generate();
+        } while (Order::query()->where('code', '=', $code)->exists());
+
+        return $code;
     }
 }

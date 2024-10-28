@@ -25,6 +25,7 @@ class NameService implements NameServiceContract
 
         return $this->render($pattern, [
             'r' => Str::of(Str::random())->upper(),
+            'n' => $this->generateRandomDigits(),
 
             'year' => date('Y'),
             'month' => date('n'),
@@ -91,5 +92,10 @@ class NameService implements NameServiceContract
         }
 
         return $number;
+    }
+
+    private function generateRandomDigits(int $count = 3, int $min = 10000, int $max = 99999): string
+    {
+        return implode('', array_map(fn () => mt_rand($min, $max), range(1, $count)));
     }
 }
