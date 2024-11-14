@@ -44,6 +44,7 @@ use App\Traits\ModifyLangFallback;
 use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
+use Domain\Currency\Currency;
 use Domain\Order\Resources\OrderResource;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
@@ -51,6 +52,7 @@ use Domain\ShippingMethod\Models\ShippingMethod;
 use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App as AppSupport;
@@ -176,26 +178,7 @@ final readonly class OrderService implements OrderServiceContract
             /** @var User|App $buyer */
             $buyer = Auth::user();
 
-            /** @var Order $order */
-            $order = Order::query()->create(
-                [
-                    'code' => $this->generateUniqueOrderCode(),
-                    'currency' => $currency->value,
-                    'shipping_price_initial' => Money::zero($currency->value),
-                    'shipping_price' => Money::zero($currency->value),
-                    'cart_total_initial' => Money::zero($currency->value),
-                    'cart_total' => Money::zero($currency->value),
-                    'summary' => Money::zero($currency->value),
-                    'status_id' => $status->getKey(),
-                    'shipping_address_id' => $shippingAddressId,
-                    'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
-                    'buyer_id' => $buyer->getKey(),
-                    'buyer_type' => $buyer->getMorphClass(),
-                    'invoice_requested' => $getInvoiceRequested,
-                    'shipping_place' => $shippingPlace,
-                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
-                ] + $dto->toArray(),
-            );
+            $order = $this->createOrder($currency, $status, $shippingAddressId, $buyer, $getInvoiceRequested, $shippingPlace, $dto, $shippingMethod, $digitalShippingMethod, $billingAddress ?? null);
 
             // Add products to order
             $cartValueInitial = Money::zero($currency->value);
@@ -693,12 +676,34 @@ final readonly class OrderService implements OrderServiceContract
         };
     }
 
-    private function generateUniqueOrderCode(): string
+    private function createOrder(Currency $currency, Status $status, string|null $shippingAddressId, App|User $buyer, bool $getInvoiceRequested, AddressDto|Missing|string|null $shippingPlace, OrderDto $dto, ShippingMethod|null $shippingMethod, ShippingMethod|null $digitalShippingMethod, Address|null $billingAddress): Order
     {
-        do {
-            $code = $this->nameService->generate();
-        } while (Order::query()->where('code', '=', $code)->exists());
-
-        return $code;
+        try {
+            // @var Order $order
+            return Order::query()->create(
+                [
+                    'code' => $this->nameService->generate(),
+                    'currency' => $currency->value,
+                    'shipping_price_initial' => Money::zero($currency->value),
+                    'shipping_price' => Money::zero($currency->value),
+                    'cart_total_initial' => Money::zero($currency->value),
+                    'cart_total' => Money::zero($currency->value),
+                    'summary' => Money::zero($currency->value),
+                    'status_id' => $status->getKey(),
+                    'shipping_address_id' => $shippingAddressId,
+                    'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
+                    'buyer_id' => $buyer->getKey(),
+                    'buyer_type' => $buyer->getMorphClass(),
+                    'invoice_requested' => $getInvoiceRequested,
+                    'shipping_place' => $shippingPlace,
+                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type ?? null,
+                ] + $dto->toArray(),
+            );
+        } catch (QueryException $queryException) {
+            if ($queryException->getCode() === '23000' && is_array($queryException->errorInfo) && $queryException->errorInfo[1] === 1062) {
+                return $this->createOrder($currency, $status, $shippingAddressId, $buyer, $getInvoiceRequested, $shippingPlace, $dto, $shippingMethod, $digitalShippingMethod, $billingAddress);
+            }
+            throw $queryException;
+        }
     }
 }
