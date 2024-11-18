@@ -6,7 +6,6 @@ namespace Domain\Order\Resources;
 
 use App\Http\Resources\Resource;
 use App\Models\Order;
-use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 /**
@@ -14,14 +13,12 @@ use Illuminate\Http\Request;
  */
 final class OrderPublicResource extends Resource
 {
-    use MetadataResource;
-
     /**
      * @return array<string, mixed>
      */
     public function base(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'status' => OrderStatusResource::make($this->resource->status),
@@ -38,6 +35,6 @@ final class OrderPublicResource extends Resource
             'created_at' => $this->resource->created_at,
             'sales_channel' => OrderSalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
-        ], $this->metadataResource('orders.show_metadata_private'));
+        ];
     }
 }

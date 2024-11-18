@@ -39,6 +39,7 @@ use Domain\Order\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -78,6 +79,10 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
+        if (!Auth::user() || !Auth::user()->can('orders.show_details')) {
+            return OrderPublicResource::make($order);
+        }
+
         $order->load([
             'products.urls',
             'products.schemas',
