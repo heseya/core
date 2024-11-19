@@ -38,11 +38,13 @@ use Domain\Order\Resources\OrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderController extends Controller
 {
@@ -79,6 +81,10 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
+        if (!Auth::user() || !Auth::user()->can('orders.show_details')) {
+            return OrderPublicResource::make($order);
+        }
+
         $order->load([
             'products.urls',
             'products.schemas',
@@ -101,6 +107,10 @@ class OrderController extends Controller
 
     public function showPublic(Order $order): JsonResource
     {
+        if (!config('orders.enable_order_public')) {
+            throw new NotFoundHttpException();
+        }
+
         return OrderPublicResource::make($order);
     }
 
