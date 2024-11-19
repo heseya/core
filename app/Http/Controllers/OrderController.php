@@ -44,6 +44,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class OrderController extends Controller
 {
@@ -105,6 +106,10 @@ class OrderController extends Controller
 
     public function showPublic(Order $order): JsonResource
     {
+        if (!config('orders.enable_order_public')) {
+            throw new NotFoundHttpException();
+        }
+
         return OrderPublicResource::make($order);
     }
 
