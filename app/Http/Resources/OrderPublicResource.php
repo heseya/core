@@ -18,7 +18,7 @@ class OrderPublicResource extends Resource
 
     public function base(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'status' => OrderStatusResource::make($this->resource->status),
@@ -35,6 +35,6 @@ class OrderPublicResource extends Resource
             'created_at' => $this->resource->created_at,
             'sales_channel' => SalesChannelResource::make($this->resource->salesChannel),
             'language' => $this->resource->language,
-        ], $this->metadataResource('orders.show_metadata_private'));
+        ];
     }
 }
