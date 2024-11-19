@@ -29,7 +29,7 @@ Route::prefix('orders')->group(function (): void {
     });
 
     Route::get('id:{order:id}', [OrderController::class, 'show'])
-        ->middleware('can:orders.show_details');
+        ->middleware('permission:orders.show_details|orders.show_summary');
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
@@ -42,6 +42,7 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::post('id:{order:id}/send-urls', [OrderController::class, 'sendUrls'])
         ->middleware('can:orders.show_details');
+    /** @deprecated  */
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary');
 
