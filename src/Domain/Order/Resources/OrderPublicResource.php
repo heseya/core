@@ -6,7 +6,6 @@ namespace Domain\Order\Resources;
 
 use App\Http\Resources\Resource;
 use App\Models\Order;
-use App\Traits\MetadataResource;
 use Domain\Order\Dtos\OrderPriceDto;
 use Illuminate\Http\Request;
 
@@ -15,14 +14,12 @@ use Illuminate\Http\Request;
  */
 final class OrderPublicResource extends Resource
 {
-    use MetadataResource;
-
     /**
      * @return array<string, mixed>
      */
     public function base(Request $request): array
     {
-        return array_merge([
+        return [
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'status' => OrderStatusResource::make($this->resource->status),
@@ -41,6 +38,6 @@ final class OrderPublicResource extends Resource
             'language' => $this->resource->language,
             'payment_method_type' => $this->resource->payment_method_type,
             'vat_rate' => $this->resource->vat_rate,
-        ], $this->metadataResource('orders.show_metadata_private'));
+        ];
     }
 }
