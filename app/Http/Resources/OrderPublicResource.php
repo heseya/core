@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Order;
-use App\Traits\MetadataResource;
 use Domain\Order\Resources\OrderStatusResource;
 use Domain\SalesChannel\Resources\SalesChannelResource;
 use Domain\ShippingMethod\Resources\ShippingMethodResource;
@@ -14,8 +13,6 @@ use Illuminate\Http\Request;
  */
 class OrderPublicResource extends Resource
 {
-    use MetadataResource;
-
     public function base(Request $request): array
     {
         return [
