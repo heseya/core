@@ -71,6 +71,8 @@ final class ProductCreateDto extends Data
         public array $translations,
         public array $published,
         public Optional|ProductBannerMediaCreateDto|null $banner,
+        public Optional|null|string $manufacturer_id,
+        public Optional|null|string $safety_information,
     ) {
         $this->metadata_computed = Map::toMetadata($metadata_public, $metadata_private);
     }

@@ -36,7 +36,7 @@ final class AddressUpdateDto extends Data
      */
     public static function rules(ValidationContext $context): array
     {
-        if (Str::contains(request()->url(), 'billing-addresses')) {
+        if (Str::contains(request()->url(), ['billing-addresses', 'manufacturers'])) {
             return [
                 'name' => ['string', 'max:255'],
             ];

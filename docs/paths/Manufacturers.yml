@@ -1,0 +1,106 @@
+Manufacturers:
+  get:
+    tags:
+      - Manufacturers
+    parameters:
+      - name: search
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  post:
+    tags:
+      - Manufacturers
+    security:
+      - BearerAuth: [ manufacturers.add ]
+    requestBody:
+      $ref: ./../requests/Manufacturers.yml#/ManufacturerDto
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+
+ManufacturersParams:
+  get:
+    tags:
+      - Manufacturers
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  patch:
+    tags:
+      - Manufacturers
+    security:
+      - BearerAuth: [ manufacturers.edit ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      $ref: ./../requests/Manufacturers.yml#/ManufacturerDto
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: ./../schemas/SalesChannel.yml#/SalesChannel
+  delete:
+    tags:
+      - Manufacturers
+    security:
+      - BearerAuth: [ manufacturers.remove ]
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      204:
+        description: Deleted
