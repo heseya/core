@@ -27,8 +27,6 @@ final class ManufacturerCreateDto extends Data
     ) {}
 
     /**
-     * @param ValidationContext $context
-     *
      * @return array<string, string[]>
      */
     public static function rules(ValidationContext $context): array

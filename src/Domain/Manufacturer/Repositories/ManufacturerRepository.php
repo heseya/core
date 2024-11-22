@@ -9,7 +9,6 @@ use Domain\Manufacturer\Dtos\ManufacturerCreateDto;
 use Domain\Manufacturer\Dtos\ManufacturerIndexDto;
 use Domain\Manufacturer\Dtos\ManufacturerUpdateDto;
 use Domain\Manufacturer\Models\Manufacturer;
-use Domain\User\Dtos\AddressStoreDto;
 use Domain\User\Dtos\AddressUpdateDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
