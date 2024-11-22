@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Manufacturer\Repositories;
 
 use App\Models\Address;
@@ -8,10 +10,11 @@ use Domain\Manufacturer\Dtos\ManufacturerIndexDto;
 use Domain\Manufacturer\Dtos\ManufacturerUpdateDto;
 use Domain\Manufacturer\Models\Manufacturer;
 use Domain\User\Dtos\AddressStoreDto;
+use Domain\User\Dtos\AddressUpdateDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 
-class ManufacturerRepository
+final class ManufacturerRepository
 {
     /**
      * @return LengthAwarePaginator<Manufacturer>
@@ -28,9 +31,9 @@ class ManufacturerRepository
         return Manufacturer::query()->create(array_merge($dto->toArray(), ['address_id' => $address->getKey()]));
     }
 
-    public function update(Manufacturer $manufacturer, ManufacturerUpdateDto $dto)
+    public function update(Manufacturer $manufacturer, ManufacturerUpdateDto $dto): Manufacturer
     {
-        if ($dto->address instanceof AddressStoreDto) {
+        if ($dto->address instanceof AddressUpdateDto) {
             $manufacturer->address()->update($dto->address->toArray());
         }
 

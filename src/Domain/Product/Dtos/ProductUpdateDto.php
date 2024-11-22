@@ -60,8 +60,8 @@ final class ProductUpdateDto extends Data
         public array|Optional $translations,
         public array|Optional $published,
         public Optional|ProductBannerMediaUpdateDto|null $banner,
-        public Optional|null|string $manufacturer_id,
-        public Optional|null|string $safety_information,
+        public Optional|string|null $manufacturer_id,
+        public Optional|string|null $safety_information,
     ) {
         $this->metadata_computed = new Optional();
     }

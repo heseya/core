@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Domain\Manufacturer\Models;
 
 use App\Models\Address;
@@ -11,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Manufacturer extends Model
+final class Manufacturer extends Model
 {
     use HasCriteria;
     use HasFactory;
