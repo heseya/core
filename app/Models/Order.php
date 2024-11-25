@@ -11,6 +11,8 @@ use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereUpdatedAfter;
+use App\Criteria\WhereUpdatedBefore;
 use App\Enums\PaymentStatus;
 use App\Enums\ShippingType;
 use App\Models\Contracts\SortableContract;
@@ -88,6 +90,8 @@ final class Order extends Model implements SortableContract
         'paid',
         'from' => WhereCreatedAfter::class,
         'to' => WhereCreatedBefore::class,
+        'updated_from' => WhereUpdatedAfter::class,
+        'updated_to' => WhereUpdatedBefore::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'ids' => WhereInIds::class,

@@ -548,6 +548,42 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearchByUpdatedFrom($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $from = $this->order->updated_at;
+
+        Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => Carbon::yesterday(),
+        ])->create();
+
+        $order2 = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/orders', [
+                'updated_from' => $from,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSearchByTo($user): void
     {
         $this->{$user}->givePermissionTo('orders.show');
@@ -572,6 +608,42 @@ class OrderTest extends TestCase
             ->actingAs($this->{$user})
             ->json('GET', '/orders', [
                 'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order1->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByUpdatedTo($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $to = $this->order->updated_at;
+
+        $order1 = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => Carbon::yesterday(),
+        ])->create();
+
+        Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/orders', [
+                'updated_to' => $to,
             ]);
 
         $response
@@ -620,6 +692,53 @@ class OrderTest extends TestCase
             ->json('GET', '/orders', [
                 'from' => $from,
                 'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $order->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByUpdatedFromUpdatedTo($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $now = Carbon::create(2020, 02, 02, 10);
+
+        $this->travelTo($now);
+
+        $from = $now->subHour();
+        $to = $now->addHour();
+
+        Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => $now->subDay(),
+        ])->create();
+
+        Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => $now->addDay(),
+        ])->create();
+
+        $order = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'updated_at' => $now->subMinutes(30),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/orders', [
+                'updated_from' => $from,
+                'updated_to' => $to,
             ]);
 
         $response
