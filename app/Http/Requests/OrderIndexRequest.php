@@ -20,6 +20,8 @@ class OrderIndexRequest extends FormRequest
             'paid' => ['sometimes', 'boolean'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'updated_from' => ['nullable', 'date'],
+            'updated_to' => ['nullable', 'date', 'after_or_equal:updated_from'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
             'ids' => ['array'],

@@ -47,6 +47,18 @@ Orders:
         schema:
           type: string
           format: date-time
+      - name: updated_from
+        in: query
+        description: 'Date datetime updated from'
+        schema:
+          type: string
+          format: date-time
+      - name: updated_to
+        in: query
+        description: 'Date datetime updated to'
+        schema:
+          type: string
+          format: date-time
       - name: metadata
         in: query
         description: search by metadata
