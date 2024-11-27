@@ -31,6 +31,7 @@ use App\Traits\HasMediaAttachments;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
+use Domain\Manufacturer\Models\Manufacturer;
 use Domain\Page\Page;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Product\Models\ProductBannerMedia;
@@ -99,11 +100,14 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         'purchase_limit_per_user',
         'published',
         'search_values',
+        'manufacturer_id',
+        'safety_information',
     ];
     protected array $translatable = [
         'name',
         'description_html',
         'description_short',
+        'safety_information',
     ];
     protected $casts = [
         'shipping_date' => 'date',
@@ -386,6 +390,14 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
     public function banner(): BelongsTo
     {
         return $this->belongsTo(ProductBannerMedia::class, 'banner_media_id');
+    }
+
+    /**
+     * @return BelongsTo<Manufacturer, self>
+     */
+    public function manufacturer(): BelongsTo
+    {
+        return $this->belongsTo(Manufacturer::class, 'manufacturer_id');
     }
 
     protected static function booted(): void

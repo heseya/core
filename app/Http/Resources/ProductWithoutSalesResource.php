@@ -7,6 +7,7 @@ use App\Models\MediaAttachment;
 use App\Models\Product;
 use App\Traits\GetAllTranslations;
 use App\Traits\MetadataResource;
+use Domain\Manufacturer\Resources\ManufacturerResource;
 use Domain\Page\PageResource;
 use Domain\Product\Resources\ProductBannerMediaResource;
 use Domain\ProductSet\ProductSet;
@@ -62,6 +63,8 @@ class ProductWithoutSalesResource extends Resource
             'description_html' => $this->when($request->boolean('with_description'), $this->resource->description_html),
             'gallery' => $this->when($request->boolean('with_gallery'), MediaResource::collection($this->resource->media)),
             'published' => $this->resource->published,
+            'manufacturer_id' => $this->resource->manufacturer_id,
+            'safety_information' => $this->resource->safety_information,
         ];
 
         return array_merge(
@@ -111,6 +114,7 @@ class ProductWithoutSalesResource extends Resource
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'attachments' => MediaAttachmentResource::collection($attachments),
             'banner' => ProductBannerMediaResource::make($this->resource->banner),
+            'manufacturer' => ManufacturerResource::make($this->resource->manufacturer),
         ];
     }
 }

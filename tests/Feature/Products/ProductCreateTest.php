@@ -12,6 +12,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Brick\Math\Exception\RoundingNecessaryException;
 use Brick\Money\Exception\UnknownCurrencyException;
 use Domain\Currency\Currency;
+use Domain\Manufacturer\Models\Manufacturer;
 use Domain\Page\Page;
 use Domain\Product\Models\ProductBannerMedia;
 use Heseya\Dto\DtoException;
@@ -273,6 +274,44 @@ class ProductCreateTest extends TestCase
             ],
             'published' => [$this->lang],
         ])->assertCreated();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithManufacturer(string $user): void
+    {
+        $manufacturer = Manufacturer::factory()->create();
+
+        $prices = array_map(fn (Currency $currency) => [
+            'value' => '100.00',
+            'currency' => $currency->value,
+        ], Currency::cases());
+
+        $this->{$user}->givePermissionTo('products.add');
+        $this
+            ->actingAs($this->{$user})
+            ->json('POST', '/products', [
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
+                'slug' => 'slug',
+                'prices_base' => $prices,
+                'public' => true,
+                'shipping_digital' => false,
+                'manufacturer_id' => $manufacturer->getKey(),
+                'safety_information' => 'Safety',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'safety_information' => 'Safety',
+            ])
+            ->assertJsonFragment([
+                'id' => $manufacturer->getKey(),
+            ]);
     }
 
     /**
@@ -604,6 +643,37 @@ class ProductCreateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'slug' => 'existing-slug',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * @throws NumberFormatException
+     * @throws RoundingNecessaryException
+     * @throws UnknownCurrencyException
+     * @throws DtoException
+     */
+    public function testUpdateManufacturer(string $user): void
+    {
+        /** @var ProductService $productService */
+        $productService = App::make(ProductService::class);
+        $product = $productService->create(FakeDto::productCreateDto());
+        $manufacturer = Manufacturer::factory()->create();
+
+        $this->{$user}->givePermissionTo('products.edit');
+        $this
+            ->actingAs($this->{$user})
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'manufacturer_id' => $manufacturer->getKey(),
+                'safety_information' => 'Safety',
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $manufacturer->getKey(),
+            ])
+            ->assertJsonFragment([
+                'safety_information' => 'Safety',
             ]);
     }
 }

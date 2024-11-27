@@ -1,0 +1,26 @@
+Manufacturer:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    first_name:
+      type: string
+    last_name:
+      type: string
+    email:
+      type: string
+    address:
+      $ref: './Addresses.yml#/Address'
+
+ManufacturerShow:
+  type: object
+  allOf:
+    - $ref: '#/Manufacturer'
+    - properties:
+        products:
+          $ref: './Products.yml#/BaseProduct'
+
+

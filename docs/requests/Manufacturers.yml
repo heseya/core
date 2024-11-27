@@ -1,0 +1,20 @@
+ManufacturerDto:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+          first_name:
+            type: string
+          last_name:
+            type: string
+          email:
+            type: string
+          address:
+            $ref: './../schemas/Addresses.yml#/Address'
+          product_ids:
+            type: array
+            items:
+              type: string
