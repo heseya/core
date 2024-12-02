@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Manufacturer\Resources;
 
 use App\Http\Resources\AddressResource;
-use App\Http\Resources\ProductWithoutSalesResource;
 use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 
