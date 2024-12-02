@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Manufacturer\Resources;
 
 use App\Http\Resources\AddressResource;
-use App\Http\Resources\ProductWithoutSalesResource;
 use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 
@@ -32,7 +31,7 @@ final class ManufacturerResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'products' => ProductWithoutSalesResource::collection($this->resource->products),
+            'product_ids' => $this->resource->productIds(),
         ];
     }
 }

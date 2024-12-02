@@ -48,4 +48,12 @@ final class Manufacturer extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * @return array<int, string>
+     */
+    public function productIds(): array
+    {
+        return $this->products()->pluck('products.id')->toArray();
+    }
 }

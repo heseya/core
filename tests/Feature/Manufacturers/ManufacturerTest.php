@@ -131,7 +131,7 @@ class ManufacturerTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
+                $product->getKey(),
             ]);
     }
 
@@ -194,13 +194,13 @@ class ManufacturerTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonFragment([
-                'id' => $product->getKey(),
+                $product->getKey(),
             ])
             ->assertJsonFragment([
-                'id' => $newProduct->getKey(),
+                $newProduct->getKey(),
             ])
             ->assertJsonMissing([
-                'id' => $oldProduct->getKey(),
+                $oldProduct->getKey(),
             ]);
     }
 
