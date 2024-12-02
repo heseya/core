@@ -12,6 +12,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 final class Manufacturer extends Model
 {
@@ -47,5 +48,13 @@ final class Manufacturer extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function productIds(): Collection
+    {
+        return $this->products()->pluck('products.id');
     }
 }
