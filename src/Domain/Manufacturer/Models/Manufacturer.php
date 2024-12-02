@@ -51,10 +51,10 @@ final class Manufacturer extends Model
     }
 
     /**
-     * @return Collection<int, string>
+     * @return array<int, string>
      */
-    public function productIds(): Collection
+    public function productIds(): array
     {
-        return $this->products()->pluck('products.id');
+        return $this->products()->pluck('products.id')->toArray();
     }
 }

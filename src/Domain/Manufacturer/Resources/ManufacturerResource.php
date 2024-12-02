@@ -32,7 +32,7 @@ final class ManufacturerResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'product_ids' => ProductWithoutSalesResource::collection($this->resource->productIds()),
+            'product_ids' => $this->resource->productIds(),
         ];
     }
 }
