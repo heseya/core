@@ -19,11 +19,12 @@ final class ManufacturerSearch extends Criterion
     {
         return $query->where(
             fn (Builder $query) => $query
+                // @phpstan-ignore-next-line
                 ->where(fn (Builder $query) => $query
                     ->where('name', 'LIKE', '%' . $this->value . '%')
                     ->orWhere('first_name', 'LIKE', '%' . $this->value . '%')
                     ->orWhere('last_name', 'LIKE', '%' . $this->value . '%')
-                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $this->value . '%'])
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $this->value . '%']),
                 )
                 ->orWhereHas(
                     'address',
@@ -36,8 +37,7 @@ final class ManufacturerSearch extends Criterion
                             ->orWhere('addresses.zip', 'LIKE', '%' . $this->value . '%')
                             ->orWhere('addresses.city', 'LIKE', '%' . $this->value . '%')
                             ->orWhere('addresses.country', 'LIKE', '%' . $this->value . '%'),
-                        )
-
+                        ),
                 ),
         );
     }
