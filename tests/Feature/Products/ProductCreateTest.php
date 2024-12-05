@@ -295,6 +295,7 @@ class ProductCreateTest extends TestCase
                 'translations' => [
                     $this->lang => [
                         'name' => 'Test',
+                        'safety_information' => 'Safety',
                     ],
                 ],
                 'published' => [$this->lang],
@@ -303,7 +304,6 @@ class ProductCreateTest extends TestCase
                 'public' => true,
                 'shipping_digital' => false,
                 'manufacturer_id' => $manufacturer->getKey(),
-                'safety_information' => 'Safety',
             ])
             ->assertCreated()
             ->assertJsonFragment([
@@ -666,7 +666,12 @@ class ProductCreateTest extends TestCase
             ->actingAs($this->{$user})
             ->json('PATCH', "/products/id:{$product->getKey()}", [
                 'manufacturer_id' => $manufacturer->getKey(),
-                'safety_information' => 'Safety',
+                'translations' => [
+                    $this->lang => [
+                        'name' => $product->name,
+                        'safety_information' => 'Safety',
+                    ]
+                ],
             ])
             ->assertOk()
             ->assertJsonFragment([
