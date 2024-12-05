@@ -33,7 +33,7 @@ class ProductUpdateRequest extends ProductCreateRequest
         $rules['published'] = ['nullable', 'array', 'min:1'];
         $rules['translations'] = [
             'nullable',
-            new Translations(['name', 'description_html', 'description_short']),
+            new Translations(['name', 'description_html', 'description_short', 'safety_information']),
         ];
         $rules['banner'] = ['nullable', 'array'];
 

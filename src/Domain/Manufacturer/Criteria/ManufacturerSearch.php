@@ -19,19 +19,25 @@ final class ManufacturerSearch extends Criterion
     {
         return $query->where(
             fn (Builder $query) => $query
-                ->where('name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('first_name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('last_name', 'LIKE', '%' . $this->value . '%')
+                ->where(fn (Builder $query) => $query
+                    ->where('name', 'LIKE', '%' . $this->value . '%')
+                    ->orWhere('first_name', 'LIKE', '%' . $this->value . '%')
+                    ->orWhere('last_name', 'LIKE', '%' . $this->value . '%')
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $this->value . '%'])
+                )
                 ->orWhereHas(
                     'address',
                     fn (Builder $query) => $query
-                        ->orWhere('name', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('phone', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('address', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('vat', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('zip', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('city', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('country', 'LIKE', '%' . $this->value . '%'),
+                        ->where(fn (Builder $query) => $query
+                            ->orWhere('addresses.name', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.phone', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.address', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.vat', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.zip', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.city', 'LIKE', '%' . $this->value . '%')
+                            ->orWhere('addresses.country', 'LIKE', '%' . $this->value . '%'),
+                        )
+
                 ),
         );
     }
