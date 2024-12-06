@@ -342,6 +342,10 @@ paths:
     $ref: './paths/Redirects.yml#/RedirectsParams'
   /email:
     $ref: './paths/Emails.yml#/Emails'
+  /manufacturers:
+    $ref: './paths/Manufacturers.yml#/Manufacturers'
+  /manufacturers/id:{id}:
+    $ref: './paths/Manufacturers.yml#/ManufacturersParams'
 components:
   schemas:
     Error:
