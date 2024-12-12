@@ -120,7 +120,6 @@ class ManufacturerTest extends TestCase
                 'address' => [
                     'name' => 'Jan Kowalski',
                     'address' => 'Test 12',
-                    'phone' => '123456789',
                     'zip' => '12-123',
                     'city' => 'City',
                     'country' => 'PL',
@@ -182,7 +181,6 @@ class ManufacturerTest extends TestCase
                 'address' => [
                     'name' => 'Jan Kowalski',
                     'address' => 'Test 12',
-                    'phone' => '123456789',
                     'zip' => '12-123',
                     'city' => 'City',
                     'country' => 'PL',

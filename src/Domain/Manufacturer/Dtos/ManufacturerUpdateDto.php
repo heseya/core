@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Manufacturer\Dtos;
 
-use Domain\User\Dtos\AddressUpdateDto;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
@@ -25,7 +24,7 @@ final class ManufacturerUpdateDto extends Data
         public readonly Optional|string|null $last_name,
         #[Email, Max(255)]
         public readonly Optional|string $email,
-        public readonly AddressUpdateDto|Optional $address,
+        public readonly ManufacturerAddressUpdateDto|Optional $address,
         public readonly array|Optional $product_ids,
     ) {}
 }
