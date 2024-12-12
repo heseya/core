@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Manufacturer\Dtos;
 
-use Domain\User\Dtos\AddressStoreDto;
 use Spatie\LaravelData\Attributes\Validation\Email;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
@@ -22,7 +21,7 @@ final class ManufacturerCreateDto extends Data
         public readonly Optional|string|null $last_name,
         #[Email, Max(255)]
         public readonly string $email,
-        public readonly AddressStoreDto $address,
+        public readonly ManufacturerAddressStoreDto $address,
         public readonly array|Optional $product_ids,
     ) {}
 

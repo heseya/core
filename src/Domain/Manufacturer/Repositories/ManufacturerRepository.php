@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Manufacturer\Repositories;
 
 use App\Models\Address;
+use Domain\Manufacturer\Dtos\ManufacturerAddressUpdateDto;
 use Domain\Manufacturer\Dtos\ManufacturerCreateDto;
 use Domain\Manufacturer\Dtos\ManufacturerIndexDto;
 use Domain\Manufacturer\Dtos\ManufacturerUpdateDto;
 use Domain\Manufacturer\Models\Manufacturer;
-use Domain\User\Dtos\AddressUpdateDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 
@@ -32,7 +32,7 @@ final class ManufacturerRepository
 
     public function update(Manufacturer $manufacturer, ManufacturerUpdateDto $dto): Manufacturer
     {
-        if ($dto->address instanceof AddressUpdateDto) {
+        if ($dto->address instanceof ManufacturerAddressUpdateDto) {
             $manufacturer->address()->update($dto->address->toArray());
         }
 
