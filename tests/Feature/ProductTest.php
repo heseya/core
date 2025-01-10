@@ -1673,6 +1673,8 @@ class ProductTest extends TestCase
                             'url' => $media->url,
                             'alt' => $media->alt,
                             'slug' => $media->slug,
+                            'metadata' => [],
+                            'source' => 'silverbox',
                         ],
                     ],
                 ],
