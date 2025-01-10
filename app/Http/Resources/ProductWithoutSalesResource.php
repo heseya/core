@@ -65,6 +65,7 @@ class ProductWithoutSalesResource extends Resource
             'published' => $this->resource->published,
             'manufacturer_id' => $this->resource->manufacturer_id,
             'safety_information' => $this->resource->safety_information,
+            'reward_images' => MediaResource::collection($this->resource->rewards),
         ];
 
         return array_merge(

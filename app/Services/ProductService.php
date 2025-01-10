@@ -200,6 +200,10 @@ final readonly class ProductService
             $this->mediaService->sync($product, $dto->media);
         }
 
+        if (!($dto->reward_images instanceof Optional)) {
+            $this->mediaService->syncRewards($product, $dto->reward_images);
+        }
+
         if (!($dto->tags instanceof Optional)) {
             $product->tags()->sync($dto->tags);
         }

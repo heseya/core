@@ -101,6 +101,10 @@ BaseProduct:
             example: '<h1>Lorem ipsum dolor sit amet</h1>'
           description_short:
             type: string
+    reward_images:
+      type: array
+      items:
+        $ref: './Media.yml#/Media'
 
 Product:
   type: object

@@ -190,6 +190,7 @@ class ProductTest extends TestCase
             'public' => (bool) $this->product->public,
             'available' => true,
             'cover' => null,
+            'reward_images' => [],
         ];
 
         // Expected full response
@@ -1632,6 +1633,11 @@ class ProductTest extends TestCase
 
         Queue::fake();
 
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . mt_rand(0, 999999) . '/800',
+        ]);
+
         $response = $this->actingAs($this->{$user})->postJson('/products', [
             'slug' => 'test',
             'prices_base' => $this->productPrices,
@@ -1645,6 +1651,7 @@ class ProductTest extends TestCase
                 ],
             ],
             'published' => [$this->lang],
+            'reward_images' => [$media->getKey()],
         ]);
 
         $response
@@ -1659,6 +1666,15 @@ class ProductTest extends TestCase
                     'description_short' => 'So called short description...',
                     'cover' => null,
                     'gallery' => [],
+                    'reward_images' => [
+                        [
+                            'id' => $media->getKey(),
+                            'type' => $media->type,
+                            'url' => $media->url,
+                            'alt' => $media->alt,
+                            'slug' => $media->slug,
+                        ],
+                    ],
                 ],
             ])
             ->assertJsonFragment([

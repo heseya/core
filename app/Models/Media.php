@@ -57,6 +57,11 @@ class Media extends Model
         return $this->belongsToMany(Product::class, 'product_media');
     }
 
+    public function rewardsProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_reward_images');
+    }
+
     public function documents(): BelongsToMany
     {
         return $this

@@ -34,6 +34,18 @@ final readonly class MediaService implements MediaServiceContract
         }
     }
 
+    public function syncRewards(Product $product, array $media): void
+    {
+        $operations = $product->rewards()->sync($this->reorderService->reorder($media));
+
+        if (array_key_exists('detached', $operations) && $operations['detached']) {
+            Media::query()->whereIn('id', $operations['detached'])
+                ->each(function ($object): void {
+                    $this->destroy($object);
+                });
+        }
+    }
+
     public function destroy(Media $media): void
     {
         $this->silverboxService->delete($media->url);
