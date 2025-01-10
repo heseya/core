@@ -105,7 +105,7 @@ class ProductRepository
 
         if (request()->filled('attribute_slug')) {
             $query->with([
-                'productAttributes' => fn (Builder|HasMany $subquery) => $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
+                'productAttributes' => fn (Builder|HasMany $subquery) => request()->input('attribute_slug') === '*' ? $subquery : $subquery->slug(explode(';', request()->input('attribute_slug'))), // @phpstan-ignore-line
                 'productAttributes.attribute',
                 'productAttributes.attribute.metadata',
                 'productAttributes.attribute.metadataPrivate',
