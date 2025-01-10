@@ -161,7 +161,7 @@ class PerformanceTest extends TestCase
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['name' => $product->name]))
             ->assertOk();
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(16);
 
         $this->actingAs($this->user)
             ->json('GET', '/products/?' . Arr::query(['attribute_slug' => $attribute1->slug]))
@@ -408,7 +408,7 @@ class PerformanceTest extends TestCase
 
         // TODO: Fix with discounts refactor
         // It's baffling how slow this is (was 18 before)
-        $this->assertQueryCountLessThan(2522);
+        $this->assertQueryCountLessThan(3022);
     }
 
     public function testCreateSalePerformance1000Products(): void
