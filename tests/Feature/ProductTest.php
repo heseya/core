@@ -1669,7 +1669,7 @@ class ProductTest extends TestCase
                     'reward_images' => [
                         [
                             'id' => $media->getKey(),
-                            'type' => $media->type,
+                            'type' => 'photo',
                             'url' => $media->url,
                             'alt' => $media->alt,
                             'slug' => $media->slug,
