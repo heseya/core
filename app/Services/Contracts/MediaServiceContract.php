@@ -9,6 +9,7 @@ use App\Models\Product;
 interface MediaServiceContract
 {
     public function sync(Product $product, array $media): void;
+
     public function syncRewards(Product $product, array $media): void;
 
     public function store(MediaDto $dto, bool $private = false): Media;
