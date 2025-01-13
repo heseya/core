@@ -193,6 +193,13 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
             ->orderByPivot('order');
     }
 
+    public function rewards(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Media::class, 'product_reward_images')
+            ->orderByPivot('order');
+    }
+
     public function orders(): BelongsToMany
     {
         return $this

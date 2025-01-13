@@ -53,6 +53,8 @@ class ProductCreateRequest extends FormRequest implements MetadataRequestContrac
 
                 'media' => ['array'],
                 'media.*' => ['uuid', 'exists:media,id'],
+                'reward_images' => ['array'],
+                'reward_images.*' => ['uuid', 'exists:media,id'],
 
                 'tags' => ['array'],
                 'tags.*' => ['uuid', 'exists:tags,id'],

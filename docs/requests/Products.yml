@@ -34,6 +34,11 @@ Product:
       items:
         type: string
         format: uuid
+    reward_images:
+      type: array
+      items:
+        type: string
+        format: uuid
     tags:
       type: array
       items:

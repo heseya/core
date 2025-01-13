@@ -29,6 +29,7 @@ final class ProductUpdateDto extends Data
     /**
      * @param DataCollection<int,PriceDto>|Optional $prices_base
      * @param string[]|Optional $media
+     * @param string[]|Optional $reward_images
      * @param string[]|Optional $tags
      * @param string[]|Optional $schemas
      * @param string[]|Optional $sets
@@ -49,6 +50,7 @@ final class ProductUpdateDto extends Data
         public int|Optional|null $google_product_category,
         public float|Optional|null $purchase_limit_per_user,
         public array|Optional $media,
+        public array|Optional $reward_images,
         public array|Optional $tags,
         public array|Optional $schemas,
         public array|Optional $sets,
