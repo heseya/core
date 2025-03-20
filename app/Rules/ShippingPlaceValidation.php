@@ -84,7 +84,7 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, Va
     {
         $validator = Validator::make($this->data, [
             'shipping_place' => ['nullable', 'array', new ShippingAddressRequired()],
-            'shipping_place.name' => ['string', 'max:255', new FullName()],
+            'shipping_place.name' => ['string', 'max:255'],
             'shipping_place.phone' => ['string', 'max:20'],
             'shipping_place.address' => ['string', 'max:255'],
             'shipping_place.zip' => ['string', 'max:16'],
@@ -92,6 +92,10 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, Va
             'shipping_place.country' => ['string', 'size:2'],
             'shipping_place.vat' => ['nullable', 'string', 'max:15'],
         ]);
+
+        $validator->sometimes('shipping_place.name', [new FullName()], function ($input) {
+            return !isset($input->shipping_place['vat']) || $input->shipping_place['vat'] === null;
+        });
 
         if ($validator->fails()) {
             foreach ($validator->errors()->messages() as $attribute => $messages) {
