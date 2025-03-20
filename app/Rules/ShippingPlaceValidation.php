@@ -93,9 +93,8 @@ final class ShippingPlaceValidation implements DataAwareRule, ValidationRule, Va
             'shipping_place.vat' => ['nullable', 'string', 'max:15'],
         ]);
 
-        $validator->sometimes('shipping_place.name', [new FullName()], function ($input) {
-            return !isset($input->shipping_place['vat']) || $input->shipping_place['vat'] === null;
-        });
+        // @phpstan-ignore-next-line
+        $validator->sometimes('shipping_place.name', [new FullName()], fn ($input) => !isset($input->shipping_place['vat']) || $input->shipping_place['vat'] === null);
 
         if ($validator->fails()) {
             foreach ($validator->errors()->messages() as $attribute => $messages) {
