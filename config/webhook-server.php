@@ -32,13 +32,13 @@ return [
      * If a call to a webhook takes longer that this amount of seconds
      * the attempt will be considered failed.
      */
-    'timeout_in_seconds' => 10,
+    'timeout_in_seconds' => (int) env('WEBHOOK_TIMEOUT', 10),
 
     // The amount of times the webhook should be called before we give up.
-    'tries' => 3,
+    'tries' => (int) env('WEBHOOK_TRIES', 3),
 
     // This class determines how many seconds there should be between attempts.
-    'backoff_strategy' => ExponentialBackoffStrategy::class,
+    'backoff_strategy' => \App\Utils\Webhooks\CustomExponentialBackoffStrategy::class,
 
     /*
      * By default we will verify that the ssl certificate of the destination
