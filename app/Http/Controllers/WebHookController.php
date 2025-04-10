@@ -10,8 +10,10 @@ use App\Models\WebHook;
 use App\Services\Contracts\WebHookServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class WebHookController extends Controller
 {
@@ -61,5 +63,17 @@ class WebHookController extends Controller
         $this->webHookService->delete($webHook);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function info(): JsonResponse
+    {
+        if (!Config::get('webhook.display_info')) {
+            throw new NotFoundHttpException();
+        }
+
+        return Response::json([
+            'tries' => Config::get('webhook-server.tries'),
+            'timeout_in_seconds' => Config::get('webhook-server.timeout_in_seconds'),
+        ]);
     }
 }
