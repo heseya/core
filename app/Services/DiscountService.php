@@ -1992,7 +1992,7 @@ readonly class DiscountService implements DiscountServiceContract
     {
         $conditionDto = MaxUsesPerUserConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        if (Auth::user()) {
+        if (Auth::user() && Auth::user()->getAuthIdentifier()) {
             return $condition
                 ->conditionGroup
                 ?->discounts()

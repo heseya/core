@@ -5,6 +5,8 @@ namespace Tests\Feature\Discounts;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
@@ -14,6 +16,7 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\Role;
 use App\Repositories\DiscountRepository;
 use App\Services\ProductService;
 use App\Services\SchemaCrudService;
@@ -1414,5 +1417,45 @@ class DiscountOrderTest extends TestCase
             ],
         ])
             ->assertUnprocessable();
+    }
+
+    public function testCreateOrderConditionsMaxPerUserUnauthenticated(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('orders.add');
+
+        $coupon = Discount::factory()->create([
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'percentage' => '15',
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::MAX_USES_PER_USER,
+            'value' => [
+                'max_uses' => false,
+            ],
+        ]);
+
+        $coupon->conditionGroups()->attach($conditionGroup);
+
+        $response = $this->postJson('/orders', [
+            'currency' => $this->currency,
+            'sales_channel_id' => SalesChannel::query()->value('id'),
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'shipping_place' => $this->address,
+            'billing_address' => $this->address,
+            'delivery_address' => $this->address,
+            'items' => $this->items,
+            'coupons' => [
+                $coupon->code,
+            ],
+        ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE->value,
+            ]);
     }
 }
