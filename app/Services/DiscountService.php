@@ -1865,16 +1865,18 @@ readonly class DiscountService implements DiscountServiceContract
         /** @var User|App|null $user */
         $user = Auth::user();
 
+        $hasRole = false;
         if ($user instanceof User) {
             /** @var Role $role */
             foreach ($user->roles as $role) {
-                if (in_array($role->getKey(), $conditionDto->getRoles()) === $conditionDto->isIsAllowList()) {
-                    return true;
+                if (in_array($role->getKey(), $conditionDto->getRoles())) {
+                    $hasRole = true;
+                    break;
                 }
             }
         }
 
-        return false;
+        return $hasRole === $conditionDto->isIsAllowList();
     }
 
     private function checkConditionUserIn(DiscountCondition $condition): bool
