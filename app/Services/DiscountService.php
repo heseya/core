@@ -360,6 +360,7 @@ readonly class DiscountService implements DiscountServiceContract
         $cartItems = [];
         $cartValue = Money::zero($currency->value);
 
+        /** @var CartItemDto $cartItem */
         foreach ($cart->getItems() as $cartItem) {
             $product = $products->firstWhere('id', $cartItem->getProductId());
 
@@ -389,6 +390,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $price,
                 $price,
                 $cartItem->getQuantity(),
+                $cartItem->getRelatedProductId() instanceof Missing ? null : $cartItem->getRelatedProductId(),
             );
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);

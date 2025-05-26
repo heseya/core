@@ -3,6 +3,7 @@
 namespace App\Dtos;
 
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
 final class CartItemDto extends Dto
 {
@@ -11,6 +12,7 @@ final class CartItemDto extends Dto
     private float $quantity;
     private array $schemas;
     private array $discounts;
+    private Missing|string|null $related_product_id;
 
     public static function fromArray(array $array): self
     {
@@ -20,6 +22,7 @@ final class CartItemDto extends Dto
             quantity: $array['quantity'],
             schemas: array_key_exists('schemas', $array) ? $array['schemas'] : [],
             discounts: [],
+            related_product_id: array_key_exists('related_product_id', $array) ? $array['related_product_id'] : new Missing(),
         );
     }
 
@@ -56,5 +59,10 @@ final class CartItemDto extends Dto
     public function addDiscount(string $id): void
     {
         $this->discounts[] = $id;
+    }
+
+    public function getRelatedProductId(): Missing|string|null
+    {
+        return $this->related_product_id;
     }
 }
