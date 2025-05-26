@@ -407,6 +407,17 @@ class Product extends Model implements SeoContract, SortableContract, Translatab
         return $this->belongsTo(Manufacturer::class, 'manufacturer_id');
     }
 
+    public function getProductSku(): string
+    {
+        $metadata = $this->metadata()->where(fn ($query) => $query->where('name', '=', 'sku')->orWhere('name', '=', 'SKU'))->first();
+
+        if ($metadata) {
+            return (string) $metadata->value;
+        }
+
+        return $this->getKey();
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Product $product): void {

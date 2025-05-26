@@ -45,6 +45,8 @@ use Brick\Math\Exception\MathException;
 use Brick\Money\Exception\MoneyMismatchException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
+use Domain\Metadata\Dtos\MetadataUpdateDto;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\Order\Resources\OrderResource;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\SalesChannel\SalesChannelService;
@@ -187,6 +189,8 @@ final readonly class OrderService implements OrderServiceContract
                 $previousSettings = $this->getCurrentLangFallbackSettings();
                 $this->setAnyLangFallback();
                 $language = AppSupport::getLocale();
+                $additionalComment = '';
+                $additionalMetadata = [];
                 foreach ($items as $item) {
                     /** @var Product $product */
                     $product = $products->firstWhere('id', $item->getProductId());
@@ -244,11 +248,43 @@ final readonly class OrderService implements OrderServiceContract
                         $orderProduct->price_initial = $schemaProductPrice->plus($orderProduct->price_initial);
                         $orderProduct->save();
                     }
+
+                    if (!($item->getRelatedProductId() instanceof Missing) && $item->getRelatedProductId() !== null) {
+                        /** @var Product $relatedProduct */
+                        $relatedProduct = Product::query()->where('id', $item->getRelatedProductId())->first();
+                        /** @var Product $itemProduct */
+                        $itemProduct = $orderProduct->product;
+                        $additionalComment .= '|' . $relatedProduct->getProductSku() . ':' . $itemProduct->getProductSku() . ':' . $orderProduct->price;
+                        $additionalMetadata[] = new MetadataUpdateDto(
+                            $relatedProduct->getProductSku() . '_' . $itemProduct->getProductSku(),
+                            $orderProduct->price,
+                            true,
+                            MetadataType::STRING,
+                        );
+                    }
                 }
                 $this->setLangFallbackSettings(...$previousSettings);
 
-                if (!($dto->getMetadata() instanceof Missing)) {
-                    $this->metadataService->sync($order, $dto->getMetadata());
+                if (!($dto->getMetadata() instanceof Missing) || count($additionalMetadata) > 0) {
+                    $metadata = $dto->getMetadata() instanceof Missing ? [] : $dto->getMetadata();
+
+                    $metadata = array_merge($metadata, $additionalMetadata);
+
+                    $this->metadataService->sync($order, $metadata);
+                }
+
+                if ($additionalComment !== '') {
+                    $additionalComment = mb_substr($additionalComment, 1);
+                    $maxCommentLength = 1000;
+                    $remainingLength = $maxCommentLength - mb_strlen($order->comment ?? '');
+
+                    if ($remainingLength > 0) {
+                        $trimmedAdditionalComment = mb_substr($additionalComment, 0, $remainingLength);
+                    } else {
+                        $trimmedAdditionalComment = '';
+                    }
+
+                    $order->comment .= $trimmedAdditionalComment;
                 }
 
                 $order->cart_total_initial = $cartValueInitial;

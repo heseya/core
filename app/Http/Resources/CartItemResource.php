@@ -13,6 +13,7 @@ class CartItemResource extends Resource
             'price' => $this->resource->price->getAmount(),
             'price_discounted' => $this->resource->price_discounted->getAmount(),
             'quantity' => (float) $this->resource->quantity,
+            'related_product_id' => $this->resource->related_product_id,
         ];
     }
 }

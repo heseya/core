@@ -17,6 +17,7 @@ class OrderItemsRequest extends FormRequest
             'items.*.quantity' => ['required', 'integer', 'min:1'],
 
             'items.*.schemas' => ['nullable', 'array'],
+            'items.*.related_product_id' => ['nullable', 'uuid'],
         ];
     }
 }

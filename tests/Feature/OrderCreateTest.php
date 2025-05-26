@@ -42,6 +42,7 @@ use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use Domain\Currency\Currency;
 use Domain\Language\Language;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\ProductSet\ProductSet;
@@ -322,6 +323,138 @@ class OrderCreateTest extends TestCase
                 'metadata' => [
                     'attributeMeta' => 'attributeValue',
                 ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithMetadataAndRelatedProduct($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $productQuantity = 20;
+
+        $relatedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $this->productRepository->setProductPrices($relatedProduct->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->postJson('/orders', [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'billing_address' => $this->address->toArray(),
+                'shipping_place' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                    [
+                        'product_id' => $relatedProduct->getKey(),
+                        'quantity' => $productQuantity,
+                        'related_product_id' => $this->product->getKey(),
+                    ],
+                ],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                    $this->product->getKey() . '_' . $relatedProduct->getKey() => "PLN 10.00",
+                ],
+            ])
+            ->assertJsonFragment([
+                'comment' => $this->product->getKey() . ':' . $relatedProduct->getKey() . ':PLN 10.00',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithMetadataAndRelatedProductWithSku($user): void
+    {
+        $this->{$user}->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->productRepository->setProductPrices($this->product->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $this->product->metadata()->create([
+            'name' => 'SKU',
+            'value' => 'TEL00001',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $productQuantity = 20;
+
+        $relatedProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $this->productRepository->setProductPrices($relatedProduct->getKey(), [
+            ProductPriceType::PRICE_BASE->value => FakeDto::generatePricesInAllCurrencies(amount: 10),
+        ]);
+
+        $relatedProduct->metadata()->create([
+            'name' => 'SKU',
+            'value' => 'TEL00002',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->postJson('/orders', [
+                'currency' => $this->currency,
+                'sales_channel_id' => SalesChannel::query()->value('id'),
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'billing_address' => $this->address->toArray(),
+                'shipping_place' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                    [
+                        'product_id' => $relatedProduct->getKey(),
+                        'quantity' => $productQuantity,
+                        'related_product_id' => $this->product->getKey(),
+                    ],
+                ],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                    $this->product->getProductSku() . '_' . $relatedProduct->getProductSku() => "PLN 10.00",
+                ],
+            ])
+            ->assertJsonFragment([
+                'comment' => $this->product->getProductSku() . ':' . $relatedProduct->getProductSku() . ':PLN 10.00',
             ]);
     }
 
