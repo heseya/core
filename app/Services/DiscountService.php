@@ -390,6 +390,7 @@ readonly class DiscountService implements DiscountServiceContract
                 $price,
                 $price,
                 $cartItem->getQuantity(),
+                $cartItem->getProductId(),
                 $cartItem->getRelatedProductId() instanceof Missing ? null : $cartItem->getRelatedProductId(),
             );
         }
@@ -1305,11 +1306,19 @@ readonly class DiscountService implements DiscountServiceContract
      */
     private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
     {
-        /** @var OrderProduct $product */
         $product = $order->products->sortBy([
             ['price', 'asc'],
             ['quantity', 'asc'],
-        ])->first();
+        ]);
+
+
+        if ($discount->target_is_allow_list) {
+            /** @var OrderProduct $product */
+            $product = $product->whereIn('product_id', $discount->products->pluck('id')->all())->first();
+        } else {
+            /** @var OrderProduct $product */
+            $product = $product->whereNotIn('product_id', $discount->products->pluck('id')->all())->first();
+        }
 
         if ($product !== null) {
             $minimalProductPrice = Money::ofMinor(1, $order->currency->value);
@@ -1477,11 +1486,18 @@ readonly class DiscountService implements DiscountServiceContract
         Discount $discount,
         CartResource $cart,
     ): CartResource {
-        /** @var CartItemResponse $cartItem */
         $cartItem = $cart->items->sortBy([
             ['price_discounted', 'asc'],
             ['quantity', 'asc'],
-        ])->first();
+        ]);
+
+        if ($discount->target_is_allow_list) {
+            /** @var CartItemResponse $cartItem */
+            $cartItem = $cartItem->whereIn('product_id', $discount->products->pluck('id')->all())->first();
+        } else {
+            /** @var CartItemResponse $cartItem */
+            $cartItem = $cartItem->whereNotIn('product_id', $discount->products->pluck('id')->all())->first();
+        }
 
         $minimalProductPrice = Money::ofMinor(1, $cartItem->price_discounted->getCurrency());
 
@@ -1497,6 +1513,8 @@ readonly class DiscountService implements DiscountServiceContract
                 $cartItem->price,
                 $cartItem->price_discounted,
                 1,
+                $cartItem->product_id,
+                $cartItem->related_product_id,
             );
             $cart->items->push($cartItem);
         }

@@ -168,6 +168,7 @@ class DiscountApplyTest extends TestCase
             Money::of(120.0, $this->currency->value),
             Money::of(120.0, $this->currency->value),
             1,
+            $this->product->getKey(),
         );
 
         $this->cart = new CartResource(
