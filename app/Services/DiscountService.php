@@ -1311,7 +1311,6 @@ readonly class DiscountService implements DiscountServiceContract
             ['quantity', 'asc'],
         ]);
 
-
         if ($discount->target_is_allow_list) {
             /** @var OrderProduct $product */
             $product = $product->whereIn('product_id', $discount->products->pluck('id')->all())->first();
