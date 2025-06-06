@@ -314,7 +314,7 @@ class DiscountApplyTest extends TestCase
 
         $coupon3 = Discount::factory([
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
-            'target_is_allow_list' => true,
+            'target_is_allow_list' => false,
             'percentage' => null,
         ])->create();
 
