@@ -502,6 +502,7 @@ class DiscountOrderTest extends TestCase
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
             'percentage' => '5',
             'code' => null,
+            'target_is_allow_list' => false,
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [
@@ -1078,6 +1079,7 @@ class DiscountOrderTest extends TestCase
             'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
             'percentage' => '10',
             'code' => null,
+            'target_is_allow_list' => false,
         ]);
 
         $response = $this->actingAs($this->{$user})->postJson('/orders', [

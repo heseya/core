@@ -11,6 +11,7 @@ class CartItemResponse
         public Money $price,
         public Money $price_discounted,
         public float $quantity,
+        public string $product_id,
         public string|null $related_product_id = null,
     ) {}
 }

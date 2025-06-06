@@ -133,6 +133,17 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
                     && $cartItem->getProductId() === $item['product_id']
                     && count(array_diff($cartItem->getSchemas(), $schemas)) === 0;
             });
+
+            if (array_key_exists('related_product_id', $item)) {
+                $quantity = 0;
+                foreach ($items as $relatedItem) {
+                    if ($relatedItem['product_id'] === $item['related_product_id']) {
+                        $quantity += $relatedItem['quantity'];
+                    }
+                }
+                $item['quantity'] = $quantity;
+            }
+
             // @phpstan-ignore-next-line
             if ($existingItem) {
                 $existingItem->setQuantity($existingItem->getQuantity() + $item['quantity']);
