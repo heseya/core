@@ -3640,6 +3640,7 @@ class CartTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 2,
                     'schemas' => [],
+                    'related_product_id' => null,
                 ],
                 [
                     'cartitem_id' => '2',

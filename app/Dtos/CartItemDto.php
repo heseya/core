@@ -22,7 +22,7 @@ final class CartItemDto extends Dto
             quantity: $array['quantity'],
             schemas: array_key_exists('schemas', $array) ? $array['schemas'] : [],
             discounts: [],
-            related_product_id: array_key_exists('related_product_id', $array) ? $array['related_product_id'] : new Missing(),
+            related_product_id: array_key_exists('related_product_id', $array) && $array['related_product_id'] !== null ? $array['related_product_id'] : new Missing(),
         );
     }
 
