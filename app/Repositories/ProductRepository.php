@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Traits\GetPublishedLanguageFilter;
 use Domain\Currency\Currency;
+use Domain\Metadata\Enums\MetadataType;
 use Domain\Price\Dtos\PriceDto;
 use Domain\Price\Enums\ProductPriceType;
 use Domain\Price\PriceRepository;
@@ -113,6 +114,13 @@ class ProductRepository implements ProductRepositoryContract
         if (Gate::denies('products.show_hidden')) {
             $query->where('products.public', true);
         }
+
+        $query->whereDoesntHave('metadata', function (Builder $query): void {
+            $query
+                ->where('name', '=', Config::get('search.search_disable_metadata'))
+                ->where('value_type', '=', MetadataType::BOOLEAN->value)
+                ->where('value', '=', true);
+        });
 
         if (request()->filled('attribute_slug')) {
             $query->with([
