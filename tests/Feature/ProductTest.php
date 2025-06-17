@@ -358,6 +358,41 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSearchByIdsDisableMetadata(string $user): void
+    {
+        $this->{$user}->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $metadata = $product->metadata()->create([
+            'name' => 'search_disabled',
+            'value' => true,
+            'value_type' => MetadataType::BOOLEAN,
+            'public' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($this->{$user})
+            ->json('GET', '/products', ['limit' => 100, 'ids' => [$product->getKey()]])
+            ->assertOk();
+        $response
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+            ]);
+
+        $this->assertQueryCountLessThan(29);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexWithGallery(string $user): void
     {
         $this->{$user}->givePermissionTo('products.show');

@@ -115,11 +115,17 @@ class ProductRepository implements ProductRepositoryContract
             $query->where('products.public', true);
         }
 
-        $query->whereDoesntHave('metadata', function (Builder $query): void {
-            $query
-                ->where('name', '=', Config::get('search.search_disable_metadata'))
-                ->where('value_type', '=', MetadataType::BOOLEAN->value)
-                ->where('value', '=', true);
+        $query->where(function (Builder $query) use ($dto): void {
+            $query->whereDoesntHave('metadata', function (Builder $query): void {
+                $query
+                    ->where('name', '=', Config::get('search.search_disable_metadata'))
+                    ->where('value_type', '=', MetadataType::BOOLEAN->value)
+                    ->where('value', '=', true);
+            });
+
+            if (!($dto->ids instanceof Optional)) {
+                $query->orWhereIn('id', $dto->ids);
+            }
         });
 
         if (request()->filled('attribute_slug')) {
