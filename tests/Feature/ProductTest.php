@@ -344,7 +344,7 @@ class ProductTest extends TestCase
 
         $response = $this
             ->actingAs($this->{$user})
-            ->json('GET', '/products', ['limit' => 100])
+            ->json('GET', '/products', ['limit' => 100, 'hide_products' => true])
             ->assertOk();
         $response
             ->assertJsonCount(2, 'data')

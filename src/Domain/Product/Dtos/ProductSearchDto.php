@@ -64,6 +64,7 @@ final class ProductSearchDto extends Data
         public Optional|ProductSearchPriceDto $price,
         public bool|Optional $full,
         public bool|Optional $with_sets,
+        public bool|Optional $hide_products,
     ) {
         if ($this->sort instanceof Optional) {
             $this->sort = null;
