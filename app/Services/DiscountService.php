@@ -1309,15 +1309,7 @@ readonly class DiscountService implements DiscountServiceContract
         $product = $order->products->sortBy([
             ['price', 'asc'],
             ['quantity', 'asc'],
-        ]);
-
-        if ($discount->target_is_allow_list) {
-            /** @var OrderProduct $product */
-            $product = $product->whereIn('product_id', $discount->products->pluck('id')->all())->first();
-        } else {
-            /** @var OrderProduct $product */
-            $product = $product->whereNotIn('product_id', $discount->products->pluck('id')->all())->first();
-        }
+        ])->first();
 
         if ($product !== null) {
             $minimalProductPrice = Money::ofMinor(1, $order->currency->value);
@@ -1488,15 +1480,7 @@ readonly class DiscountService implements DiscountServiceContract
         $cartItem = $cart->items->sortBy([
             ['price_discounted', 'asc'],
             ['quantity', 'asc'],
-        ]);
-
-        if ($discount->target_is_allow_list) {
-            /** @var CartItemResponse $cartItem */
-            $cartItem = $cartItem->whereIn('product_id', $discount->products->pluck('id')->all())->first();
-        } else {
-            /** @var CartItemResponse $cartItem */
-            $cartItem = $cartItem->whereNotIn('product_id', $discount->products->pluck('id')->all())->first();
-        }
+        ])->first();
 
         $minimalProductPrice = Money::ofMinor(1, $cartItem->price_discounted->getCurrency());
 
