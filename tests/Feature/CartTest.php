@@ -1056,7 +1056,7 @@ class CartTest extends TestCase
                     'name' => 'Discount on cheapest product',
                     'percentage' => '5',
                     'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
-                    'target_is_allow_list' => false,
+                    'target_is_allow_list' => true,
                 ] + $code
             );
 
@@ -3729,28 +3729,30 @@ class CartTest extends TestCase
             ->assertValid()->assertOk()
             ->assertJsonFragment([
                 'cart_total_initial' => '9240.00',
-                'cart_total' => '9010.00',
+                'cart_total' => '9239.00',
                 'shipping_price_initial' => '0.00',
                 'shipping_price' => '0.00',
-                'summary' => '9010.00',
+                'summary' => '9239.00',
                 'coupons' => [],
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '1',
                 'price' => '4600.00',
                 'price_discounted' => '4600.00',
+                'quantity' => 2,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '2',
+                'price' => '20.00',
+                'price_discounted' => '20.00',
+                'related_product_id' => $this->product->getKey(),
                 'quantity' => 1,
             ])
             ->assertJsonFragment([
                 'cartitem_id' => '2',
                 'price' => '20.00',
+                'price_discounted' => '19.00',
                 'related_product_id' => $this->product->getKey(),
-                'quantity' => 2,
-            ])
-            ->assertJsonFragment([
-                'cartitem_id' => '1',
-                'price' => '4600.00',
-                'price_discounted' => '4370.00',
                 'quantity' => 1,
             ]);
     }
