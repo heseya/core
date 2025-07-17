@@ -17,4 +17,6 @@ interface MediaServiceContract
     public function update(Media $media, MediaDto $dto): Media;
 
     public function destroy(Media $media): void;
+
+    public function addMediaToCache(Media $media): void;
 }

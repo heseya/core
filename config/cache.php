@@ -95,4 +95,7 @@ return [
      */
 
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'heseya_store'), '_') . '_cache'),
+
+    'media_cache_core_id' => env('MEDIA_CACHE_CORE_ID', 'core_id'),
+    'media_cache_ttl' => env('MEDIA_CACHE_TTL', 3600),
 ];
