@@ -135,7 +135,7 @@ final readonly class MediaService implements MediaServiceContract
         $key = 'm_' . Config::get('cache.media_cache_core_id') . '_' . $media->getKey();
 
         $redis->del($key);
-        $redis->hmset($key, ['d' => json_encode(MediaCacheResource::make($media)->resolve())]);
+        $redis->hmset($key, ['d' => json_encode(MediaCacheResource::make($media)->resolve(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
         $redis->expire($key, Config::get('cache.media_cache_ttl'));
     }
 
