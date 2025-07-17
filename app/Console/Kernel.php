@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\MediaCache;
 use App\Jobs\CheckActiveSales;
 use App\Jobs\GoogleCategoryJob;
 use App\Jobs\StopShippingUnlimitedStockDateJob;
@@ -33,5 +34,7 @@ class Kernel extends ConsoleKernel
         $schedule->job(new GoogleCategoryJob())
             ->weekly()
             ->sentryMonitor('google-category');
+
+        $schedule->command(MediaCache::class)->dailyAt('01:00');
     }
 }

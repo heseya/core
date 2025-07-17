@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\MediaDto;
 use App\Enums\MediaSource;
 use App\Enums\MediaType;
+use App\Http\Resources\MediaCacheResource;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -13,6 +14,8 @@ use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SilverboxServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redis;
 
 final readonly class MediaService implements MediaServiceContract
 {
@@ -49,6 +52,7 @@ final readonly class MediaService implements MediaServiceContract
     public function destroy(Media $media): void
     {
         $this->silverboxService->delete($media->url);
+        $this->removeMediaFromCache($media);
         $media->forceDelete();
     }
 
@@ -89,6 +93,8 @@ final readonly class MediaService implements MediaServiceContract
             $this->metadataService->sync($media, $dto->getMetadata());
         }
 
+        $this->addMediaToCache($media);
+
         return $media;
     }
 
@@ -108,6 +114,8 @@ final readonly class MediaService implements MediaServiceContract
 
         $media->save();
 
+        $this->addMediaToCache($media);
+
         return $media;
     }
 
@@ -119,5 +127,21 @@ final readonly class MediaService implements MediaServiceContract
             'pdf', 'doc', 'docx', 'odt', 'xls', 'xlsx' => MediaType::DOCUMENT,
             default => MediaType::OTHER,
         };
+    }
+
+    public function addMediaToCache(Media $media): void
+    {
+        $redis = Redis::connection('noprefix');
+        $key = 'm_' . Config::get('cache.media_cache_core_id') . '_' . $media->getKey();
+
+        $redis->del($key);
+        $redis->hmset($key, ['d' => json_encode(MediaCacheResource::make($media)->resolve())]);
+        $redis->expire($key, Config::get('cache.media_cache_ttl'));
+    }
+
+    public function removeMediaFromCache(Media $media): void
+    {
+        $key = 'm_' . Config::get('cache.media_cache_core_id') . '_' . $media->getKey();
+        Redis::connection('noprefix')->del($key);
     }
 }
