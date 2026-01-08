@@ -49,8 +49,14 @@ final class GoogleRecaptchaV3CaptchaProvider implements CaptchaProvider
             return false;
         }
 
+        /** @var string|float $min_Score */
         $min_Score = $this->settingsService->getSetting('google_recaptcha_min_score')->value;
+        $min_Score = is_string($min_Score) ? (float) str_replace(',', '.', trim($min_Score)) : $min_Score;
 
-        return !($score < $min_Score);
+        if ($min_Score <= 0) {
+            $min_Score = 0.1;
+        }
+
+        return (float) $score >= $min_Score;
     }
 }
